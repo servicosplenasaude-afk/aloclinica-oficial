@@ -71,7 +71,9 @@ Deno.serve(async (req) => {
       .select("id, patient_id, scheduled_at, payment_status, created_at, lembrete_enviado")
       .gte("scheduled_at", start.toISOString())
       .lte("scheduled_at", end.toISOString())
-      .in("status", ["scheduled", "waiting"])
+      // "waiting" (sala de espera) nunca ocorre numa janela de 22-26h; "confirmed"
+      // ficava de fora. Alinha com os demais fluxos: consultas agendadas/confirmadas.
+      .in("status", ["scheduled", "confirmed"])
       .neq("lembrete_enviado", true);
     if (aErr) throw aErr;
 

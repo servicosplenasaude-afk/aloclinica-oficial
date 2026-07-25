@@ -73,12 +73,6 @@ verify_jwt = false
 [functions.lembrete-consultas]
 verify_jwt = false
 
-[functions.generate-sweepstake-tickets]
-verify_jwt = false
-
-[functions.notify-expired-prescriptions]
-verify_jwt = false
-
 [functions.post-consultation-survey]
 verify_jwt = false
 
