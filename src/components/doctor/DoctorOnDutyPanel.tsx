@@ -92,6 +92,10 @@ const DoctorOnDutyPanel = () => {
       status: "in_progress",
       payment_status: "approved",
       appointment_type: "urgent_care",
+      // Copia o valor pago (fila) para a consulta — sem isto, "Receita hoje" e o
+      // repasse do plantonista ficavam em R$ 0 (price/price_at_booking nulos).
+      price: entry.price ?? null,
+      price_at_booking: entry.price ?? null,
     }).select("id").single();
 
     if (apptError || !appt) {

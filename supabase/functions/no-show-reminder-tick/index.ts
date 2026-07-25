@@ -82,18 +82,11 @@ Deno.serve(async (req) => {
       const risk = await computeRisk(sb, a);
       if (risk.band === "baixo") { skipped.push({ id: a.id, reason: "low_risk" }); continue; }
 
-      // WhatsApp via whatsapp-notify
-      try {
-        await fetch(`${supaUrl}/functions/v1/whatsapp-notify`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${anon}`, "x-internal-secret": Deno.env.get("INTERNAL_FUNCTION_SECRET") ?? "" },
-          body: JSON.stringify({
-            tipo: "lembrete_1h",
-            user_id: a.patient_id,
-            dados: { appointment_id: a.id },
-          }),
-        });
-      } catch (e) { console.warn("WhatsApp falhou:", e); }
+      // OBS: NÃO enviamos WhatsApp aqui. O lembrete de 24h por WhatsApp já é enviado
+      // (com o texto e os dados corretos) pela função de banco fn_send_appointment_reminders.
+      // Antes, esta função mandava o template "lembrete_1h" ("começa em 1 hora") com
+      // nome/hora vazios para uma janela de ~24h — mensagem errada + WhatsApp em dobro.
+      // Aqui fica só o PUSH extra para pacientes de risco de no-show (canal distinto).
 
       // Push via send-push-notification
       try {

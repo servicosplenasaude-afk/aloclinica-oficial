@@ -290,6 +290,27 @@ const VideoRoom = () => {
     };
   }, [appointmentId]);
 
+  // Paciente: quando o MÉDICO conclui a consulta (status -> completed), sai da sala
+  // e vai para a avaliação — antes o paciente ficava numa sala vazia, sem sinal,
+  // após o médico encerrar (só o médico conclui o ato). postgres_changes respeita a
+  // RLS de appointments, então só o participante recebe o evento.
+  useEffect(() => {
+    if (!appointmentId || isDoctor) return;
+    const channel = db
+      .channel(`appt-status-${appointmentId}`)
+      .on("postgres_changes",
+        { event: "UPDATE", schema: "public", table: "appointments", filter: `id=eq.${appointmentId}` },
+        (payload) => {
+          if ((payload.new as { status?: string })?.status === "completed") {
+            try { videoRef.current?.hangUp(); } catch { /* ignore */ }
+            toast.success("O médico encerrou a consulta", { description: "Leve um instante para avaliar seu atendimento." });
+            navigate(`/dashboard/rate/${appointmentId}`);
+          }
+        })
+      .subscribe();
+    return () => { db.removeChannel(channel); };
+  }, [appointmentId, isDoctor, navigate]);
+
   // ─── Alergias / condições crônicas do paciente (faixa de alerta do médico) ───
   // Mesma fonte do PatientInfoPanel (profiles.allergies / chronic_conditions).
   // Carrega uma vez quando a chamada do médico abre; a faixa não é renderizada se vazio.

@@ -262,9 +262,13 @@ const AppointmentConfirmed = () => {
           const p = patientProfile as any;
           patientName = [p.first_name, p.last_name].filter(Boolean).join(" ") || null;
         }
-        // Buscar e-mail do auth
-        const { data: authData } = await db.auth.admin.getUser(data.patient_id);
-        patientEmail = authData?.user?.email ?? null;
+        // E-mail do próprio paciente, da SESSÃO ATUAL (auth.admin não funciona no
+        // cliente — antes retornava null + 403). Quem vê esta tela é o paciente da
+        // consulta, então o e-mail sai da sessão dele quando o id bate.
+        const { data: authData } = await db.auth.getUser();
+        if (authData?.user?.id === data.patient_id) {
+          patientEmail = authData.user.email ?? null;
+        }
       }
 
       const docAny = doc as any;
