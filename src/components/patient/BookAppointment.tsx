@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { db } from "@/integrations/supabase/untyped";
 import { triggerAppointmentConfirmed } from "@/lib/whatsapp";
 import { notifyNewAppointment, notifyPaymentConfirmed } from "@/lib/notifications";
@@ -132,6 +132,31 @@ const BookAppointment = () => {
   useEffect(() => {
     if (doctorId) fetchDoctor();
   }, [doctorId]);
+
+  // Retomar pagamento de uma consulta PENDENTE (botão "Pagar" da lista envia
+  // ?resume=<appointmentId>). Sem isto, o paciente recaía no início do fluxo e
+  // criava uma consulta DUPLICADA em vez de pagar a pendente. Guardado pelo param:
+  // sem ?resume, o fluxo normal de agendamento não é afetado.
+  useEffect(() => {
+    const resumeId = searchParams.get("resume");
+    if (!resumeId || !doctor || !user) return;
+    (async () => {
+      const { data: appt } = await db
+        .from("appointments")
+        .select("id, patient_id, doctor_id, scheduled_at, status, payment_status")
+        .eq("id", resumeId)
+        .maybeSingle();
+      const a = appt as { id: string; patient_id: string; doctor_id: string; scheduled_at: string; status: string; payment_status: string } | null;
+      // Só retoma a própria consulta, deste médico, ainda pendente de pagamento.
+      if (!a || a.patient_id !== user.id || a.doctor_id !== doctor.id) return;
+      if (a.status !== "scheduled" || !["pending", "refused"].includes(a.payment_status)) return;
+      const dt = new Date(a.scheduled_at);
+      setSelectedDate(dt);
+      setSelectedTime(format(dt, "HH:mm"));
+      setAppointmentId(a.id);
+      setPaymentStep(true);
+    })();
+  }, [searchParams, doctor, user]);
 
   // Check return eligibility
   useEffect(() => {
@@ -1210,7 +1235,12 @@ const BookAppointment = () => {
                   )}
                 </div>
 
-                {/* Recurrence */}
+                {/* Agendamento recorrente DESATIVADO temporariamente: o fluxo criava
+                    N consultas mas só cobrava a 1ª — as demais ficavam pendentes e
+                    eram canceladas em 30 min (paciente perdia as consultas em
+                    silêncio). Reativar apenas com cobrança de PACOTE (cobrar as N de
+                    uma vez e aprovar todas juntas). Até lá, só agendamento avulso.
+                {RECURRENCE_OPTIONS.length > 0 && (
                 <div className="mb-4">
                   <p className="text-xs text-muted-foreground mb-1.5">Agendamento recorrente</p>
                   <Select value={recurrence} onValueChange={setRecurrence}>
@@ -1235,6 +1265,8 @@ const BookAppointment = () => {
                     </div>
                   )}
                 </div>
+                )}
+                */}
 
                 <Button
                   className="w-full h-14 rounded-xl bg-gradient-to-r from-primary via-primary to-secondary text-primary-foreground text-base font-bold shadow-xl shadow-primary/20 hover:shadow-2xl transition-shadow active:scale-[0.98]"
