@@ -85,39 +85,43 @@ export default function LGPDCenter() {
   const pendingDeletion = deletionReqs.find(r => r.status === "pending");
 
   const exportData = async () => {
-    toast.info("Preparando exportação...");
-    const [profileRes, appointmentsRes, prescriptionsRes, metricsRes] = await Promise.all([
-      db.from("profiles").select("*").eq("user_id", user!.id).single(),
-      db.from("appointments").select("*").eq("patient_id", user!.id),
-      db.from("prescriptions").select("*").eq("patient_id", user!.id),
-      db.from("health_metrics").select("*").eq("patient_id", user!.id),
-    ]);
+    toast.info("Preparando exportação completa dos seus dados…");
+    try {
+      // LGPD (Art. 18 — acesso/portabilidade): usa a edge function COMPLETA
+      // (16 conjuntos de dados + conta), não o export parcial client-side de antes,
+      // que só cobria 4 tabelas. O arquivo é gerado no servidor e baixado por URL
+      // assinada (bucket privado, expira por segurança).
+      const { data, error } = await db.functions.invoke("lgpd-export-user", { body: {} });
+      if (error || !data?.ok || !data?.download_url) {
+        throw new Error(data?.error || error?.message || "Falha ao gerar a exportação.");
+      }
+      const a = document.createElement("a");
+      a.href = data.download_url as string;
+      a.download = `aloclinica-meus-dados-${format(new Date(), "dd-MM-yyyy")}.json`;
+      a.target = "_blank";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      toast.success(`Exportação concluída — ${data.tables_count ?? ""} conjuntos de dados.`, {
+        description: "O download começou. O link expira por segurança.",
+      });
 
-    const exportData = {
-      exported_at: new Date().toISOString(),
-      profile: profileRes.data,
-      appointments: appointmentsRes.data ?? [],
-      prescriptions: prescriptionsRes.data ?? [],
-      health_metrics: metricsRes.data ?? [],
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `aloclinica-meus-dados-${format(new Date(), "dd-MM-yyyy")}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("Dados exportados com sucesso!");
-
-    // Log the export
-    await db.from("lgpd_access_log" as any).insert({
-      data_owner_id: user!.id,
-      accessor_id: user!.id,
-      accessor_role: "patient",
-      action: "export",
-      resource: "all_data",
-    });
+      // Registra no log de acesso (histórico exibido nesta tela).
+      await db.from("lgpd_access_log" as any).insert({
+        data_owner_id: user!.id,
+        accessor_id: user!.id,
+        accessor_role: "patient",
+        action: "export",
+        resource: "all_data",
+      });
+      qc.invalidateQueries({ queryKey: ["lgpd-access-log"] });
+    } catch (e) {
+      console.error("[LGPD export]", e);
+      toast.error("Não foi possível exportar", {
+        description: e instanceof Error ? e.message : "Tente novamente em instantes.",
+      });
+    }
   };
 
   const requestDeletion = async () => {
