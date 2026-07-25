@@ -482,6 +482,7 @@ const UrgentCareQueue = () => {
                 </>
               )}
               {myEntry.status === "assigned" && (<><Phone className="w-12 h-12 mx-auto text-[hsl(var(--p-primary))] mb-4" /><h2 className="text-xl font-bold mb-2 font-[Manrope]">Médico encontrado!</h2><p className="text-muted-foreground mb-4">Aguarde, a consulta começará em instantes...</p></>)}
+              {myEntry.status === "in_progress" && (<><RefreshCw className="w-12 h-12 mx-auto text-[hsl(var(--p-primary))] mb-4 animate-spin" /><h2 className="text-xl font-bold mb-2 font-[Manrope]">Conectando você ao médico…</h2><p className="text-muted-foreground mb-4">Sua sala de consulta está sendo aberta. Você será levado(a) automaticamente.</p><Button variant="outline" onClick={() => fetchMyEntry()} className="rounded-full"><RefreshCw className="w-4 h-4 mr-1" /> Atualizar</Button></>)}
             </div>
           </motion.div>
         ) : showPayment ? (

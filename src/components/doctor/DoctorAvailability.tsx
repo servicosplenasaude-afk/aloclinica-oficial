@@ -65,7 +65,7 @@ const DoctorAvailability = () => {
       .from("doctor_profiles")
       .select("id, available_now")
       .eq("user_id", user!.id)
-      .single();
+      .maybeSingle();
 
     if (data) {
       setDoctorProfileId(data.id);
@@ -122,7 +122,13 @@ const DoctorAvailability = () => {
   };
 
   const addSlot = async () => {
-    if (!doctorProfileId) return;
+    if (!doctorProfileId) {
+      // Feedback em vez de no-op silencioso: o perfil pode ainda não ter carregado
+      // (ex.: logo após a aprovação). Avisa e tenta recarregar.
+      toast.error("Perfil médico ainda carregando", { description: "Aguarde um instante e tente novamente." });
+      fetchDoctorProfile();
+      return;
+    }
     const dayNum = parseInt(newDay);
     const overlapping = slots.filter(s =>
       s.day_of_week === dayNum &&
