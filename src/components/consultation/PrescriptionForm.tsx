@@ -438,6 +438,7 @@ const PrescriptionForm = () => {
         diagnosis: data.diagnosis || null,
         observations: data.observations || null,
         document_hash: documentHash,
+        verification_code: verificationCode,
         status: "finalized",
       }).select("id").single();
 
@@ -445,6 +446,13 @@ const PrescriptionForm = () => {
         toast.error("Erro ao salvar receita", { description: error.message });
         return;
       }
+
+      // Gera o PDF oficial (CFM) e grava prescriptions.pdf_url. Sem isto, o paciente
+      // NUNCA acessa o PDF — todas as telas do paciente leem pdf_url (que ficava
+      // nulo) e caíam num PDF texto simples. A edge existia mas não era chamada.
+      db.functions
+        .invoke("generate-prescription-pdf", { body: { prescription_id: insertedPrescription.id } })
+        .catch((e) => logError("generate-prescription-pdf failed", e));
 
       // Also persist verification record
       await db.from("document_verifications").insert({
