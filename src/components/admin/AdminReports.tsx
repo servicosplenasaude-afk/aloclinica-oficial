@@ -124,7 +124,7 @@ const AdminReports = () => {
 
     // Top doctors
     const { data: docProfiles } = await db.from("doctor_profiles")
-      .select("id, user_id, rating, total_reviews, consultation_price")
+      .select("id, user_id, rating, total_reviews, price")
       .gt("total_reviews", 0)
       .order("rating", { ascending: false })
       .limit(5);

@@ -265,7 +265,7 @@ export const useFavoriteDoctors = () => {
 
       const { data: favDocs } = await db
         .from("doctor_profiles")
-        .select("id, user_id, consultation_price, rating")
+        .select("id, user_id, price, rating")
         .in("id", favDocIds);
 
       if (!favDocs?.length) return [];

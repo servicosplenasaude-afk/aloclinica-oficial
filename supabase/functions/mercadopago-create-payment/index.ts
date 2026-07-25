@@ -392,16 +392,16 @@ async function resolveServerAmount(admin: any, referenceId: string, callerId: st
       .maybeSingle();
     if (error || !data) throw new AmountError("Consulta não encontrada", 404);
     requireOwner(data.patient_id);
-    // SECURITY: o preço-base vem da FONTE DO MÉDICO (doctor_profiles.consultation_price),
-    // que o paciente NÃO consegue escrever — jamais de appointments.price_at_booking
+    // SECURITY: o preço-base vem da FONTE DO MÉDICO (doctor_profiles.price), que o
+    // paciente NÃO consegue escrever — jamais de appointments.price_at_booking
     // (coluna gravada pelo cliente). Isso fecha o subfaturamento ("pague R$1").
     const { data: doc, error: docErr } = await admin
       .from("doctor_profiles")
-      .select("consultation_price")
+      .select("price")
       .eq("id", data.doctor_id)
       .maybeSingle();
     if (docErr || !doc) throw new AmountError("Médico não encontrado", 404);
-    const base = Number(doc.consultation_price);
+    const base = Number(doc.price);
     // Retorno: 50% de desconto quando o paciente tem consulta CONCLUÍDA com este
     // médico cujo prazo de retorno ainda é válido (mesma regra do BookAppointment).
     // Aplicado no SERVIDOR para a cobrança NUNCA ser maior que a exibida ao paciente.

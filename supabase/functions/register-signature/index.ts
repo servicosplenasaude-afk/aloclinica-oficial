@@ -54,7 +54,7 @@ serve(async (req) => {
     const { data: docProfile } = caller.user
       ? await supabase
           .from("doctor_profiles")
-          .select("id, full_name, crm, cpf")
+          .select("id, crm")
           .eq("user_id", caller.user.id)
           .maybeSingle()
       : { data: null };
@@ -76,8 +76,9 @@ serve(async (req) => {
           .maybeSingle()
       : { data: null };
 
-    const derivedName = docProfile?.full_name
-      || (baseProfile ? `${baseProfile.first_name ?? ""} ${baseProfile.last_name ?? ""}`.trim() : "")
+    // Nome/CPF vêm de profiles (doctor_profiles não guarda full_name/cpf).
+    const derivedName =
+      (baseProfile ? `${baseProfile.first_name ?? ""} ${baseProfile.last_name ?? ""}`.trim() : "")
       || null;
 
     // SECURITY: prefer the derived (trusted) identity; FALL BACK to body values only when
@@ -85,7 +86,7 @@ serve(async (req) => {
     // must NOT turn into a 400 and block signing).
     const doctor_name = derivedName ?? body.doctor_name ?? null;
     const doctor_crm = docProfile?.crm ?? body.doctor_crm ?? null;
-    const doctor_cpf = docProfile?.cpf ?? baseProfile?.cpf ?? body.doctor_cpf ?? null;
+    const doctor_cpf = baseProfile?.cpf ?? body.doctor_cpf ?? null;
 
     // Core required fields only. Doctor identity is best-effort (derived + fallback) and
     // must not block signing when e.g. CPF is missing.

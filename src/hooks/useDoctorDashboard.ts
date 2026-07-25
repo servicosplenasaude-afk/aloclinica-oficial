@@ -10,13 +10,13 @@ export const useDoctorStats = () => {
       if (!user) return null;
       const { data: docProfile } = await db
         .from("doctor_profiles")
-        .select("id, consultation_price, rating, total_reviews, crm, crm_state, crm_verified, is_approved, kyc_status, created_at, approved_at, cfm_verified_at, kyc_verified_at, rejection_reason")
+        .select("id, price, rating, total_reviews, crm, crm_state, crm_verified, is_approved, kyc_status, created_at, approved_at, cfm_verified_at, kyc_verified_at, rejection_reason")
         .eq("user_id", user.id)
         .single();
       if (!docProfile) return null;
 
       const doctorId = docProfile.id;
-      const price = Number(docProfile.consultation_price) || 89;
+      const price = Number(docProfile.price) || 89;
 
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);

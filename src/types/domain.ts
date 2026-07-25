@@ -17,7 +17,7 @@ export interface DoctorProfileRow {
   crm_verified?: boolean;
   crm_verified_at?: string | null;
   bio: string | null;
-  consultation_price: number | null;
+  price: number | null;
   experience_years: number | null;
   education: string | null;
   rating?: number | null;

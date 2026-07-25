@@ -211,7 +211,7 @@ const DoctorSearch = () => {
     else setLoading(true);
 
     const offset = loadMore ? doctors.length : 0;
-    const richCols = "id, user_id, crm, crm_state, bio, short_description, consultation_price, consultation_duration_min, rating, total_reviews, experience_years, available_now, available_now_since, display_name, crm_verified, accepts_insurance, languages";
+    const richCols = "id, user_id, crm, crm_state, bio, short_description, price, consultation_duration, rating, total_reviews, experience_years, available_now, available_now_since, display_name, crm_verified, accepts_insurance, languages";
 
     let resp: any = await db
       .from("doctor_profiles")
@@ -224,7 +224,7 @@ const DoctorSearch = () => {
     if (resp.error) {
       resp = await db
         .from("doctor_profiles")
-        .select("id, user_id, crm, crm_state, bio, consultation_price, rating, total_reviews, experience_years, available_now, available_now_since, display_name, crm_verified", { count: "exact" })
+        .select("id, user_id, crm, crm_state, bio, price, rating, total_reviews, experience_years, available_now, available_now_since, display_name, crm_verified", { count: "exact" })
         .eq("is_approved", true)
         .eq("is_active", true)
         .eq("doctor_type" as any, doctorType)
@@ -290,7 +290,7 @@ const DoctorSearch = () => {
 
     const results: DoctorResult[] = doctorData.map((d: any) => ({
       ...d,
-      consultation_price: Number(d.consultation_price),
+      consultation_price: Number(d.price),
       rating: Number(d.rating),
       languages: Array.isArray(d.languages) ? d.languages : (typeof d.languages === "string" && d.languages ? [d.languages] : null),
       profile: profilesMap.get(d.user_id) ?? null,

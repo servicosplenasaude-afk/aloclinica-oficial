@@ -225,12 +225,12 @@ async function resolveServerAmount(admin: any, referenceId: string, callerId: st
       .from("appointments").select("patient_id, doctor_id").eq("id", resourceId).maybeSingle();
     if (error || !data) throw new AmountError("Consulta não encontrada", 404);
     requireOwner(data.patient_id);
-    // SECURITY: base = fonte do médico (doctor_profiles.consultation_price), jamais
+    // SECURITY: base = fonte do médico (doctor_profiles.price), jamais
     // price_at_booking (client-writable). Fecha o subfaturamento.
     const { data: doc, error: docErr } = await admin
-      .from("doctor_profiles").select("consultation_price").eq("id", data.doctor_id).maybeSingle();
+      .from("doctor_profiles").select("price").eq("id", data.doctor_id).maybeSingle();
     if (docErr || !doc) throw new AmountError("Médico não encontrado", 404);
-    const base = Number(doc.consultation_price);
+    const base = Number(doc.price);
     // Retorno: 50% quando há consulta CONCLUÍDA com este médico dentro do prazo de
     // retorno (mesma regra do create-payment/BookAppointment). Assim o pagamento com
     // cartão salvo também respeita o desconto — cobrança nunca maior que a exibida.

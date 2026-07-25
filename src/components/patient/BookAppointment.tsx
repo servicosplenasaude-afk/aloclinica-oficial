@@ -257,7 +257,7 @@ const BookAppointment = () => {
     try {
       const { data: doc, error } = await db
         .from("doctor_profiles")
-        .select("id, user_id, crm, crm_state, bio, consultation_price, rating, experience_years, doctor_type")
+        .select("id, user_id, crm, crm_state, bio, price, rating, experience_years, doctor_type")
         .eq("id", doctorId!)
         .single();
 
@@ -276,7 +276,7 @@ const BookAppointment = () => {
 
       setDoctor({
         ...doc,
-        consultation_price: Number(doc.consultation_price),
+        consultation_price: Number(doc.price),
         rating: Number(doc.rating),
         first_name: profileRes.data?.first_name ?? "",
         last_name: profileRes.data?.last_name ?? "",

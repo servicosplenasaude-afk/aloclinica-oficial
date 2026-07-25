@@ -144,9 +144,9 @@ const AdminFinancial = () => {
     const doctorIds = [...new Set(appts.map(a => a.doctor_id))];
     const { data: docProfiles } = await db
       .from("doctor_profiles")
-      .select("id, user_id, consultation_price, specialty_id")
+      .select("id, user_id, price, specialty_id")
       .in("id", doctorIds);
-    const docPriceMap = new Map(docProfiles?.map(d => [d.id, Number(d.consultation_price) || 89]) ?? []);
+    const docPriceMap = new Map(docProfiles?.map(d => [d.id, Number(d.price) || 89]) ?? []);
     // Mapa medico -> especialidade (real), para o grafico de "Receita por Especialidade".
     const specIds = [...new Set((docProfiles ?? []).map((d: any) => d.specialty_id).filter(Boolean))];
     const { data: specs } = specIds.length

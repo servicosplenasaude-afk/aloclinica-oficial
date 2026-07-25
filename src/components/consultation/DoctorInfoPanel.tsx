@@ -22,7 +22,7 @@ interface DoctorData {
   experience_years: number | null;
   rating: number | null;
   total_reviews: number | null;
-  consultation_price: number | null;
+  price: number | null;
   first_name: string;
   last_name: string;
   specialties: string[];
@@ -48,7 +48,7 @@ const DoctorInfoPanel = ({ doctorId, appointmentId }: DoctorInfoPanelProps) => {
   const fetchData = async () => {
     const [docRes, specRes] = await Promise.all([
       db.from("doctor_profiles")
-        .select("crm, crm_state, bio, education, experience_years, rating, total_reviews, consultation_price, user_id")
+        .select("crm, crm_state, bio, education, experience_years, rating, total_reviews, price, user_id")
         .eq("id", doctorId)
         .single(),
       db.from("doctor_specialties")

@@ -147,7 +147,7 @@ const UserProfile = () => {
 
   const fetchDoctorProfile = async () => {
     const { data } = await db.from("doctor_profiles")
-      .select("id, bio, education, experience_years, consultation_price, display_name, crm, crm_state, crm_verified, doctor_type, short_description, consultation_duration_min, available_for_telemedicine, available_now, show_in_directory, auto_confirm_bookings, mp_user_id, mp_connected_at")
+      .select("id, bio, education, experience_years, price, display_name, crm, crm_state, crm_verified, doctor_type, short_description, consultation_duration, available_for_telemedicine, available_now, show_in_directory, auto_confirm_bookings, mp_user_id, mp_connected_at")
       .eq("user_id", user!.id)
       .single();
     if (data) {
@@ -161,8 +161,8 @@ const UserProfile = () => {
       setCrmState((data as any).crm_state || "");
       setCrmVerified(!!(data as any).crm_verified);
       setDoctorType((data as any).doctor_type || "telemedicina");
-      setExperienceYears(data.experience_years || 0); setConsultationPrice(Number(data.consultation_price) || 89);
-      setConsultationDuration(Number((data as any).consultation_duration_min) || 30);
+      setExperienceYears(data.experience_years || 0); setConsultationPrice(Number(data.price) || 89);
+      setConsultationDuration(Number((data as any).consultation_duration) || 30);
       setAvailableForTelemedicine((data as any).available_for_telemedicine ?? true);
       setAvailableNow(!!(data as any).available_now);
       setShowInDirectory((data as any).show_in_directory ?? true);
@@ -217,11 +217,11 @@ const UserProfile = () => {
         bio: bio.trim() || null,
         education: education.trim() || null,
         experience_years: experienceYears,
-        consultation_price: consultationPrice,
+        price: consultationPrice,
         display_name: displayName.trim() || null,
         short_description: shortDescription.trim() || null,
         doctor_type: doctorType,
-        consultation_duration_min: consultationDuration,
+        consultation_duration: consultationDuration,
         available_for_telemedicine: availableForTelemedicine,
         available_now: availableNow,
         show_in_directory: showInDirectory,

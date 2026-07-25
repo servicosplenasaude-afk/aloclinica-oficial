@@ -237,7 +237,7 @@ const AdminAnalyticsCharts = () => {
       db.from("doctor_specialties").select("doctor_id, specialty_id"),
       db.from("specialties").select("id, name, consultation_price"),
       db.from("satisfaction_surveys").select("doctor_id, nps_score, quality_score, ease_score"),
-      db.from("doctor_profiles").select("id, user_id, consultation_price, rating, total_reviews"),
+      db.from("doctor_profiles").select("id, user_id, price, rating, total_reviews"),
       db.from("profiles").select("user_id, first_name, last_name"),
     ]);
 
