@@ -14,9 +14,9 @@ interface EmailRequest {
 }
 
 // ─── URL Constants ─────────────────────────────────────────────────────────────
-const ROOT_DOMAIN = Deno.env.get("SITE_DOMAIN") || "aloclinica.com";
+const ROOT_DOMAIN = Deno.env.get("SITE_DOMAIN") || "aloclinica.com.br";
 const PROTOCOL = "https://";
-const FALLBACK_URL = Deno.env.get("SITE_URL") || "https://allo-medico-care.lovable.app";
+const FALLBACK_URL = Deno.env.get("SITE_URL") || "https://aloclinica.com.br";
 
 // Subdomain-based URLs for each role
 const sub = (subdomain: string, path = "") => `${PROTOCOL}${subdomain}.${ROOT_DOMAIN}${path}`;
@@ -713,7 +713,7 @@ const templates: Record<string, (d: Record<string, string>) => { subject: string
     `, "waitlist_slot_available"),
   }),
 
-  kyc_approved: (d) => ({
+  kyc_approved_doctor: (d) => ({
     subject: "✅ Documentação Aprovada — AloClínica",
     html: wrap(`
       <h2 style="color:${BRAND.green};margin:0 0 16px;">Documentação Aprovada!</h2>

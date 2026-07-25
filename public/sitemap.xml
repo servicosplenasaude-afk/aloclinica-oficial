@@ -2,14 +2,10 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://aloclinica.com.br/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
   <url><loc>https://aloclinica.com.br/teleconsulta</loc><priority>0.95</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://aloclinica.com.br/telelaudo</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://aloclinica.com.br/cartao-desconto</loc><priority>0.85</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/para-empresas</loc><priority>0.85</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/paciente</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/medico</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/clinica</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://aloclinica.com.br/consulta-avulsa</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://aloclinica.com.br/laudista</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/parceiro</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/afiliado</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/validar</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>

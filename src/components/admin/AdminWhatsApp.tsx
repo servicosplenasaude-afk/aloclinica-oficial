@@ -43,7 +43,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <CalendarCheck className="w-4 h-4 text-green-500" />,
     category: "appointment",
     defaultTemplate:
-      "🩺 *Allo Médico* - Consulta Confirmada!\n\nOlá, {{patient_name}}!\nSua consulta foi agendada para *{{scheduled_date}}*.\n\n📹 Link de acesso:\n{{jitsi_link}}\n\nAcesse o link no horário marcado. Até lá! 💚",
+      "🩺 *AloClínica* - Consulta Confirmada!\n\nOlá, {{patient_name}}!\nSua consulta foi agendada para *{{scheduled_date}}*.\n\n📹 Link de acesso:\n{{jitsi_link}}\n\nAcesse o link no horário marcado. Até lá! 💚",
     enabled: true,
   },
   {
@@ -53,7 +53,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <Clock className="w-4 h-4 text-amber-500" />,
     category: "appointment",
     defaultTemplate:
-      "⏰ *Lembrete* — Allo Médico\n\nOlá, {{patient_name}}!\nSua consulta começa em *1 hora* ({{scheduled_date}}).\n\n📹 Acesse: {{jitsi_link}}\n\nEsteja pronto(a)! 💚",
+      "⏰ *Lembrete* — AloClínica\n\nOlá, {{patient_name}}!\nSua consulta começa em *1 hora* ({{scheduled_date}}).\n\n📹 Acesse: {{jitsi_link}}\n\nEsteja pronto(a)! 💚",
     enabled: true,
   },
   {
@@ -63,7 +63,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <Clock className="w-4 h-4 text-red-500" />,
     category: "appointment",
     defaultTemplate:
-      "🔔 *Atenção* — Allo Médico\n\nOlá, {{patient_name}}!\nSua consulta começa em *15 minutos*!\n\n📹 Entre agora: {{jitsi_link}}\n\nEstamos te esperando! 💚",
+      "🔔 *Atenção* — AloClínica\n\nOlá, {{patient_name}}!\nSua consulta começa em *15 minutos*!\n\n📹 Entre agora: {{jitsi_link}}\n\nEstamos te esperando! 💚",
     enabled: true,
   },
   {
@@ -73,7 +73,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <AlertTriangle className="w-4 h-4 text-destructive" />,
     category: "appointment",
     defaultTemplate:
-      "❌ *Consulta Cancelada* — Allo Médico\n\nOlá, {{patient_name}}.\nSua consulta de {{scheduled_date}} foi cancelada.\n\nMotivo: {{cancel_reason}}\n\nPara reagendar, acesse: https://aloclinica.com.br/dashboard/book",
+      "❌ *Consulta Cancelada* — AloClínica\n\nOlá, {{patient_name}}.\nSua consulta de {{scheduled_date}} foi cancelada.\n\nMotivo: {{cancel_reason}}\n\nPara reagendar, acesse: https://aloclinica.com.br/dashboard/book",
     enabled: false,
   },
   {
@@ -83,7 +83,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <Star className="w-4 h-4 text-yellow-500" />,
     category: "notification",
     defaultTemplate:
-      "⭐ *Como foi sua consulta?* — Allo Médico\n\nOlá, {{patient_name}}!\nSua opinião é muito importante para nós.\n\nAvalie sua experiência: https://aloclinica.com.br/dashboard/rate/{{appointment_id}}?role=patient\n\nObrigado! 💚",
+      "⭐ *Como foi sua consulta?* — AloClínica\n\nOlá, {{patient_name}}!\nSua opinião é muito importante para nós.\n\nAvalie sua experiência: https://aloclinica.com.br/dashboard/rate/{{appointment_id}}?role=patient\n\nObrigado! 💚",
     enabled: true,
   },
   {
@@ -93,7 +93,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <FileText className="w-4 h-4 text-primary" />,
     category: "notification",
     defaultTemplate:
-      "📋 *Receita Pronta* — Allo Médico\n\nOlá, {{patient_name}}!\nSua receita médica está disponível.\n\nAcesse: https://aloclinica.com.br/dashboard/paciente/prescriptions\n\n💚 Cuide da sua saúde!",
+      "📋 *Receita Pronta* — AloClínica\n\nOlá, {{patient_name}}!\nSua receita médica está disponível.\n\nAcesse: https://aloclinica.com.br/dashboard/history\n\n💚 Cuide da sua saúde!",
     enabled: false,
   },
   {
@@ -103,7 +103,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <ShieldCheck className="w-4 h-4 text-green-500" />,
     category: "notification",
     defaultTemplate:
-      "🎉 *Cadastro Aprovado!* — Allo Médico\n\nParabéns, Dr(a). {{doctor_name}}!\nSeu perfil foi aprovado. Você já pode atender pacientes.\n\nAcesse: https://aloclinica.com.br/medico\n\n💚 Bem-vindo(a) à equipe!",
+      "🎉 *Cadastro Aprovado!* — AloClínica\n\nParabéns, Dr(a). {{doctor_name}}!\nSeu perfil foi aprovado. Você já pode atender pacientes.\n\nAcesse: https://aloclinica.com.br/medico\n\n💚 Bem-vindo(a) à equipe!",
     enabled: false,
   },
   {
@@ -113,7 +113,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <Bell className="w-4 h-4 text-primary" />,
     category: "marketing",
     defaultTemplate:
-      "🩺 *Retorno Médico* — Allo Médico\n\nOlá, {{patient_name}}!\nSeu prazo de retorno vence em {{return_date}}.\n\nAgende agora: https://aloclinica.com.br/dashboard/book?doctor={{doctor_id}}\n\nCuide-se! 💚",
+      "🩺 *Retorno Médico* — AloClínica\n\nOlá, {{patient_name}}!\nSeu prazo de retorno vence em {{return_date}}.\n\nAgende agora: https://aloclinica.com.br/dashboard/book?doctor={{doctor_id}}\n\nCuide-se! 💚",
     enabled: false,
   },
   {
@@ -123,7 +123,7 @@ const DEFAULT_AUTOMATIONS: AutomationConfig[] = [
     icon: <MessageCircle className="w-4 h-4 text-muted-foreground" />,
     category: "marketing",
     defaultTemplate:
-      "💚 *Sentimos sua falta!* — Allo Médico\n\nOlá, {{patient_name}}!\nFaz tempo que você não agenda uma consulta.\n\nCuide da sua saúde: https://aloclinica.com.br/dashboard/book\n\nEstamos aqui por você! 🩺",
+      "💚 *Sentimos sua falta!* — AloClínica\n\nOlá, {{patient_name}}!\nFaz tempo que você não agenda uma consulta.\n\nCuide da sua saúde: https://aloclinica.com.br/dashboard/book\n\nEstamos aqui por você! 🩺",
     enabled: false,
   },
 ];

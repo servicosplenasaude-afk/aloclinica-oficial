@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -31,6 +31,18 @@ export function ConsentDialog({ open, onOpenChange, kind, appointmentId, onAccep
   const [accepted, setAccepted] = useState(false);
   const [reachedEnd, setReachedEnd] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Se o documento é curto e NÃO rola, o evento de scroll nunca dispara e o aceite
+  // ficaria travado para sempre. Detecta a ausência de overflow e libera o aceite.
+  useEffect(() => {
+    if (loading || !doc) return;
+    const t = setTimeout(() => {
+      const vp = scrollAreaRef.current?.querySelector<HTMLElement>("[data-radix-scroll-area-viewport]");
+      if (vp && vp.scrollHeight - vp.clientHeight < 40) setReachedEnd(true);
+    }, 200);
+    return () => clearTimeout(t);
+  }, [loading, doc]);
 
   useEffect(() => {
     if (!open) return;
@@ -79,7 +91,7 @@ export function ConsentDialog({ open, onOpenChange, kind, appointmentId, onAccep
             <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
         ) : doc ? (
-          <ScrollArea className="h-[55vh] rounded-lg border border-border bg-muted/30 p-4" onScrollCapture={onScroll}>
+          <ScrollArea ref={scrollAreaRef} className="h-[55vh] rounded-lg border border-border bg-muted/30 p-4" onScrollCapture={onScroll}>
             <LegalMarkdown source={doc.body_md} />
           </ScrollArea>
         ) : (

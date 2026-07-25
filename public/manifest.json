@@ -35,13 +35,13 @@
     {
       "name": "Agendar consulta",
       "short_name": "Agendar",
-      "url": "/agendamento",
+      "url": "/agendar",
       "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {
       "name": "Minhas consultas",
       "short_name": "Consultas",
-      "url": "/minhas-consultas",
+      "url": "/dashboard/appointments",
       "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {
