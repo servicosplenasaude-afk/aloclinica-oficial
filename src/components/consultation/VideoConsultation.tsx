@@ -35,6 +35,9 @@ export interface VideoConsultationHandle {
 
 interface VideoConsultationProps {
   appointmentId: string;
+  /** Identificador da sala de sinalização (segredo por consulta). Cai no
+   *  appointmentId se não informado — mantém compatibilidade e sem regressão. */
+  roomId?: string;
   userName?: string;
   onEndCall: () => void;
   onStatusChange?: (status: CallStatus) => void;
@@ -52,7 +55,7 @@ const STATUS_LABELS: Record<CallStatus, string> = {
 };
 
 const VideoConsultation = forwardRef<VideoConsultationHandle, VideoConsultationProps>(
-  ({ appointmentId, userName, onEndCall, onStatusChange }, ref) => {
+  ({ appointmentId, roomId, userName, onEndCall, onStatusChange }, ref) => {
     const { user, roles } = useAuth();
     const isMobile = useIsMobile();
     const isDoctor = roles.includes("doctor") || roles.includes("admin");
@@ -79,7 +82,9 @@ const VideoConsultation = forwardRef<VideoConsultationHandle, VideoConsultationP
       hangUp,
       startCall,
     } = useWebRTC({
-      roomId: appointmentId,
+      // Sala de sinalização = segredo por consulta (não o appointmentId, que vaza
+      // no link). Fallback ao appointmentId mantém o comportamento antigo.
+      roomId: roomId ?? appointmentId,
       userId: user?.id || "anonymous",
       isInitiator: isDoctor,
       displayName: userName,

@@ -86,6 +86,10 @@ const VideoRoom = () => {
    const [toolOverlay, setToolOverlay] = useState<{ url: string; title: string } | null>(null);
   const presenceLogId = useRef<string | null>(null);
   const videoRef = useRef<VideoConsultationHandle>(null);
+  // Segredo da sala (por consulta): identifica a sala de vídeo/sinalização SEM
+  // expor o appointmentId (que vai no link e permitiria a um terceiro entrar).
+  // Ref evita stale-closure nos callbacks; é preenchido em fetchAppointment.
+  const roomSecretRef = useRef<string>("");
   const [webrtcStatus, setWebrtcStatus] = useState<string>("idle");
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -112,7 +116,7 @@ const VideoRoom = () => {
 
   /** Switch atomically to Jitsi (usado pela UI manual e pelo fallback automático). */
   const switchToJitsi = useCallback(async (reason: "manual" | "auto") => {
-    const rid = gerarRoomId(appointmentId ?? "");
+    const rid = gerarRoomId(roomSecretRef.current || appointmentId || "");
     setUseJitsi(true);
     setJitsiRoomId(rid);
     localStorage.setItem(`jitsi_${appointmentId}`, "true");
@@ -614,6 +618,9 @@ const VideoRoom = () => {
     }
 
     setAppointment(data);
+    // Segredo da sala (por consulta) — ambos os peers leem a MESMA linha, logo o
+    // mesmo segredo; um terceiro com o appointmentId não o deriva.
+    roomSecretRef.current = ((data as { video_room_secret?: string }).video_room_secret) || appointmentId || "";
 
     // If blocked, do not start the consultation or notify peers
     const blockedPayment = !isDoctor && data.payment_status === "pending" && data.status === "scheduled";
@@ -627,7 +634,7 @@ const VideoRoom = () => {
       const savedJitsi = localStorage.getItem(`jitsi_${appointmentId}`);
       if (savedJitsi === 'true') {
         setUseJitsi(true);
-        const newRoomId = gerarRoomId(appointmentId ?? '');
+        const newRoomId = gerarRoomId(((data as { video_room_secret?: string }).video_room_secret) || appointmentId || '');
         setJitsiRoomId(newRoomId);
       }
       await db.from("appointments").update({ status: "in_progress" } as any).eq("id", appointmentId ?? '');
@@ -1580,6 +1587,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
               <VideoConsultation
                 ref={videoRef}
                 appointmentId={appointmentId!}
+                roomId={((appointment as { video_room_secret?: string } | null)?.video_room_secret) || appointmentId!}
                 userName={currentUserName}
                 onEndCall={endCall}
                 onStatusChange={(s) => {
