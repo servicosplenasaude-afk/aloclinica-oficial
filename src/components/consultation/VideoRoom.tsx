@@ -1582,6 +1582,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                 roomId={jitsiRoomId}
                 displayName={currentUserName}
                 onEnd={endCall}
+                presenter={isDoctor}
               />
             ) : (
               <VideoConsultation

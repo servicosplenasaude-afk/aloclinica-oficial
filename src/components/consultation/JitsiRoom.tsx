@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PhoneOff, Clock } from "lucide-react";
+import { PhoneOff, Clock, Loader2 } from "lucide-react";
 import { getJitsiUrl } from "@/lib/jitsi";
+import { db } from "@/integrations/supabase/untyped";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,15 +19,38 @@ interface JitsiRoomProps {
   roomId: string;
   displayName: string;
   onEnd: () => void;
+  /** true = médico (host/apresentador da sala MiroTalk). */
+  presenter?: boolean;
 }
 
-const JitsiRoom = ({ roomId, displayName, onEnd }: JitsiRoomProps) => {
+const JitsiRoom = ({ roomId, displayName, onEnd, presenter }: JitsiRoomProps) => {
   const [elapsed, setElapsed] = useState(0);
+  const [meetUrl, setMeetUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setElapsed((p) => p + 1), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Busca um token JWT do MiroTalk (defesa em profundidade). Timeout curto +
+  // fallback: se o servidor MiroTalk não exigir/emitir token, entra sem token
+  // (comportamento atual) — nunca atrasa/quebra o vídeo por mais de ~2s.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      let token: string | null = null;
+      try {
+        const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
+        const call = db.functions
+          .invoke("mirotalk-token", { body: { room: roomId, name: displayName, presenter: !!presenter } })
+          .then(({ data }: { data: { token?: string | null } | null }) => data?.token ?? null)
+          .catch(() => null);
+        token = await Promise.race([call, timeout]);
+      } catch { /* fallback sem token */ }
+      if (!cancelled) setMeetUrl(getJitsiUrl(roomId, displayName, token));
+    })();
+    return () => { cancelled = true; };
+  }, [roomId, displayName, presenter]);
 
   const formatTime = (s: number) => {
     const h = Math.floor(s / 3600);
@@ -41,8 +65,6 @@ const JitsiRoom = ({ roomId, displayName, onEnd }: JitsiRoomProps) => {
       : elapsed > 1800
       ? "text-amber-400"
       : "text-[hsl(150,60%,55%)]";
-
-  const meetUrl = getJitsiUrl(roomId, displayName);
 
   return (
     <div className="relative w-full h-full flex flex-col" style={{ background: "hsl(220, 25%, 4%)" }}>
@@ -88,12 +110,18 @@ const JitsiRoom = ({ roomId, displayName, onEnd }: JitsiRoomProps) => {
       </div>
 
       <div className="flex-1 relative" style={{ height: "calc(100% - 60px)" }}>
-        <iframe
-          src={meetUrl}
-          allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"
-          className="absolute inset-0 w-full h-full border-0"
-          title="Teleconsulta"
-        />
+        {meetUrl ? (
+          <iframe
+            src={meetUrl}
+            allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"
+            className="absolute inset-0 w-full h-full border-0"
+            title="Teleconsulta"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-[hsl(220,15%,45%)]" />
+          </div>
+        )}
       </div>
     </div>
   );
