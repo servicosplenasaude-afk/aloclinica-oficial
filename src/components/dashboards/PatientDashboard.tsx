@@ -15,7 +15,7 @@ import {
   CalendarCheck, VideoCamera, Clock, Gift, ArrowRight,
   Heart, Lightning, ClipboardText, FileText, UploadSimple,
   Sparkle, Stethoscope, MagnifyingGlass, Plus, Warning, Robot,
-  Pill, Heartbeat, TrendUp, ChatCircleDots, DotsThreeVertical, Headset,
+  Pill, Heartbeat, TrendUp, ChatCircleDots, DotsThreeVertical,
 } from "@phosphor-icons/react";
 import { AlertTriangle, RefreshCw, ShieldCheck, Lock } from "lucide-react";
 import PatientOnboarding, { ONBOARDING_KEY, KYC_PENDING_KEY } from "@/components/patient/PatientOnboarding";
@@ -35,12 +35,23 @@ import { Input } from "@/components/ui/input";
 import FirstConsultationTour from "@/components/patient/FirstConsultationTour";
 import ImminentConsultationBar from "./ImminentConsultationBar";
 import AppPromotionalBanners from "./AppPromotionalBanners";
-import patientHomeHero from "@/assets/patient-home-hero.png";
 
 /* ── Constants ── */
 const HEALTH_TIPS = [
-  { title: "Hidratação é chave!", body: "Beba pelo menos 2L de água por dia para manter corpo e mente funcionando bem.", metric: "2L", metricLabel: "Meta Diária", emoji: "💧" },
-  { title: "Mexa-se hoje!", body: "30 min de caminhada reduzem ansiedade em até 40%.", metric: "30min", metricLabel: "Ideal/dia", emoji: "🏃" },
+  { title: "Hidratação é chave!", body: "Beba pelo menos 2L de água ao longo do dia para manter corpo e mente funcionando bem.", metric: "2L", metricLabel: "Meta diária", emoji: "💧" },
+  { title: "Mexa-se hoje!", body: "30 minutos de caminhada por dia reduzem a ansiedade e melhoram o humor.", metric: "30min", metricLabel: "Por dia", emoji: "🏃" },
+  { title: "Durma bem", body: "Dormir de 7 a 9 horas fortalece a memória, o humor e a imunidade.", metric: "7-9h", metricLabel: "Por noite", emoji: "😴" },
+  { title: "Coma colorido", body: "Inclua frutas, verduras e legumes em pelo menos 3 refeições do seu dia.", metric: "5", metricLabel: "Porções/dia", emoji: "🥗" },
+  { title: "Descanse os olhos", body: "A cada 20 minutos de tela, olhe para longe por 20 segundos para relaxar a visão.", metric: "20-20-20", metricLabel: "Descanso visual", emoji: "👀" },
+  { title: "Respire fundo", body: "Reserve alguns minutos para respirar com calma e aliviar o estresse do dia.", metric: "5min", metricLabel: "Respiro diário", emoji: "🧘" },
+  { title: "Vacinas em dia", body: "Mantenha sua carteira de vacinação atualizada, inclusive na vida adulta.", metric: "Em dia", metricLabel: "Vacinação", emoji: "💉" },
+  { title: "Faça check-ups", body: "Consultas de rotina ajudam a prevenir e detectar problemas mais cedo.", metric: "1x/ano", metricLabel: "Check-up", emoji: "🩺" },
+  { title: "Não fique parado", body: "Se você trabalha sentado, levante-se e alongue-se a cada hora.", metric: "1x/h", metricLabel: "Alongue-se", emoji: "🧍" },
+  { title: "Pegue um sol", body: "15 minutos de sol pela manhã ajudam o corpo a produzir vitamina D.", metric: "15min", metricLabel: "Sol da manhã", emoji: "☀️" },
+  { title: "Menos açúcar", body: "Troque refrigerantes e sucos adoçados por água ou frutas naturais.", metric: "Menos", metricLabel: "Açúcar", emoji: "🍎" },
+  { title: "Lave as mãos", body: "Lavar as mãos com água e sabão previne gripes, resfriados e infecções.", metric: "20s", metricLabel: "Higiene", emoji: "🧼" },
+  { title: "Cuide do sorriso", body: "Escove os dentes e use fio dental todos os dias para a saúde da boca.", metric: "2x/dia", metricLabel: "Escovação", emoji: "🦷" },
+  { title: "Cuide da mente", body: "Manter contato com quem você gosta faz bem para a saúde mental.", metric: "Conecte-se", metricLabel: "Bem-estar", emoji: "💬" },
 ];
 
 const getQuickActions = (serviceType: ServiceType) => [
@@ -105,7 +116,11 @@ const PatientDashboard = () => {
   const waitingAppt = upcoming.find((a: any) => a.status === "waiting" || a.status === "in_progress") ?? null;
   const nextAppt = upcoming[0];
   const minutesUntilNext = nextAppt ? differenceInMinutes(new Date(nextAppt.scheduled_at), new Date()) : null;
-  const todayTip = HEALTH_TIPS[new Date().getDay() % HEALTH_TIPS.length];
+  // Varia a dica pelo dia do ano para percorrer todo o pool ao longo das semanas
+  // (getDay() daria só 0-6 e nunca mostraria as dicas além do 7º índice).
+  const _now = new Date();
+  const dayOfYear = Math.floor((_now.getTime() - new Date(_now.getFullYear(), 0, 0).getTime()) / 86400000);
+  const todayTip = HEALTH_TIPS[dayOfYear % HEALTH_TIPS.length];
   const firstName = profile?.first_name || "Paciente";
   const [isPulling, setIsPulling] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -524,409 +539,6 @@ const PatientHomeModern = ({ firstName, stats, nextAppt, timelineEvents, returnA
         </div>
       </section>
     </div>
-  );
-};
-
-const PatientHomeReference = ({ firstName, stats, nextAppt, timelineEvents, navigate }: any) => {
-  const scheduledAt = nextAppt ? new Date(nextAppt.scheduled_at) : null;
-  const activities = (timelineEvents ?? []).slice(0, 2);
-  const actionCards = [
-    { label: "Agendar", sub: "Consulta", icon: CalendarCheck, path: "/dashboard/schedule?role=patient", color: "text-blue-600", bg: "bg-blue-500/10" },
-    { label: "Urgência", sub: "Atendimento", icon: Lightning, path: "/dashboard/urgent-care?role=patient", color: "text-red-500", bg: "bg-red-500/10" },
-    { label: "Receitas", sub: "Ver todas", icon: FileText, path: "/dashboard/history?role=patient", color: "text-teal-600", bg: "bg-teal-500/10" },
-    { label: "Exames", sub: "Meus exames", icon: Pill, path: "/dashboard/patient/documents?role=patient", color: "text-indigo-600", bg: "bg-indigo-500/10" },
-  ];
-
-  const summary = [
-    { label: "Consultas", sub: "realizadas", value: stats?.total ?? 0, icon: ShieldCheck, color: "text-blue-600" },
-    { label: "Receitas", sub: "emitidas", value: stats?.prescriptions ?? 0, icon: FileText, color: "text-teal-600" },
-    { label: "Exames", sub: "realizados", value: stats?.documents ?? 0, icon: Pill, color: "text-indigo-600" },
-    { label: "Bem-estar", sub: "geral", value: "—", icon: Heartbeat, color: "text-orange-500" },
-  ];
-
-  return (
-    <div className="mx-auto w-full max-w-[430px] space-y-5 md:max-w-3xl">
-      <section className="relative min-h-[118px] overflow-hidden rounded-b-[34px] px-3 pb-4 pt-2 md:rounded-[34px] md:bg-gradient-to-br md:from-blue-50 md:via-white md:to-cyan-50 md:px-6 md:pt-5">
-        <div className="relative z-10 max-w-[260px]">
-          <p className="font-[Manrope] text-[22px] font-extrabold tracking-tight text-foreground">
-            Olá, {firstName} <span className="text-amber-500">👋</span>
-          </p>
-          <p className="mt-1 text-sm font-medium text-muted-foreground">Como está se sentindo hoje?</p>
-        </div>
-        <div className="absolute -right-2 -top-1 flex h-32 w-32 items-center justify-center rounded-full bg-blue-100/70 md:right-5 md:top-3">
-          <PingoMascot variant="welcome" size={112} animate />
-          <span className="absolute right-5 top-4 h-4 w-4 rounded-full border-2 border-white bg-emerald-400" />
-        </div>
-      </section>
-
-      <section className="rounded-[24px] border border-border/55 bg-card p-4 shadow-[0_10px_28px_-18px_rgba(15,42,90,0.55)]">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-extrabold text-foreground">Próxima consulta</h2>
-          {nextAppt && (
-            <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-700">Confirmada</span>
-          )}
-        </div>
-        <div className="flex gap-3">
-          <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-blue-500/10 text-blue-600">
-            <CalendarCheck size={32} weight="bold" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-extrabold text-foreground">{nextAppt?.doctor_name ?? "Nenhuma consulta marcada"}</p>
-            <p className="text-xs font-medium text-muted-foreground">{nextAppt?.specialty ?? "Escolha um médico para começar"}</p>
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] font-bold text-primary">
-              <span>{scheduledAt ? format(scheduledAt, "dd MMM yyyy", { locale: ptBR }) : "Sem data"}</span>
-              <span>{scheduledAt ? format(scheduledAt, "HH:mm") : "--:--"}</span>
-              <span className="rounded-md bg-emerald-500/10 px-2 py-0.5 text-emerald-700">Online</span>
-            </div>
-          </div>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-border/50 pt-4">
-          <Button variant="ghost" onClick={() => navigate("/dashboard/appointments?role=patient")} className="h-11 rounded-2xl font-bold text-primary">
-            Ver detalhes
-          </Button>
-          <Button onClick={() => navigate(nextAppt ? `/dashboard/consultation/${nextAppt.id}` : "/dashboard/schedule?role=patient")} className="h-11 rounded-2xl font-bold">
-            <VideoCamera size={16} weight="fill" />
-            {nextAppt ? "Entrar" : "Agendar"}
-          </Button>
-        </div>
-      </section>
-
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-extrabold text-foreground">O que você precisa?</h2>
-          <button onClick={() => navigate("/dashboard/schedule?role=patient")} className="flex items-center gap-1 text-xs font-bold text-primary">
-            Ver todos <ArrowRight size={13} weight="bold" />
-          </button>
-        </div>
-        <div className="grid grid-cols-4 gap-3">
-          {actionCards.map((item) => (
-            <button key={item.label} onClick={() => navigate(item.path)} className="rounded-2xl border border-border/55 bg-card p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-              <div className={cn("mx-auto mb-2 grid h-11 w-11 place-items-center rounded-2xl", item.bg, item.color)}>
-                <item.icon size={22} weight="fill" />
-              </div>
-              <p className="text-[11px] font-extrabold leading-tight text-foreground">{item.label}</p>
-              <p className="mt-0.5 text-[10px] leading-tight text-muted-foreground">{item.sub}</p>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-[22px] border border-border/55 bg-card p-4 shadow-sm">
-        <h2 className="mb-4 text-sm font-extrabold text-foreground">Resumo da sua saúde</h2>
-        <div className="grid grid-cols-4 divide-x divide-border/60">
-          {summary.map((item) => (
-            <div key={item.label} className="px-2 text-center first:pl-0 last:pr-0">
-              <item.icon className={cn("mx-auto mb-2 h-6 w-6", item.color)} />
-              <p className={cn("text-xl font-black leading-none", item.color)}>{item.value}</p>
-              <p className="mt-1 text-[10px] font-bold leading-tight text-muted-foreground">{item.label}</p>
-              <p className="text-[10px] leading-tight text-muted-foreground">{item.sub}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-extrabold text-foreground">Atividade recente</h2>
-          <button onClick={() => navigate("/dashboard/history?role=patient")} className="flex items-center gap-1 text-xs font-bold text-primary">
-            Ver histórico <ArrowRight size={13} weight="bold" />
-          </button>
-        </div>
-        <div className="overflow-hidden rounded-[22px] border border-border/55 bg-card shadow-sm">
-          {(activities.length ? activities : [
-            { title: "Receita emitida", subtitle: "Seu histórico ficará disponível aqui", status: "Ativa", icon: FileText },
-            { title: "Exame de sangue", subtitle: "Documentos recentes aparecem nesta área", status: "Concluído", icon: Pill },
-          ]).map((item: any, index: number) => {
-            const Icon = item.icon ?? (index === 0 ? FileText : Pill);
-            return (
-              <button key={item.id ?? item.title ?? index} onClick={() => navigate("/dashboard/history?role=patient")} className="flex w-full items-center gap-3 border-b border-border/50 p-3 text-left last:border-b-0">
-                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-emerald-500/10 text-emerald-600">
-                  <Icon size={20} weight="fill" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-extrabold text-foreground">{item.title ?? item.type ?? "Atividade"}</p>
-                  <p className="truncate text-[11px] text-muted-foreground">{item.subtitle ?? item.description ?? "Atualização recente"}</p>
-                </div>
-                <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-700">{item.status ?? "Ativa"}</span>
-                <ArrowRight size={16} weight="bold" className="text-muted-foreground/50" />
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      <button onClick={() => navigate("/dashboard/chat?role=patient")} className="flex w-full items-center gap-3 rounded-[22px] border border-blue-500/10 bg-blue-500/8 p-4 text-left shadow-sm">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
-          <Headset size={24} weight="fill" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-extrabold text-primary">Precisa de ajuda?</p>
-          <p className="text-xs text-muted-foreground">Fale com nossa equipe de suporte</p>
-        </div>
-        <div className="grid h-9 w-9 place-items-center rounded-full bg-background text-primary">
-          <ArrowRight size={16} weight="bold" />
-        </div>
-      </button>
-    </div>
-  );
-};
-
-const PatientHomeCommandCenter = ({ firstName, stats, nextAppt, upcoming, minutesUntilNext, navigate }: any) => {
-  const consultationSoon = nextAppt && minutesUntilNext !== null && minutesUntilNext <= 60;
-  const scheduledAt = nextAppt ? new Date(nextAppt.scheduled_at) : null;
-  const statusLabel = upcoming?.length ? "Consulta programada" : "Agenda livre";
-  const actionItems = [
-    {
-      label: "Agendar",
-      desc: "Buscar médico",
-      icon: CalendarCheck,
-      path: "/dashboard/schedule?role=patient",
-      className: "bg-primary text-primary-foreground border-primary/20",
-      iconClass: "bg-white/16 text-white",
-    },
-    {
-      label: "Urgência",
-      desc: "Atendimento agora",
-      icon: Lightning,
-      path: "/dashboard/urgent-care?role=patient",
-      className: "bg-red-500/8 text-foreground border-red-500/16",
-      iconClass: "bg-red-500/12 text-red-600",
-    },
-    {
-      label: "Receitas",
-      desc: "Histórico",
-      icon: FileText,
-      path: "/dashboard/history?role=patient",
-      className: "bg-card text-foreground border-border/55",
-      iconClass: "bg-emerald-500/12 text-emerald-600",
-    },
-    {
-      label: "Exames",
-      desc: "Documentos",
-      icon: ClipboardText,
-      path: "/dashboard/patient/documents?role=patient",
-      className: "bg-card text-foreground border-border/55",
-      iconClass: "bg-sky-500/12 text-sky-600",
-    },
-  ];
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-[28px] border border-border/55 bg-card p-4 shadow-sm sm:p-5"
-    >
-      <div className="grid gap-4 xl:grid-cols-[1fr_270px]">
-        <div className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <p className="text-sm font-bold text-muted-foreground">{getGreeting()}, {firstName}</p>
-              <h1 className="mt-1 font-[Manrope] text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
-                Início
-              </h1>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-emerald-700">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Dados seguros
-              </span>
-              <span className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em]",
-                consultationSoon
-                  ? "border-red-500/20 bg-red-500/10 text-red-600"
-                  : "border-primary/15 bg-primary/8 text-primary"
-              )}>
-                <span className={cn("h-2 w-2 rounded-full", consultationSoon ? "animate-pulse bg-red-500" : "bg-primary")} />
-                {statusLabel}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid gap-3 lg:grid-cols-[1fr_0.9fr]">
-            <div className="rounded-3xl border border-border/55 bg-muted/18 p-4">
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground">Próxima consulta</p>
-                  <h2 className="mt-1 font-[Manrope] text-xl font-extrabold text-foreground">
-                    {nextAppt ? nextAppt.doctor_name : "Nenhuma consulta marcada"}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {nextAppt
-                      ? `${nextAppt.specialty || "Atendimento médico"} · ${format(scheduledAt!, "dd/MM 'às' HH:mm")}`
-                      : "Agende em poucos passos ou entre no atendimento imediato."}
-                  </p>
-                </div>
-                <div className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-2xl", consultationSoon ? "bg-red-500/12 text-red-600" : "bg-primary/10 text-primary")}>
-                  <VideoCamera size={22} weight="fill" />
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button
-                  onClick={() => navigate(nextAppt ? "/dashboard/appointments?role=patient" : "/dashboard/schedule?role=patient")}
-                  className="h-11 rounded-2xl font-extrabold"
-                >
-                  {nextAppt ? "Ver consulta" : "Agendar consulta"}
-                  <ArrowRight size={16} weight="bold" />
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/dashboard/urgent-care?role=patient")}
-                  className="h-11 rounded-2xl font-extrabold"
-                >
-                  Atendimento agora
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5">
-              {[
-                { label: "Consultas", value: stats?.total ?? 0, icon: CalendarCheck },
-                { label: "Receitas", value: stats?.prescriptions ?? 0, icon: FileText },
-                { label: "Exames", value: stats?.documents ?? 0, icon: ClipboardText },
-                { label: "Próximo", value: nextAppt ? format(scheduledAt!, "HH:mm") : "Livre", icon: Clock },
-              ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-border/50 bg-background p-3">
-                  <item.icon size={18} weight="fill" className="mb-2 text-primary" />
-                  <p className="text-xl font-black leading-none text-foreground">{item.value}</p>
-                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.13em] text-muted-foreground">{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
-            {actionItems.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => navigate(item.path)}
-                className={cn("group rounded-2xl border p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md", item.className)}
-              >
-                <div className={cn("mb-3 grid h-10 w-10 place-items-center rounded-2xl", item.iconClass)}>
-                  <item.icon size={20} weight="fill" />
-                </div>
-                <p className="text-sm font-extrabold">{item.label}</p>
-                <p className={cn("mt-1 text-xs leading-5", item.className.includes("bg-primary") ? "text-primary-foreground/75" : "text-muted-foreground")}>{item.desc}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="hidden xl:block">
-          <div className="relative h-full min-h-[300px] overflow-hidden rounded-[24px] border border-border/50 bg-muted/20">
-            <img src={patientHomeHero} alt="" className="h-full w-full object-cover object-[69%_center]" aria-hidden="true" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/72 via-transparent to-transparent" />
-            <div className="absolute bottom-3 left-3 right-3 rounded-2xl border border-white/60 bg-white/78 p-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/72">
-              <div className="flex items-center gap-3">
-                <PingoMascot variant="wave" size={42} animate />
-                <div>
-                  <p className="text-sm font-extrabold text-foreground">Tudo em um painel</p>
-                  <p className="text-xs text-muted-foreground">{getContextualSubtitle(upcoming, stats)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.section>
-  );
-};
-
-const PatientHomeHero = ({ firstName, stats, nextAppt, upcoming, minutesUntilNext, navigate }: any) => {
-  const consultationSoon = nextAppt && minutesUntilNext !== null && minutesUntilNext <= 60;
-  const statusText = upcoming?.length ? "Consulta programada" : "Pronto para agendar";
-
-  return (
-    <motion.section
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="relative -mx-4 -mt-5 overflow-hidden rounded-b-[34px] border border-border/50 bg-card shadow-[0_18px_55px_-28px_rgba(15,42,90,0.5)] md:-mx-6 md:-mt-5 md:rounded-[2rem] lg:-mx-8 lg:-mt-6"
-    >
-      <div className="absolute inset-0">
-        <img
-          src={patientHomeHero}
-          alt=""
-          className="h-full w-full object-cover object-center"
-          aria-hidden="true"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-white/35 dark:from-slate-950 dark:via-slate-950/88 dark:to-slate-950/35" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background to-transparent" />
-      </div>
-
-      <div className="relative grid min-h-[360px] gap-6 px-5 py-7 sm:px-7 md:grid-cols-[1.08fr_0.92fr] md:px-8 md:py-9">
-        <div className="flex max-w-2xl flex-col justify-between gap-7">
-          <div>
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/15 bg-primary/10 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-primary">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Cuidado verificado
-              </span>
-              <span className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em]",
-                consultationSoon
-                  ? "border-red-500/20 bg-red-500/10 text-red-600"
-                  : "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"
-              )}>
-                <span className={cn("h-2 w-2 rounded-full", consultationSoon ? "animate-pulse bg-red-500" : "bg-emerald-500")} />
-                {statusText}
-              </span>
-            </div>
-
-            <p className="mb-2 text-sm font-bold text-muted-foreground">{getGreeting()}, {firstName}</p>
-            <h1 className="font-[Manrope] text-3xl font-extrabold leading-[1.04] tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-              Sua saúde organizada em uma experiência simples.
-            </h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Agende consultas, acompanhe receitas, exames e histórico médico com segurança e atendimento online quando precisar.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              onClick={() => navigate("/dashboard/schedule?role=patient")}
-              className="h-12 rounded-2xl px-6 font-extrabold shadow-lg shadow-primary/20 transition hover:-translate-y-0.5"
-            >
-              Agendar consulta
-              <ArrowRight size={17} weight="bold" />
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/dashboard/urgent-care?role=patient")}
-              className="h-12 rounded-2xl border-border/70 bg-background/70 px-6 font-extrabold backdrop-blur transition hover:-translate-y-0.5"
-            >
-              Atendimento agora
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex items-end justify-stretch md:justify-end">
-          <div className="w-full max-w-md rounded-[2rem] border border-white/70 bg-white/72 p-4 shadow-[0_22px_70px_-36px_rgba(15,42,90,0.65)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/65">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-muted-foreground">Painel de hoje</p>
-                <p className="mt-1 text-sm font-bold text-foreground">{getContextualSubtitle(upcoming, stats)}</p>
-              </div>
-              <PingoMascot variant="wave" size={58} animate />
-            </div>
-            <div className="grid grid-cols-2 gap-2.5">
-              {[
-                { label: "Consultas", value: stats?.total ?? 0, icon: CalendarCheck },
-                { label: "Receitas", value: stats?.prescriptions ?? 0, icon: FileText },
-                { label: "Exames", value: stats?.documents ?? 0, icon: ClipboardText },
-                { label: "Próximo", value: nextAppt ? format(new Date(nextAppt.scheduled_at), "HH:mm") : "Livre", icon: Clock },
-              ].map((item) => (
-                <div key={item.label} className="rounded-2xl border border-border/45 bg-background/70 p-3">
-                  <item.icon size={18} weight="fill" className="mb-2 text-primary" />
-                  <p className="text-xl font-black leading-none text-foreground">{item.value}</p>
-                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.13em] text-muted-foreground">{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.section>
   );
 };
 

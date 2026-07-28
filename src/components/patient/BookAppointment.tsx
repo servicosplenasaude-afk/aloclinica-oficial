@@ -18,7 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Clock, Star, Check, UserPlus, UserCheck, AlertTriangle, Loader2,
+  ArrowLeft, Clock, Star, Check, UserPlus, UserCheck, Loader2,
   CalendarDays, CheckCircle2, ChevronRight, Stethoscope, QrCode, CreditCard,
   FileBarChart, Lock, Shield, Copy, Tag, X as XIcon
 } from "lucide-react";
@@ -69,7 +69,10 @@ const BookAppointment = () => {
   const [recurrence, setRecurrence] = useState("none");
   const [recurrenceCount, setRecurrenceCount] = useState(4);
 
-  // Return eligibility — retorno com 50% de desconto (consulta concluída dentro do prazo de retorno)
+  // Return eligibility — retorno com 50% de desconto (consulta concluída dentro do prazo de retorno).
+  // returnOffered: paciente é elegível (existe consulta concluída no prazo) → controla a OFERTA na UI.
+  // returnEligible: oferta aceita (paciente marcou "É retorno") → dispara o DESCONTO no preço.
+  const [returnOffered, setReturnOffered] = useState(false);
   const [returnEligible, setReturnEligible] = useState(false);
 
   // Payment state
@@ -158,10 +161,13 @@ const BookAppointment = () => {
     })();
   }, [searchParams, doctor, user]);
 
-  // Check return eligibility
+  // Check return eligibility — roda independente do tipo escolhido para decidir se a
+  // opção de retorno é oferecida (returnOffered). O desconto no preço (returnEligible)
+  // só vale quando o paciente É elegível E marcou "É retorno".
   useEffect(() => {
     const checkReturn = async () => {
-      if (appointmentType !== "return" || !user || !doctorId) {
+      if (!user || !doctorId) {
+        setReturnOffered(false);
         setReturnEligible(false);
         return;
       }
@@ -176,7 +182,9 @@ const BookAppointment = () => {
         .gte("return_deadline", new Date().toISOString())
         .order("scheduled_at", { ascending: false })
         .limit(1);
-      setReturnEligible(Boolean(data && data.length > 0));
+      const eligible = Boolean(data && data.length > 0);
+      setReturnOffered(eligible);
+      setReturnEligible(eligible && appointmentType === "return");
     };
     checkReturn();
   }, [appointmentType, user, doctorId]);
@@ -1127,22 +1135,32 @@ const BookAppointment = () => {
                   </div>
                 )}
 
-                <div className="mb-4">
-                  <p className="text-xs text-muted-foreground mb-1.5">Tipo de consulta</p>
-                  <Select value={appointmentType} onValueChange={setAppointmentType}>
-                    <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="first_visit"><span className="flex items-center gap-2"><UserPlus className="w-3.5 h-3.5" /> 1ª Consulta</span></SelectItem>
-                      <SelectItem value="return"><span className="flex items-center gap-2"><UserCheck className="w-3.5 h-3.5" /> Retorno</span></SelectItem>
-                      <SelectItem value="urgency"><span className="flex items-center gap-2"><AlertTriangle className="w-3.5 h-3.5" /> Urgência</span></SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {appointmentType === "return" && returnEligible && (
-                    <div className="mt-2 flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 text-[12px] font-medium text-emerald-700 dark:text-emerald-400">
-                      <CheckCircle2 className="w-4 h-4 shrink-0" /> Retorno com {RETURN_DISCOUNT_PCT}% de desconto aplicado.
-                    </div>
-                  )}
-                </div>
+                {/* Retorno é oferecido só quando o paciente é elegível (consulta concluída
+                    dentro do prazo de retorno). Sem jargão de "tipo de consulta": o padrão é
+                    1ª consulta e nada é pedido ao paciente quando não há retorno disponível. */}
+                {returnOffered && (
+                  <div className="mb-4">
+                    <label className="flex items-center justify-between gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.07] px-4 py-3 cursor-pointer">
+                      <span className="min-w-0">
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                          <UserCheck className="w-4 h-4 text-emerald-600 shrink-0" /> É retorno?
+                        </span>
+                        <span className="block text-[12px] text-muted-foreground mt-0.5">
+                          Consulta de acompanhamento com {RETURN_DISCOUNT_PCT}% de desconto.
+                        </span>
+                      </span>
+                      <Switch
+                        checked={appointmentType === "return"}
+                        onCheckedChange={(on) => setAppointmentType(on ? "return" : "first_visit")}
+                      />
+                    </label>
+                    {appointmentType === "return" && returnEligible && (
+                      <div className="mt-2 flex items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 text-[12px] font-medium text-emerald-700 dark:text-emerald-400">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" /> Retorno com {RETURN_DISCOUNT_PCT}% de desconto aplicado.
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="bg-muted/50 rounded-xl p-4 space-y-2.5 mb-5">
                   <div className="flex items-center gap-2 text-sm text-foreground">
