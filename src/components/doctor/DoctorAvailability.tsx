@@ -94,7 +94,7 @@ const DoctorAvailability = () => {
         toast.error("Erro ao atualizar disponibilidade");
       } else {
         setAvailableNow(newVal);
-        toast.success(newVal ? "🟢 Online para consultas imediatas!" : "Modo plantão desativado.");
+        toast.success(newVal ? "🟢 Plantão ativado — disponível agora!" : "Plantão pausado.");
       }
     } catch {
       toast.error("Erro inesperado");
@@ -272,15 +272,18 @@ const DoctorAvailability = () => {
                 <Zap className={`w-6 h-6 ${availableNow ? "fill-current" : ""}`} />
               </div>
               <div>
-                <p className="font-black text-foreground text-[15px]">Disponível para Agora</p>
-                <p className="text-xs text-muted-foreground mt-0.5 max-w-[240px]">
-                  {availableNow ? "Você está visível para consultas imediatas." : "Ative para ser listado no plantão 24h."}
+                <p className="font-black text-foreground text-[15px]">Plantão 24h · Disponível agora</p>
+                <p className="text-xs text-muted-foreground mt-0.5 max-w-[260px]">
+                  {availableNow ? "Você está no plantão, visível para consultas imediatas." : "Ative o plantão 24h para receber consultas imediatas."}
+                </p>
+                <p className="text-[10px] text-muted-foreground/70 mt-1 max-w-[260px]">
+                  É o mesmo botão "Ativar plantão" do seu painel inicial.
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <span className={`text-[10px] font-black uppercase tracking-widest ${availableNow ? "text-emerald-600" : "text-muted-foreground"}`}>
-                {availableNow ? "ATIVO" : "OFFLINE"}
+                {availableNow ? "ATIVO" : "PAUSADO"}
               </span>
               <Switch checked={availableNow} onCheckedChange={toggleAvailableNow} disabled={togglingAvailability} className="data-[state=checked]:bg-emerald-500" />
             </div>

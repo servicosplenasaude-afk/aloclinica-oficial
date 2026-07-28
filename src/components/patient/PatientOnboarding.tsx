@@ -435,7 +435,7 @@ const PatientOnboarding = ({ onComplete }: PatientOnboardingProps) => {
                 </p>
                 <span className="text-[10px] font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">Opcional</span>
               </div>
-              <p className="text-[11px] text-muted-foreground -mt-1">Ajuda os médicos a te atender melhor. Você pode preencher depois.</p>
+              <p className="text-[11px] text-muted-foreground -mt-1">Ajuda os médicos a te atender melhor. É totalmente opcional — você pode pular agora e preencher depois no seu painel.</p>
 
               <div>
                 <Label className="text-xs flex items-center gap-1"><Droplets className="w-3 h-3" /> Tipo Sanguíneo</Label>
@@ -538,6 +538,19 @@ const PatientOnboarding = ({ onComplete }: PatientOnboardingProps) => {
                   </div>
                 )}
               </div>
+
+              {/* Saúde é opcional: avança sem preencher nada (mesma ação do "Próximo") */}
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={saving}
+                className="w-full mt-1 flex items-center justify-center gap-1.5 text-[13px] font-bold text-primary hover:underline disabled:opacity-50"
+              >
+                Pular por agora <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <p className="text-[10px] text-center text-muted-foreground/70 -mt-1">
+                Você pode preencher isto quando quiser, no seu painel.
+              </p>
             </div>
           </div>
         );
