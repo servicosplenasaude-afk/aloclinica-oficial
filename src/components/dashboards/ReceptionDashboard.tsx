@@ -320,7 +320,7 @@ const ReceptionDashboard = () => {
               <SelectItem value="no_show">Faltou</SelectItem>
             </SelectContent>
           </Select>
-          <Button size="sm" variant="outline" className="h-9 rounded-xl gap-1.5" onClick={() => fetchToday(true)} disabled={refreshing}>
+          <Button size="sm" variant="outline" className="h-9 rounded-xl gap-1.5" onClick={() => fetchToday(true)} disabled={refreshing} aria-label="Atualizar">
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
           </Button>
           <Button size="sm" variant="outline" className="h-9 rounded-xl gap-1.5" onClick={exportCSV} disabled={loading || todayAppts.length === 0}>

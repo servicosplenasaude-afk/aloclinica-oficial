@@ -218,12 +218,12 @@ const DependentsManager = () => {
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(dep)}>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => openEdit(dep)} aria-label="Editar dependente">
                         <Edit2 className="w-3.5 h-3.5 text-muted-foreground" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="Remover dependente">
                             <Trash2 className="w-3.5 h-3.5 text-destructive" />
                           </Button>
                         </AlertDialogTrigger>

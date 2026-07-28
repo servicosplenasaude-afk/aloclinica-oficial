@@ -71,10 +71,10 @@ export function PrescriptionFinder({ onValidated }: { onValidated?: () => void }
             placeholder="Código da receita (ID)..."
             className="h-11 rounded-xl border-border/40 pl-9 text-sm" />
         </div>
-        <Button onClick={search} disabled={loading || !code.trim()} className="h-11 rounded-xl bg-[#0B5F4A] px-4 text-sm font-semibold text-white hover:bg-[#0B5F4A]/90">
+        <Button onClick={search} disabled={loading || !code.trim()} className="h-11 rounded-xl bg-[#0B5F4A] px-4 text-sm font-semibold text-white hover:bg-[#0B5F4A]/90" aria-label="Buscar receita">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
         </Button>
-        <Button variant="outline" onClick={() => toast.info("Scanner QR em desenvolvimento")} className="h-11 w-11 rounded-xl border-border/40 p-0">
+        <Button variant="outline" onClick={() => toast.info("Scanner QR em desenvolvimento")} className="h-11 w-11 rounded-xl border-border/40 p-0" aria-label="Escanear QR code">
           <QrCode className="h-4 w-4 text-muted-foreground" />
         </Button>
       </div>

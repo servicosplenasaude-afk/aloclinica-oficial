@@ -763,6 +763,7 @@ const PrescriptionForm = () => {
                 {data.medications.length > 1 && (
                   <button
                     onClick={() => prescription.removeMedication(i)}
+                    aria-label="Remover medicamento"
                     className="absolute top-3 right-3 text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 className="w-4 h-4" />

@@ -671,6 +671,7 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
               <button
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                 title={sidebarCollapsed ? "Expandir menu" : "Encolher menu"}
+                aria-label={sidebarCollapsed ? "Expandir menu" : "Encolher menu"}
                 className="w-full flex items-center justify-center gap-2 px-2 py-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 text-[11px]"
               >
                 {sidebarCollapsed

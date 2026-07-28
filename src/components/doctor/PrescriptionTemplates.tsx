@@ -165,7 +165,7 @@ export default function PrescriptionTemplates({ userId, current, onApply, trigge
                       <Button size="sm" onClick={handleSave} className="flex-1 gap-1">
                         <Save className="w-3.5 h-3.5" /> Salvar
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => { setSavingNew(false); setNewName(""); }}>
+                      <Button size="sm" variant="ghost" onClick={() => { setSavingNew(false); setNewName(""); }} aria-label="Cancelar">
                         <X className="w-3.5 h-3.5" />
                       </Button>
                     </div>

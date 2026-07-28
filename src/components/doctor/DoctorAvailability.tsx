@@ -434,12 +434,13 @@ const DoctorAvailability = () => {
                         <Clock className="w-3 h-3 opacity-60" />{s.start_time.slice(0, 5)} — {s.end_time.slice(0, 5)}
                         <button
                           title={s.is_active ? "Desativar" : "Ativar"}
+                          aria-label={s.is_active ? "Desativar horário" : "Ativar horário"}
                           onClick={() => toggleSlotActive(s)}
                           className={`ml-1 hover:scale-125 transition-all ${s.is_active ? "opacity-0 group-hover:opacity-100" : "opacity-100"}`}
                         >
                           <Power className="w-3 h-3" />
                         </button>
-                        <button onClick={() => removeSlot(s.id)} className="opacity-0 group-hover:opacity-100 hover:text-destructive hover:scale-125 transition-all"><Trash2 className="w-3 h-3" /></button>
+                        <button onClick={() => removeSlot(s.id)} aria-label="Remover horário" className="opacity-0 group-hover:opacity-100 hover:text-destructive hover:scale-125 transition-all"><Trash2 className="w-3 h-3" /></button>
                       </div>
                     ))}
                   </div>

@@ -128,13 +128,13 @@ const SymptomDiary = () => {
           <Card className="border-border/50">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} aria-label="Mês anterior">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <CardTitle className="text-sm capitalize">
                   {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                <Button variant="ghost" size="sm" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} aria-label="Próximo mês">
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>

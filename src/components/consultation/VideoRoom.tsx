@@ -1298,6 +1298,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
           variant="outline"
           className="rounded-xl border-[hsl(220,15%,18%)] text-[hsl(220,15%,60%)] hover:bg-[hsl(220,20%,12%)]"
           onClick={() => setToolOverlay({ url: `/dashboard/prescribe/${appointmentId}?embed=1`, title: "Receita / Prescrição" })}
+          aria-label="Abrir receita"
         >
           <Pill className="w-3.5 h-3.5" />
         </Button>
@@ -1678,6 +1679,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                 </div>
                 <button
                   onClick={closeAllPanels}
+                  aria-label="Fechar painel"
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-[hsl(220,15%,40%)] hover:text-white hover:bg-[hsl(220,20%,12%)] transition-all"
                 >
                   <X className="w-4 h-4" />
@@ -1762,6 +1764,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                   </div>
                   <button
                     onClick={closeAllPanels}
+                    aria-label="Fechar painel"
                     className="w-9 h-9 rounded-lg flex items-center justify-center text-[hsl(220,15%,40%)] hover:text-white active:bg-[hsl(220,20%,16%)]"
                   >
                     <X className="w-5 h-5" />

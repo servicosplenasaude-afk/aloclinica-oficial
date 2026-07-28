@@ -534,6 +534,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
             <button
               onClick={toggleMic}
               disabled={!micOk}
+              aria-label={micOn ? "Desligar microfone" : "Ligar microfone"}
               className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 ${
                 micOn && micOk
                   ? 'bg-[hsl(220,20%,18%)] hover:bg-[hsl(220,20%,23%)] text-white'
@@ -551,6 +552,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
             <button
               onClick={toggleCamera}
               disabled={!cameraOk}
+              aria-label={cameraOn ? "Desligar câmera" : "Ligar câmera"}
               className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 ${
                 cameraOn && cameraOk
                   ? 'bg-[hsl(220,20%,18%)] hover:bg-[hsl(220,20%,23%)] text-white'
@@ -568,6 +570,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
             <button
               onClick={testDevices}
               disabled={testing}
+              aria-label="Testar dispositivos"
               className="w-11 h-11 rounded-full flex items-center justify-center bg-[hsl(220,20%,18%)] hover:bg-[hsl(220,20%,23%)] text-[hsl(220,15%,60%)] transition-all"
             >
               <RefreshCw className={`w-5 h-5 ${testing ? 'animate-spin' : ''}`} />
@@ -577,6 +580,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
             {!isDoctor && appointmentId && (
               <button
                 onClick={() => setShowChat(!showChat)}
+                aria-label="Abrir chat"
                 className="relative w-11 h-11 rounded-full flex items-center justify-center bg-[hsl(220,20%,18%)] hover:bg-[hsl(220,20%,23%)] text-[hsl(220,15%,60%)] transition-all"
               >
                 <MessageCircle className="w-5 h-5" />
@@ -691,7 +695,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
             >
               <div className="flex items-center justify-between px-4 py-3 border-b border-[hsl(220,15%,15%)]">
                 <p className="text-sm font-medium text-white">Chat da sala de espera</p>
-                <button onClick={() => setShowChat(false)} className="text-[hsl(220,15%,55%)] hover:text-white">
+                <button onClick={() => setShowChat(false)} aria-label="Fechar chat" className="text-[hsl(220,15%,55%)] hover:text-white">
                   <ChevronDown className="w-5 h-5" />
                 </button>
               </div>
@@ -723,7 +727,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
                   placeholder="Digite uma mensagem..."
                   className="flex-1 bg-[hsl(220,20%,15%)] border border-[hsl(220,15%,22%)] rounded-xl px-3 py-3 text-sm text-white placeholder:text-[hsl(220,15%,40%)] outline-none focus:border-primary/50 transition-colors"
                 />
-                <button onClick={sendChatMessage} className="text-primary hover:text-primary/80 px-3 min-h-[44px]">
+                <button onClick={sendChatMessage} aria-label="Enviar mensagem" className="text-primary hover:text-primary/80 px-3 min-h-[44px]">
                   <Send className="w-5 h-5" />
                 </button>
               </div>
@@ -850,6 +854,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
                 <button
                   onClick={toggleMic}
                   disabled={!micOk}
+                  aria-label={micOn ? "Desligar microfone" : "Ligar microfone"}
                   className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
                     micOn && micOk
                       ? 'bg-[hsl(220,20%,18%)] hover:bg-[hsl(220,20%,23%)] text-white'
@@ -868,6 +873,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
                 <button
                   onClick={toggleCamera}
                   disabled={!cameraOk}
+                  aria-label={cameraOn ? "Desligar câmera" : "Ligar câmera"}
                   className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
                     cameraOn && cameraOk
                       ? 'bg-[hsl(220,20%,18%)] hover:bg-[hsl(220,20%,23%)] text-white'
@@ -888,6 +894,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
                 <button
                   onClick={testDevices}
                   disabled={testing}
+                  aria-label="Re-testar dispositivos"
                   className="w-10 h-10 rounded-full flex items-center justify-center bg-[hsl(220,20%,18%)] hover:bg-[hsl(220,20%,23%)] text-[hsl(220,15%,60%)] transition-all duration-200"
                   title="Re-testar dispositivos"
                 >
@@ -1090,7 +1097,7 @@ const PreCallCheck = ({ appointmentId, doctorName, doctorSpecialty, scheduledAt,
                             placeholder="Digite uma mensagem..."
                             className="flex-1 bg-[hsl(220,20%,15%)] border border-[hsl(220,15%,22%)] rounded-xl px-3 py-2 text-xs text-white placeholder:text-[hsl(220,15%,40%)] outline-none focus:border-primary/50 transition-colors"
                           />
-                          <button onClick={sendChatMessage} className="text-primary hover:text-primary/80 px-2">
+                          <button onClick={sendChatMessage} aria-label="Enviar mensagem" className="text-primary hover:text-primary/80 px-2">
                             <Send className="w-3.5 h-3.5" />
                           </button>
                         </div>

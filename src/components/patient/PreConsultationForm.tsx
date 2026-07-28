@@ -120,7 +120,7 @@ const PreConsultationForm = ({ appointmentId, onComplete }: PreConsultationFormP
                 onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addCustomSymptom())}
                 className="flex-1"
               />
-              <Button size="sm" variant="outline" onClick={addCustomSymptom} disabled={!customSymptom.trim()}>
+              <Button size="sm" variant="outline" onClick={addCustomSymptom} disabled={!customSymptom.trim()} aria-label="Adicionar sintoma">
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
@@ -129,7 +129,7 @@ const PreConsultationForm = ({ appointmentId, onComplete }: PreConsultationFormP
                 {selectedSymptoms.filter(s => !COMMON_SYMPTOMS.includes(s)).map(s => (
                   <Badge key={s} className="gap-1 text-xs">
                     {s}
-                    <button onClick={() => toggleSymptom(s)}><X className="w-3 h-3" /></button>
+                    <button onClick={() => toggleSymptom(s)} aria-label="Remover sintoma"><X className="w-3 h-3" /></button>
                   </Badge>
                 ))}
               </div>

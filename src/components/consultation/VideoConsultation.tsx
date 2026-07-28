@@ -460,6 +460,7 @@ const VideoConsultation = forwardRef<VideoConsultationHandle, VideoConsultationP
                 variant="outline"
                 size="lg"
                 className="rounded-full w-12 h-12 p-0 min-h-[48px] min-w-[48px] border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+                aria-label="Baixar gravação"
                 title="Baixar gravação"
               >
                 <Download className="w-5 h-5" />

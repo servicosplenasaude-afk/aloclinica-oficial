@@ -129,6 +129,7 @@
                  variant={copied ? "outline" : "default"} 
                  className="h-11 w-11 p-0 shrink-0 rounded-xl"
                  onClick={copyToClipboard}
+                 aria-label="Copiar link"
                >
                  {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                </Button>

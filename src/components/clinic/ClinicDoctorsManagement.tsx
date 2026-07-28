@@ -279,7 +279,7 @@ const ClinicDoctorsManagement = () => {
                 <div className="space-y-4">
                   <div className="flex gap-2">
                     <Input placeholder="Buscar por CRM..." value={searchCrm} onChange={e => setSearchCrm(e.target.value)} />
-                    <Button onClick={searchDoctor} disabled={searching}>
+                    <Button onClick={searchDoctor} disabled={searching} aria-label="Buscar médico">
                       <Search className="w-4 h-4" />
                     </Button>
                   </div>
@@ -343,7 +343,7 @@ const ClinicDoctorsManagement = () => {
                     <Badge variant={statusConfig[doc.status]?.variant ?? "outline"}>
                       {statusConfig[doc.status]?.label ?? doc.status}
                     </Badge>
-                    <Button size="sm" variant="ghost" onClick={() => { setEditingDoctor(doc); setCommissionValue(doc.commission_percent); setCommissionDialogOpen(true); }}>
+                    <Button size="sm" variant="ghost" onClick={() => { setEditingDoctor(doc); setCommissionValue(doc.commission_percent); setCommissionDialogOpen(true); }} aria-label="Editar repasse">
                       <Percent className="w-4 h-4 text-primary" />
                     </Button>
                     {doc.status === "pending" && (

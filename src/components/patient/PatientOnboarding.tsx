@@ -480,7 +480,7 @@ const PatientOnboarding = ({ onComplete }: PatientOnboardingProps) => {
                     className="h-10 rounded-xl flex-1 text-sm"
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addAllergy())}
                   />
-                  <Button size="sm" variant="outline" onClick={addAllergy} className="h-10 w-10 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
+                  <Button size="sm" variant="outline" onClick={addAllergy} aria-label="Adicionar alergia" className="h-10 w-10 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
                 </div>
                 {allergies.filter((a) => !COMMON_ALLERGIES.includes(a) && a !== "Nenhuma").length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
@@ -526,7 +526,7 @@ const PatientOnboarding = ({ onComplete }: PatientOnboardingProps) => {
                     className="h-10 rounded-xl flex-1 text-sm"
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCondition())}
                   />
-                  <Button size="sm" variant="outline" onClick={addCondition} className="h-10 w-10 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
+                  <Button size="sm" variant="outline" onClick={addCondition} aria-label="Adicionar condição" className="h-10 w-10 rounded-xl shrink-0"><Plus className="w-4 h-4" /></Button>
                 </div>
                 {chronicConditions.filter((c) => !COMMON_CONDITIONS.includes(c) && c !== "Nenhuma").length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
@@ -776,7 +776,7 @@ const PatientOnboarding = ({ onComplete }: PatientOnboardingProps) => {
       <div className="fixed bottom-0 left-0 right-0 p-5 bg-background border-t border-border/50 safe-bottom">
         <div className="flex gap-2 max-w-md mx-auto">
           {currentStep > 0 && (
-            <Button variant="outline" className="h-12 rounded-xl px-4" onClick={() => setCurrentStep(prev => prev - 1)}>
+            <Button variant="outline" className="h-12 rounded-xl px-4" onClick={() => setCurrentStep(prev => prev - 1)} aria-label="Voltar">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           )}

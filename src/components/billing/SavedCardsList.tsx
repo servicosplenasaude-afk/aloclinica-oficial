@@ -89,6 +89,7 @@ export function SavedCardsList({ selectedId, onSelect, pickOnly = false }: Props
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
+                          aria-label="Definir como padrão"
                           title="Definir como padrão"
                           onClick={() => setDefault(c.id)}
                         >
@@ -99,6 +100,7 @@ export function SavedCardsList({ selectedId, onSelect, pickOnly = false }: Props
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-destructive hover:text-destructive"
+                        aria-label="Remover cartão"
                         title="Remover"
                         onClick={() => {
                           if (confirm(`Remover o cartão final ${c.last4}?`)) remove(c.id);

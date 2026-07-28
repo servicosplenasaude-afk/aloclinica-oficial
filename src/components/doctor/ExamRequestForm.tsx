@@ -239,7 +239,7 @@ const ExamRequestForm = () => {
                         <Button type="button" size="sm" className="h-8 gap-1" onClick={saveCurrentFavorite}>
                           <Save className="w-3.5 h-3.5" /> Salvar
                         </Button>
-                        <Button type="button" size="sm" variant="ghost" className="h-8 px-2" onClick={() => { setSavingFav(false); setFavName(""); }}>
+                        <Button type="button" size="sm" variant="ghost" className="h-8 px-2" onClick={() => { setSavingFav(false); setFavName(""); }} aria-label="Cancelar">
                           <X className="w-3.5 h-3.5" />
                         </Button>
                       </span>

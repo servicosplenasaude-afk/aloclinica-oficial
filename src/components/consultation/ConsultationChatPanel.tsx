@@ -222,6 +222,7 @@ export function ConsultationChatPanel({
                     setFilePreview(null);
                   }}
                   className="flex-shrink-0 text-destructive hover:text-destructive/80 transition-colors"
+                  aria-label="Remover arquivo"
                   title="Remover arquivo"
                 >
                   <X className="w-4 h-4" />
@@ -266,6 +267,7 @@ export function ConsultationChatPanel({
                 variant="ghost"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingFile}
+                aria-label="Anexar arquivo"
                 title="Anexar arquivo"
               >
                 <Paperclip className="w-4 h-4" />
@@ -274,6 +276,7 @@ export function ConsultationChatPanel({
                 size="sm"
                 onClick={handleSend}
                 disabled={isSending || uploadingFile || (!input.trim() && !attachedFile)}
+                aria-label="Enviar mensagem"
               >
                 <Send className="w-4 h-4" />
               </Button>
