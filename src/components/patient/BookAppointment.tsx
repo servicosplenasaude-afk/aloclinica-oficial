@@ -420,14 +420,6 @@ const BookAppointment = () => {
   const discountAmount = basePrice * (cardDiscount / 100);
   const couponAmount = basePrice * (couponDiscount / 100);
   const totalPrice = Math.max(basePrice - discountAmount - couponAmount, 0);
-  // Pacote recorrente: N consultas cobradas de uma vez. Total = preço cheio × N ×
-  // (1-cupom%), SEM desconto de retorno/cartão — alinhado EXATAMENTE com o cálculo
-  // do servidor (mercadopago-create-payment, prefixo package_).
-  const isPackage = recurrence !== "none";
-  const packageCount = isPackage ? recurrenceCount : 1;
-  const payableTotal = isPackage
-    ? Math.round(fullPrice * packageCount * (1 - couponDiscount / 100) * 100) / 100
-    : totalPrice;
 
   const applyCoupon = async () => {
     const code = couponInput.trim().toUpperCase();
@@ -681,12 +673,10 @@ const BookAppointment = () => {
       };
 
       const payload: Record<string, any> = {
-        // O servidor recomputa o valor (fonte do médico); amount aqui é para exibição/registro.
-        amount: payableTotal,
+        amount: totalPrice,
         payment_method: methodMap[paymentMethod],
-        // Pacote recorrente → prefixo package_ (servidor cobra N×preço e aprova todas).
-        reference_id: isPackage ? `package_${appointmentId}` : `appointment_${appointmentId}`,
-        description: isPackage ? `Pacote de ${packageCount} consultas AloClínica` : `Consulta médica AloClínica`,
+        reference_id: `appointment_${appointmentId}`,
+        description: `Consulta médica AloClínica`,
         // Cupom é REVALIDADO no servidor (só o código trafega; o % é relido lá).
         coupon_code: couponCode || undefined,
       };
@@ -768,17 +758,10 @@ const BookAppointment = () => {
   // Pós-aprovação da consulta (compartilhado entre cartão novo e cartão salvo)
   const finalizeApprovedAppointment = async (firstName?: string, lastName?: string) => {
     if (!user || !doctor || !appointmentId) return;
-    // Pacote: aprova a 1ª consulta + todas as recorrentes ligadas a ela (o servidor
-    // já faz isso na aprovação; aqui garante consistência no cartão aprovado).
-    const upd = db.from("appointments").update({
+    await db.from("appointments").update({
       payment_status: "approved",
       payment_confirmed_at: new Date().toISOString(),
-    });
-    if (isPackage) {
-      await upd.or(`id.eq.${appointmentId},original_appointment_id.eq.${appointmentId}`);
-    } else {
-      await upd.eq("id", appointmentId);
-    }
+    }).eq("id", appointmentId);
 
     triggerAppointmentConfirmed(appointmentId).catch(err => logError("triggerAppointmentConfirmed", err));
     const pName = `${firstName ?? ""} ${lastName ?? ""}`.trim();
@@ -787,7 +770,7 @@ const BookAppointment = () => {
       notifyNewAppointment(appointmentId, doctor.id, pName, format(selectedDate, "dd/MM/yyyy", { locale: ptBR }), selectedTime)
         .catch(err => logError("notifyNewAppointment", err));
     }
-    notifyPaymentConfirmed(user.id, doctorFullName, selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: ptBR }) : "", `R$ ${payableTotal.toFixed(2)}`)
+    notifyPaymentConfirmed(user.id, doctorFullName, selectedDate ? format(selectedDate, "dd/MM/yyyy", { locale: ptBR }) : "", `R$ ${totalPrice.toFixed(2)}`)
       .catch(err => logError("notifyPaymentConfirmed", err));
 
     toast.success("Pagamento confirmado! ✅");
@@ -807,8 +790,8 @@ const BookAppointment = () => {
     try {
       const res = await chargeSavedCard({
         savedCardId,
-        referenceId: isPackage ? `package_${appointmentId}` : `appointment_${appointmentId}`,
-        description: isPackage ? `Pacote de ${packageCount} consultas AloClínica` : "Consulta médica AloClínica",
+        referenceId: `appointment_${appointmentId}`,
+        description: "Consulta médica AloClínica",
         securityCode,
         couponCode: couponCode || undefined,
       });
@@ -971,10 +954,8 @@ const BookAppointment = () => {
             )}
           </div>
           <div className="text-right shrink-0">
-            <p className="text-xl font-black text-foreground">R${payableTotal.toFixed(0)}</p>
-            {isPackage ? (
-              <p className="text-[10px] text-muted-foreground">{packageCount} consultas</p>
-            ) : totalPrice < fullPrice && (
+            <p className="text-xl font-black text-foreground">R${totalPrice.toFixed(0)}</p>
+            {totalPrice < fullPrice && (
               <p className="text-[10px] text-secondary line-through">R${fullPrice.toFixed(0)}</p>
             )}
             {returnEligible && (
@@ -1213,8 +1194,8 @@ const BookAppointment = () => {
                       </div>
                     )}
                     <div className="flex items-center justify-between pt-1 mt-1 border-t border-border/40 text-sm font-bold text-foreground">
-                      <span>{isPackage ? `Total (${packageCount} consultas)` : "Total"}</span>
-                      <span className="tabular-nums">R$ {payableTotal.toFixed(2)}</span>
+                      <span>Total</span>
+                      <span className="tabular-nums">R$ {totalPrice.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -1272,38 +1253,7 @@ const BookAppointment = () => {
                   )}
                 </div>
 
-                {/* Agendamento recorrente (pacote): cria N consultas e cobra TODAS de
-                    uma vez; ao pagar, todas ficam garantidas. */}
-                {RECURRENCE_OPTIONS.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-xs text-muted-foreground mb-1.5">Agendamento recorrente (opcional)</p>
-                  <Select value={recurrence} onValueChange={setRecurrence}>
-                    <SelectTrigger className="h-11 rounded-xl"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {RECURRENCE_OPTIONS.map(o => (
-                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {isPackage && (
-                    <div className="mt-2 space-y-2">
-                      <p className="text-xs text-muted-foreground mb-1">Quantas consultas?</p>
-                      <Select value={String(recurrenceCount)} onValueChange={v => setRecurrenceCount(Number(v))}>
-                        <SelectTrigger className="h-9 rounded-xl w-28"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {[2, 3, 4, 6, 8, 12].map(n => (
-                            <SelectItem key={n} value={String(n)}>{n} consultas</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <div className="rounded-xl bg-primary/5 border border-primary/15 px-3 py-2 text-xs text-foreground/80">
-                        Pacote de <b>{packageCount} consultas</b> (semanais) — cobrança única de{" "}
-                        <b className="tabular-nums">R$ {payableTotal.toFixed(2)}</b>. Todas ficam garantidas ao pagar.
-                      </div>
-                    </div>
-                  )}
-                </div>
-                )}
+                {/* Só consultas avulsas — sem agendamento recorrente/pacote. */}
 
                 <Button
                   className="w-full h-14 rounded-xl bg-gradient-to-r from-primary via-primary to-secondary text-primary-foreground text-base font-bold shadow-xl shadow-primary/20 hover:shadow-2xl transition-shadow active:scale-[0.98]"
@@ -1339,16 +1289,13 @@ const BookAppointment = () => {
                     <Lock className="w-3 h-3 mr-2" /> Checkout Seguro
                   </Badge>
                   <h3 className="text-3xl font-black tracking-tight mb-2">Finalizar Agendamento</h3>
-                  {!isPackage && totalPrice < fullPrice && (
+                  {totalPrice < fullPrice && (
                     <span className="text-sm font-medium line-through opacity-60">R$ {fullPrice.toFixed(2)}</span>
                   )}
                   <div className="flex items-baseline gap-1">
                     <span className="text-lg opacity-80 font-medium">R$</span>
-                    <span className="text-5xl font-black">{payableTotal.toFixed(2)}</span>
+                    <span className="text-5xl font-black">{totalPrice.toFixed(2)}</span>
                   </div>
-                  {isPackage && (
-                    <span className="text-xs opacity-90 mt-1">Pacote de {packageCount} consultas semanais</span>
-                  )}
                   <div className="mt-6 flex items-center gap-2 text-sm opacity-90 font-medium bg-black/10 px-4 py-2 rounded-2xl">
                     <CalendarDays className="w-4 h-4" />
                     {selectedDate && format(selectedDate, "dd 'de' MMMM", { locale: ptBR })} às {selectedTime}
