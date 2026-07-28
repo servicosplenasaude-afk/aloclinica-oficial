@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Clock, Zap, Phone, RefreshCw, AlertTriangle, QrCode, CreditCard, FileBarChart, Lock, Copy, CheckCircle2, Shield, MapPin, Ambulance, ChevronRight, Building2, Navigation, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { toastError } from "@/lib/errorMessages";
 import { motion, AnimatePresence } from "framer-motion";
 import { notifyDoctorsNewQueueEntry } from "@/lib/notifications-queue";
 import { logError } from "@/lib/logger";
@@ -319,7 +320,7 @@ const UrgentCareQueue = () => {
           payload.payment_method_id = token.payment_method_id ?? detectCardBrand(cardNumber);
           payload.installments = 1;
         } catch (e) {
-          toast.error("Erro no cartão", { description: e instanceof Error ? e.message : String(e) });
+          toastError(toast, e, "pagamento");
           await db.from("on_demand_queue").delete().eq("id", queueEntry.id); setProcessing(false); return;
         }
       }

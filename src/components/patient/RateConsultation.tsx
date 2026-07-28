@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp, ThumbsDown, Stethoscope, Clock, MessageSquare } from "lucide-react";
+import { Star, ThumbsUp, ThumbsDown, Stethoscope, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -24,8 +24,6 @@ const RateConsultation = ({ appointmentId, doctorId, onClose }: RateConsultation
   const [nps, setNps] = useState<number | null>(null);
   const [ease, setEase] = useState(0);
   const [quality, setQuality] = useState(0);
-  const [punctuality, setPunctuality] = useState(0);
-  const [videoQuality, setVideoQuality] = useState(0);
   const [recommend, setRecommend] = useState<boolean | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [comment, setComment] = useState("");
@@ -156,7 +154,7 @@ const RateConsultation = ({ appointmentId, doctorId, onClose }: RateConsultation
             <>
               {/* NPS */}
               <div>
-                <p className="text-sm font-medium text-foreground mb-2">De 0 a 10, o quanto recomendaria a AloClinica?</p>
+                <p className="text-sm font-medium text-foreground mb-2">De 0 a 10, o quanto recomendaria a AloClínica?</p>
                 <div className="grid grid-cols-6 sm:flex sm:flex-wrap gap-1.5 sm:gap-1">
                   {Array.from({ length: 11 }, (_, i) => (
                     <button
@@ -178,8 +176,6 @@ const RateConsultation = ({ appointmentId, doctorId, onClose }: RateConsultation
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <StarRow label="Qualidade" value={quality} onChange={setQuality} icon={Stethoscope} />
                 <StarRow label="Facilidade" value={ease} onChange={setEase} icon={MessageSquare} />
-                <StarRow label="Pontualidade" value={punctuality} onChange={setPunctuality} icon={Clock} />
-                <StarRow label="Videochamada" value={videoQuality} onChange={setVideoQuality} icon={Clock} />
               </div>
 
               <Button
@@ -270,7 +266,7 @@ const RateConsultation = ({ appointmentId, doctorId, onClose }: RateConsultation
 
               {/* Would use again */}
               <div>
-                <p className="text-sm font-medium text-foreground mb-2">Você usaria a AloClinica de novo?</p>
+                <p className="text-sm font-medium text-foreground mb-2">Você usaria a AloClínica de novo?</p>
                 <div className="flex gap-2">
                   {["Sim", "Talvez", "Não"].map(opt => (
                     <Button

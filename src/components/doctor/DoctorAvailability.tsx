@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { getDoctorNav } from "./doctorNav";
 import { Plus, Trash2, Clock, CalendarOff, Zap, CalendarDays, Copy, Power } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, parseISO, eachDayOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -38,6 +39,7 @@ interface Absence {
 
 const DoctorAvailability = () => {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [doctorProfileId, setDoctorProfileId] = useState<string | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
   const [absences, setAbsences] = useState<Absence[]>([]);
@@ -154,6 +156,13 @@ const DoctorAvailability = () => {
   };
 
   const removeSlot = async (id: string) => {
+    const ok = await confirm({
+      title: "Remover horário?",
+      description: "Esse horário deixará de ficar disponível para novos agendamentos.",
+      confirmLabel: "Remover",
+      destructive: true,
+    });
+    if (!ok) return;
     await db.from("availability_slots").delete().eq("id", id);
     if (doctorProfileId) fetchSlots(doctorProfileId);
   };
@@ -227,6 +236,13 @@ const DoctorAvailability = () => {
   };
 
   const removeAbsence = async (id: string) => {
+    const ok = await confirm({
+      title: "Remover folga?",
+      description: "Essa data voltará a ficar disponível para agendamentos.",
+      confirmLabel: "Remover",
+      destructive: true,
+    });
+    if (!ok) return;
     await db.from("doctor_absences").delete().eq("id", id);
     if (doctorProfileId) fetchAbsences(doctorProfileId);
   };

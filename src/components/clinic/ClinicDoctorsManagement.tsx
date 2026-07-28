@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 import { Users, Plus, Check, X, Search, Mail, MessageCircle, Percent } from "lucide-react";
 import {
@@ -34,7 +36,8 @@ interface ClinicDoctor {
 
 const ClinicDoctorsManagement = () => {
   const { user } = useAuth();
-  
+  const confirm = useConfirm();
+
   const [clinicProfileId, setClinicProfileId] = useState<string | null>(null);
   const [clinicName, setClinicName] = useState("");
   const [doctors, setDoctors] = useState<ClinicDoctor[]>([]);
@@ -172,6 +175,17 @@ const ClinicDoctorsManagement = () => {
     if (clinicProfileId) fetchDoctors(clinicProfileId);
   };
 
+  const deactivateDoctor = async (doc: ClinicDoctor) => {
+    const ok = await confirm({
+      title: "Desativar médico?",
+      description: `Dr(a). ${doc.first_name} ${doc.last_name} deixará de atender pela sua clínica.`,
+      confirmLabel: "Desativar",
+      destructive: true,
+    });
+    if (!ok) return;
+    await updateStatus(doc.affiliation_id, "inactive");
+  };
+
   const sendInviteEmail = async () => {
     if (!inviteEmail.trim()) return;
     try {
@@ -289,12 +303,17 @@ const ClinicDoctorsManagement = () => {
         </div>
 
         {loading ? (
-          <div className="shimmer-v2 h-5 rounded w-32 inline-block" aria-label="Carregando" />
+          <div className="space-y-3" aria-label="Carregando médicos">
+            {[0, 1, 2].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+          </div>
         ) : doctors.length === 0 ? (
           <Card className="border-border">
             <CardContent className="py-8 text-center">
               <Users className="w-10 h-10 mx-auto text-muted-foreground/30 mb-3" />
               <p className="text-muted-foreground">Nenhum médico vinculado ainda.</p>
+              <Button className="mt-4 bg-gradient-hero text-primary-foreground" onClick={() => setDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-1" /> Vincular médico
+              </Button>
             </CardContent>
           </Card>
         ) : (
@@ -328,12 +347,12 @@ const ClinicDoctorsManagement = () => {
                       <Percent className="w-4 h-4 text-primary" />
                     </Button>
                     {doc.status === "pending" && (
-                      <Button size="sm" variant="ghost" onClick={() => updateStatus(doc.affiliation_id, "active")}>
+                      <Button size="sm" variant="ghost" aria-label={`Aprovar Dr(a). ${doc.first_name} ${doc.last_name}`} title="Aprovar médico" onClick={() => updateStatus(doc.affiliation_id, "active")}>
                         <Check className="w-4 h-4 text-secondary" />
                       </Button>
                     )}
                     {doc.status === "active" && (
-                      <Button size="sm" variant="ghost" onClick={() => updateStatus(doc.affiliation_id, "inactive")}>
+                      <Button size="sm" variant="ghost" aria-label={`Desativar Dr(a). ${doc.first_name} ${doc.last_name}`} title="Desativar médico" onClick={() => deactivateDoctor(doc)}>
                         <X className="w-4 h-4 text-destructive" />
                       </Button>
                     )}

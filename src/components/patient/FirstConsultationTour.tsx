@@ -39,7 +39,7 @@ const STEPS: Step[] = [
     title: "2. Urgência? Atendimento já",
     body: "Botão vermelho \"Urgência\" coloca você em fila com médicos online em até 15 min.",
     icon: Lightning,
-    bullet: "Custo a partir de R$ 35,00.",
+    bullet: "Atendimento por demanda, com valor do turno exibido antes de confirmar.",
   },
   {
     title: "3. Conversa segura por vídeo",
@@ -57,6 +57,12 @@ export default function FirstConsultationTour() {
     if (!isFeatureEnabled("first_tour")) return;
     try {
       if (localStorage.getItem(STORAGE_KEY) === "true") return;
+      // Evita fadiga: se o onboarding acabou de ser concluído nesta sessão,
+      // não mostra o tour agora (aparece numa próxima visita).
+      if (localStorage.getItem("alo_onboarding_just_done") === "true") {
+        localStorage.removeItem("alo_onboarding_just_done");
+        return;
+      }
     } catch { return; }
     // Pequeno delay para não competir com loading do dashboard
     const t = setTimeout(() => setOpen(true), 600);

@@ -123,6 +123,9 @@ const PatientOnboarding = ({ onComplete }: PatientOnboardingProps) => {
 
    const markAsCompleted = async () => {
      localStorage.setItem(ONBOARDING_KEY, "true");
+     // Sinaliza ao FirstConsultationTour para não abrir logo após o onboarding
+     // (evita dois tours em sequência). O tour consome/remove esta flag.
+     localStorage.setItem("alo_onboarding_just_done", "true");
      localStorage.removeItem(KYC_PENDING_KEY);
      if (user) {
        await db.auth.updateUser({
@@ -679,7 +682,6 @@ const PatientOnboarding = ({ onComplete }: PatientOnboardingProps) => {
               <p className="text-[10px] font-bold uppercase tracking-wider text-primary-foreground/70">DESTAQUE DO MÊS</p>
               <p className="text-base font-bold mt-1">Check-up Preventivo</p>
               <p className="text-xs text-primary-foreground/70 mt-0.5">Incluso no seu plano AloClínica.</p>
-              <Button variant="secondary" size="sm" className="mt-3 rounded-xl">Saber Mais</Button>
             </div>
           </div>
         );
@@ -774,12 +776,12 @@ const PatientOnboarding = ({ onComplete }: PatientOnboardingProps) => {
       <div className="fixed bottom-0 left-0 right-0 p-5 bg-background border-t border-border/50 safe-bottom">
         <div className="flex gap-2 max-w-md mx-auto">
           {currentStep > 0 && (
-            <Button variant="outline" className="h-13 rounded-xl px-4" onClick={() => setCurrentStep(prev => prev - 1)}>
+            <Button variant="outline" className="h-12 rounded-xl px-4" onClick={() => setCurrentStep(prev => prev - 1)}>
               <ArrowLeft className="w-4 h-4" />
             </Button>
           )}
           <Button
-            className="flex-1 h-13 rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-lg shadow-primary/20 disabled:opacity-40"
+            className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-bold text-base shadow-lg shadow-primary/20 disabled:opacity-40"
             onClick={handleNext}
             disabled={saving || (step.id === "kyc" && !kycCompleted)}
           >

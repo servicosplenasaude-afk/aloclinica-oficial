@@ -1,5 +1,5 @@
 import { ReactNode, useState, useMemo, useEffect, useRef, isValidElement, cloneElement } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,8 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
    SignOut, User, GearSix, List, MagnifyingGlass, ShieldCheck as ShieldCheckIcon,
-   CaretDown, DownloadSimple, X as XIcon, DeviceMobile, SidebarSimple, ArrowLineLeft,
-    House, Bell, ChatCircleText, UserCircle, Timer, VideoCamera, CalendarDots, Users,
+   CaretDown, SidebarSimple, ArrowLineLeft,
+    House, Bell, ChatCircleText, UserCircle, Timer, VideoCamera, CalendarDots, Lightning, Stethoscope,
 } from "@phosphor-icons/react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -36,10 +36,6 @@ interface NavItem {
 interface DashboardLayoutProps {
   children: ReactNode; title: string;
   nav?: NavItem[]; role?: string; loading?: boolean;
-}
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 // ── Service Identity ──
@@ -116,83 +112,6 @@ const ROLE_ACTIVE_BG: Record<string, string> = {
   ai:"bg-[hsl(210,85%,48%,0.12)]",
 };
 
-
-// ── PWA Banner ────────────────────────────────────────────────────────────────
-const PWABanner = ({ role }: { role: string }) => {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [show, setShow] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [dismissed, setDismissed] = useLocalStorage<boolean>("pwa-dismissed", false);
-  const [dismissedUntil, setDismissedUntil] = useLocalStorage<number>("pwa-dismissed-until", 0);
-
-  useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
-    if (dismissed && Date.now() < dismissedUntil) return;
-    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !("MSStream" in window);
-    setIsIOS(ios);
-    if (ios) { const t = setTimeout(() => setShow(true), 4000); return () => clearTimeout(t); }
-    const h = (e: Event) => { e.preventDefault(); setDeferredPrompt(e as BeforeInstallPromptEvent); setTimeout(() => setShow(true), 3000); };
-    window.addEventListener("beforeinstallprompt", h);
-    return () => window.removeEventListener("beforeinstallprompt", h);
-  }, [dismissed, dismissedUntil]);
-
-  const install = async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === "accepted") { setDismissed(true); setDismissedUntil(Date.now() + 365 * 86400000); }
-    setShow(false); setDeferredPrompt(null);
-  };
-  const dismiss = () => { setShow(false); setDismissed(true); setDismissedUntil(Date.now() + 7 * 86400000); };
-  const grad = ROLE_GRADIENT[role] ?? "from-blue-500 to-cyan-500";
-
-  return (
-    <AnimatePresence>
-      {show && (
-        <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.94 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 24, scale: 0.96 }}
-          transition={{ type: "spring", stiffness: 360, damping: 26 }}
-          className="fixed z-[60] bottom-[80px] left-3 right-3 md:hidden"
-          role="dialog" aria-label="Instalar AloClínica"
-        >
-          <div className="relative rounded-2xl overflow-hidden"
-            style={{ boxShadow: "0 24px 48px -8px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.06)" }}>
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-transparent to-secondary/15 pointer-events-none" />
-            <div className="relative bg-card/96 backdrop-blur-2xl m-[1px] rounded-[15px] p-4">
-              <div className="flex items-center gap-3">
-                <div className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${grad} flex items-center justify-center shrink-0 shadow-lg`}>
-                  <DeviceMobile className="w-5 h-5 text-white" aria-hidden="true" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground">Instalar AloClínica</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {isIOS ? "Toque ⎙ → Adicionar à Tela Inicial" : "App nativo · Offline · Notificações"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {!isIOS && (
-                    <Button size="sm" onClick={install}
-                      className="h-8 px-3 rounded-xl text-xs font-bold gap-1.5 bg-gradient-to-r from-primary to-secondary text-white border-0 shadow-md">
-                      <DownloadSimple className="w-3.5 h-3.5" aria-hidden="true" />
-                      Instalar
-                    </Button>
-                  )}
-                  <button onClick={dismiss}
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted/60 transition-colors"
-                    aria-label="Dispensar">
-                    <XIcon className="w-3.5 h-3.5" aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLayoutProps) => {
@@ -273,6 +192,12 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
     if (role === "doctor") {
       items.push(
         {
+          label: "Plantão",
+          href: "/dashboard/doctor/on-duty?role=doctor",
+          icon: <Lightning size={22} weight={currentPath.includes("on-duty") ? "fill" : "regular"} />,
+          active: currentPath.includes("on-duty")
+        },
+        {
           label: "Agenda",
           href: "/dashboard/doctor/calendar?role=doctor",
           icon: <CalendarDots size={22} weight={currentPath.includes("calendar") ? "fill" : "regular"} />,
@@ -286,14 +211,38 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
           badge: pendingCount > 0 ? pendingCount : undefined,
         },
         {
-          label: "Pacientes",
-          href: "/dashboard/patients?role=doctor",
-          icon: <Users size={22} weight={currentPath.includes("patients") ? "fill" : "regular"} />,
-          active: currentPath.includes("patients")
+          label: "Perfil",
+          href: "/dashboard/profile?role=doctor",
+          icon: <UserCircle size={22} weight={currentPath.includes("profile") ? "fill" : "regular"} />,
+          active: currentPath.includes("profile")
+        }
+      );
+      return items;
+    }
+
+    if (role === "clinic") {
+      items.push(
+        {
+          label: "Agenda",
+          href: "/dashboard/clinic/schedules?role=clinic",
+          icon: <CalendarDots size={22} weight={currentPath.includes("schedules") ? "fill" : "regular"} />,
+          active: currentPath.includes("schedules")
+        },
+        {
+          label: "Médicos",
+          href: "/dashboard/clinic/doctors?role=clinic",
+          icon: <Stethoscope size={22} weight={currentPath.includes("doctors") ? "fill" : "regular"} />,
+          active: currentPath.includes("doctors")
+        },
+        {
+          label: "Sala",
+          href: "/dashboard/clinic/waiting-room?role=clinic",
+          icon: <Timer size={22} weight={currentPath.includes("waiting-room") ? "fill" : "regular"} />,
+          active: currentPath.includes("waiting-room")
         },
         {
           label: "Perfil",
-          href: "/dashboard/profile?role=doctor",
+          href: "/dashboard/profile?role=clinic",
           icon: <UserCircle size={22} weight={currentPath.includes("profile") ? "fill" : "regular"} />,
           active: currentPath.includes("profile")
         }
@@ -771,7 +720,6 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
       </div>
 
       <GlobalCommand role={role} />
-      <PWABanner role={role} />
       <FaqChatWidget />
 
        {/* ═══ Mobile bottom nav — Premium Floating TabBar ═══ */}
@@ -797,7 +745,7 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
                       aria-label={item.label}
                       aria-current={item.active ? "page" : undefined}
                       className={`relative flex flex-col items-center justify-center flex-1 h-full select-none transition-all duration-300 ${
-                        item.active ? activeColor : "text-muted-foreground/30 hover:text-muted-foreground/60"
+                        item.active ? activeColor : "text-muted-foreground/70 hover:text-foreground"
                       }`}
                     >
                      {/* Active Glow Effect */}
@@ -834,7 +782,7 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
  
                        {/* Label */}
                        <span className={`text-[10px] mt-1.5 transition-all duration-300 ${
-                         item.active ? "font-black opacity-100 tracking-tight" : "font-medium opacity-0 -translate-y-1"
+                         item.active ? "font-black opacity-100 tracking-tight" : "font-medium opacity-100"
                        }`}>
                          {item.label}
                        </span>

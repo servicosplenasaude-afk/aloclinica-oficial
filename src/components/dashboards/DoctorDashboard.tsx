@@ -26,7 +26,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import DoctorOnboarding from "@/components/doctor/DoctorOnboarding";
-import OnboardingProgress from "@/components/doctor/OnboardingProgress";
 import CrmApprovalTimeline from "@/components/doctor/CrmApprovalTimeline";
 import { getDoctorNav } from "@/components/doctor/doctorNav";
 import { useAuth } from "@/contexts/AuthContext";
@@ -278,8 +277,12 @@ const DoctorDashboard = () => {
 
   return (
     <DashboardLayout title="Médico" nav={getDoctorNav("home")} role="doctor">
-      {!loading && !data?.crm && <DoctorOnboarding />}
-      {!loading && data?.crm && <OnboardingProgress />}
+      {/* Mantém a orientação rica (DoctorOnboarding) por todo o onboarding — não
+          apenas até o CRM ser preenchido. Ele calcula o próprio progresso e se
+          auto-oculta ao atingir 100% (mostrando o card de "Perfil completo"),
+          então o médico não perde a orientação enquanto ainda faltam agenda,
+          preço, câmera, KYC, etc. */}
+      {!loading && <DoctorOnboarding />}
       {!loading && data?.crm && data?.approval && !data.approval.is_approved && (
         <div className="mb-5">
           <CrmApprovalTimeline doctor={data.approval} />

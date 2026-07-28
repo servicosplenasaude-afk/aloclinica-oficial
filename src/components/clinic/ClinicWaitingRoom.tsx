@@ -11,12 +11,14 @@ import { format, differenceInMinutes } from "date-fns";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { notify } from "@/lib/notifications";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { getClinicNav } from "./clinicNav";
 
 const fadeUp = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } } };
 
 const ClinicWaitingRoom = () => {
   const { user } = useAuth();
+  const confirm = useConfirm();
   const [waiting, setWaiting] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<Map<string, string>>(new Map());
   const [patients, setPatients] = useState<Map<string, string>>(new Map());
@@ -105,6 +107,13 @@ const ClinicWaitingRoom = () => {
   };
 
   const markNoShow = async (appt: any) => {
+    const ok = await confirm({
+      title: "Marcar falta?",
+      description: `${patients.get(appt.patient_id) ?? "O paciente"} será marcado como ausente (no-show) e sairá da sala de espera.`,
+      confirmLabel: "Marcar falta",
+      destructive: true,
+    });
+    if (!ok) return;
     setActing(appt.id);
     const { error } = await db.from("appointments").update({ status: "no_show" }).eq("id", appt.id).in("doctor_id", doctorIds);
     setActing(null);

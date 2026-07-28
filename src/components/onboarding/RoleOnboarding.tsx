@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Building2, Users, Calendar, Pill, FlaskConical, MessageCircle, Inbox,
+  Building2, Users, Pill, FlaskConical, MessageCircle, Inbox,
   UserCog, ShieldCheck, CheckCircle2, ChevronRight, ArrowRight, Trophy, Sparkles,
 } from "lucide-react";
 import { db } from "@/integrations/supabase/untyped";
@@ -42,16 +42,12 @@ const CONFIG: Record<Role, { title: string; emoji: string; steps: Step[]; loader
       { id: "cnpj", label: "Cadastrar CNPJ", description: "Identificação fiscal da clínica", icon: Building2, path: "/dashboard/profile?role=clinic", check: (d) => !!d.clinic?.cnpj },
       { id: "address", label: "Adicionar endereço", description: "Endereço completo e telefone", icon: Building2, path: "/dashboard/profile?role=clinic", check: (d) => !!d.clinic?.address && !!d.clinic?.phone },
       { id: "doctors", label: "Vincular primeiro médico", description: "Adicione médicos à clínica", icon: Users, path: "/dashboard/clinic/doctors?role=clinic", check: (d) => (d.doctorCount ?? 0) > 0 },
-      { id: "schedule", label: "Configurar horários", description: "Pelo menos 1 horário ativo", icon: Calendar, path: "/dashboard/clinic/schedules?role=clinic", check: (d) => (d.slotCount ?? 0) > 0 },
     ],
     loader: async (userId) => {
       const { data: clinic } = await db.from("clinic_profiles").select("id, cnpj, address, phone").eq("user_id", userId).single();
-      if (!clinic) return { clinic: null, doctorCount: 0, slotCount: 0 };
-      const [docRes, slotRes] = await Promise.all([
-        db.from("clinic_affiliations").select("id", { count: "exact", head: true }).eq("clinic_id", clinic.id).eq("status", "active"),
-        db.from("availability_slots").select("id", { count: "exact", head: true }).eq("clinic_id", clinic.id),
-      ]);
-      return { clinic, doctorCount: docRes.count ?? 0, slotCount: slotRes.count ?? 0 };
+      if (!clinic) return { clinic: null, doctorCount: 0 };
+      const { count } = await db.from("clinic_affiliations").select("id", { count: "exact", head: true }).eq("clinic_id", clinic.id).eq("status", "active");
+      return { clinic, doctorCount: count ?? 0 };
     },
   },
   support: {

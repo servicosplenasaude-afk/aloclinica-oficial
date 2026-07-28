@@ -39,7 +39,6 @@ const ClinicDashboard = () => {
   const [clinicProfile, setClinicProfile] = useState<{ id: string; name: string; cnpj?: string | null; address?: string | null; phone?: string | null } | null>(null);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
-  const [totalSlots, setTotalSlots] = useState(0);
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState(false);
 
@@ -77,28 +76,15 @@ const ClinicDashboard = () => {
     const doctorIds = (affiliations ?? []).map((a: { doctor_id: string }) => a.doctor_id);
     if (doctorIds.length > 0) {
       // Limit 2000 — protege contra clínicas com milhares de consultas em 6m
+      // price_at_booking = valor efetivamente cobrado na consulta (mesma fonte de
+      // ClinicFinance/ClinicReports); não usamos doctor_profiles.price (preço atual).
       const { data: appts } = await db.from("appointments")
-        .select("*, doctor_profiles(price)")
+        .select("*")
         .in("doctor_id", doctorIds)
         .gte("scheduled_at", subMonths(new Date(), 6).toISOString())
         .order("scheduled_at", { ascending: false })
         .limit(2000);
       setAppointments(appts ?? []);
-
-      // Calculate total slots from availability_slots table
-      const monthStart = startOfMonth(new Date());
-      const { count: slotCount, error: slotsError } = await db
-        .from("availability_slots")
-        .select("id", { count: "exact", head: true })
-        .in("doctor_id", doctorIds)
-        .gte("date", monthStart.toISOString());
-
-      // Ocupação real = consultas / vagas configuradas. Sem vagas cadastradas,
-      // não inventamos denominador (antes: doctorIds×20 fabricado, pois head:true
-      // retorna data=null e o slots.length caía sempre no fallback).
-      setTotalSlots(!slotsError ? (slotCount ?? 0) : 0);
-    } else {
-      setTotalSlots(0);
     }
     setLoading(false);
   };
@@ -107,9 +93,8 @@ const ClinicDashboard = () => {
   const monthStart = startOfMonth(now);
   const thisMonthAppts = appointments.filter(a => new Date(a.scheduled_at) >= monthStart);
   const completed = thisMonthAppts.filter(a => a.status === "completed");
-  const revenue = completed.reduce((sum, a) => sum + (a.doctor_profiles?.price ?? 0), 0);
+  const revenue = completed.reduce((sum, a) => sum + Number(a.price_at_booking ?? 0), 0);
   const activeDoctors = doctors.filter(d => d.status === "active").length;
-  const occupancy = totalSlots > 0 ? Math.round((thisMonthAppts.length / totalSlots) * 100) : 0;
   const upcomingAppts = appointments.filter(a => new Date(a.scheduled_at) >= now && a.status !== "cancelled").slice(0, 5);
 
   const monthlyData = Array.from({ length: 6 }, (_, i) => {
@@ -117,7 +102,7 @@ const ClinicDashboard = () => {
     const ms = startOfMonth(month);
     const me = startOfMonth(subMonths(now, 4 - i));
     const ma = appointments.filter(a => { const d = new Date(a.scheduled_at); return d >= ms && (i < 5 ? d < me : true); });
-    return { month: format(month, "MMM", { locale: ptBR }), consultas: ma.length, receita: ma.filter(a => a.status === "completed").reduce((s, a) => s + (a.doctor_profiles?.price ?? 0), 0) };
+    return { month: format(month, "MMM", { locale: ptBR }), consultas: ma.length, receita: ma.filter(a => a.status === "completed").reduce((s, a) => s + Number(a.price_at_booking ?? 0), 0) };
   });
 
   const doctorPerformance = doctors.filter(d => d.status === "active").map(d => {
@@ -125,7 +110,7 @@ const ClinicDashboard = () => {
     const name = profile ? `Dr(a). ${profile.first_name}` : "Médico";
     const docAppts = appointments.filter(a => a.doctor_id === d.doctor_id);
     const docCompleted = docAppts.filter(a => a.status === "completed");
-    const receita = docCompleted.reduce((s, a) => s + (a.doctor_profiles?.price ?? 0), 0);
+    const receita = docCompleted.reduce((s, a) => s + Number(a.price_at_booking ?? 0), 0);
     return { name, consultas: docAppts.length, completadas: docCompleted.length, receita };
   }).sort((a, b) => b.consultas - a.consultas);
 
@@ -156,7 +141,6 @@ const ClinicDashboard = () => {
       `Médicos Ativos: ${activeDoctors}`,
       `Consultas do Mês: ${thisMonthAppts.length}`,
       `Receita do Mês: R$ ${revenue.toLocaleString("pt-BR")}`,
-      `Ocupação: ${occupancy}%`,
       `Consultas Concluídas: ${completed.length}`,
       `Ticket Médio: R$ ${completed.length > 0 ? Math.round(revenue / completed.length) : 0}`,
     ];
@@ -185,7 +169,6 @@ const ClinicDashboard = () => {
       ["Médicos Ativos", String(activeDoctors)],
       ["Consultas do Mês", String(thisMonthAppts.length)],
       ["Receita do Mês", `R$ ${revenue}`],
-      ["Ocupação", `${occupancy}%`],
       ["Concluídas", String(completed.length)],
       ["Ticket Médio", `R$ ${completed.length > 0 ? Math.round(revenue / completed.length) : 0}`],
     ];
@@ -219,7 +202,7 @@ const ClinicDashboard = () => {
             { label: "Médicos", value: activeDoctors },
             { label: "Consultas", value: thisMonthAppts.length },
             { label: "Receita", value: `R$${(revenue/1000).toFixed(1)}k` },
-            { label: "Ocupação", value: `${occupancy}%` },
+            { label: "Concluídas", value: completed.length },
           ]}
           loading={loading}
           onRefresh={undefined}
@@ -246,7 +229,7 @@ const ClinicDashboard = () => {
           { label: "Médicos ativos", value: activeDoctors, icon: "🩺", iconBg: "bg-indigo-50 dark:bg-indigo-950/30", valueClass: "text-indigo-700 dark:text-indigo-400", accentClass: "bg-indigo-500" },
           { label: "Receita do mês", value: `R$${(revenue / 1000).toFixed(1)}k`, icon: "💰", iconBg: "bg-emerald-50 dark:bg-emerald-950/30", valueClass: "text-emerald-700 dark:text-emerald-400", accentClass: "bg-emerald-500" },
           { label: "Consultas/mês", value: thisMonthAppts.length, icon: "📅", iconBg: "bg-blue-50 dark:bg-blue-950/30", valueClass: "text-[#1255C8] dark:text-blue-400", accentClass: "bg-blue-500" },
-          { label: "Taxa de ocupação", value: `${occupancy}%`, icon: "📊", iconBg: "bg-amber-50 dark:bg-amber-950/30", valueClass: "text-amber-600 dark:text-amber-400" },
+          { label: "Concluídas", value: completed.length, icon: "✅", iconBg: "bg-amber-50 dark:bg-amber-950/30", valueClass: "text-amber-600 dark:text-amber-400", accentClass: "bg-amber-500" },
         ]} />
 
         {/* Pingo Banner */}

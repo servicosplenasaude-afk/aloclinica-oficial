@@ -741,7 +741,7 @@ const BookAppointment = () => {
       }
     } catch (err: unknown) {
       logError("BookAppointment payment error", err);
-      toast.error("Erro", { description: err instanceof Error ? err.message : "Erro inesperado." });
+      toastError(toast, err, "pagamento");
     } finally {
       setProcessing(false);
     }
@@ -1316,8 +1316,9 @@ const BookAppointment = () => {
                 </div>
               </div>
 
-              <div className="app-glass-panel grid grid-cols-3 gap-3 rounded-[24px] p-1">
-                {(["pix", "card", "boleto"] as const).map((method) => {
+              {/* Boleto oculto na telemedicina: a vaga expira em 30 min e o boleto leva até 2 dias úteis para compensar. */}
+              <div className="app-glass-panel grid grid-cols-2 gap-3 rounded-[24px] p-1">
+                {(["pix", "card"] as const).map((method) => {
                   const Icon = method === "pix" ? QrCode : method === "card" ? CreditCard : FileBarChart;
                   const active = paymentMethod === method;
                   return (

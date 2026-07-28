@@ -106,7 +106,14 @@ const DoctorOnboarding = () => {
     fetchData();
   }, [user]);
 
-  if (!data || dismissed) return null;
+  if (dismissed) return null;
+  // Enquanto os dados carregam, reserva a altura aproximada do card para evitar
+  // que o conteúdo "salte" na tela quando o fetch termina (layout shift).
+  if (!data) return (
+    <div className="mb-5">
+      <Skeleton className="h-[280px] w-full rounded-xl" />
+    </div>
+  );
 
   const completedSteps = steps.filter(s => s.check(data));
   const pendingSteps = steps.filter(s => !s.check(data));
