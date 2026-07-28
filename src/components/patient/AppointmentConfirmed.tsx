@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { CheckCircle2, Calendar, Clock, Video, ArrowRight, Stethoscope, Download, Home, ListChecks, Loader2, Copy, Wifi, Mic, Camera, FileText, Receipt, RefreshCw, X, ShieldCheck, AlertTriangle, Info, BellRing, ChevronDown, Check, Mail, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
@@ -292,8 +293,14 @@ const AppointmentConfirmed = () => {
   if (loading) {
     return (
       <DashboardLayout title="Confirmação" nav={nav}>
-        <div className="flex items-center justify-center py-32">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="w-full max-w-xl mx-auto pb-24 md:pb-6" aria-label="Carregando confirmação">
+          <Skeleton className="h-64 w-full rounded-[30px]" />
+          <div className="mt-6 space-y-3">
+            <Skeleton className="h-5 w-2/3 rounded-lg" />
+            <Skeleton className="h-4 w-full rounded-lg" />
+            <Skeleton className="h-4 w-5/6 rounded-lg" />
+            <Skeleton className="h-11 w-full rounded-xl mt-4" />
+          </div>
         </div>
       </DashboardLayout>
     );

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Download, Sparkles, Loader2, ChevronDown, ChevronUp, Search, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -196,7 +197,23 @@ const MedicalHistory = () => {
         <h1 className="text-2xl font-bold text-foreground mb-1">Histórico Médico</h1>
         <p className="text-muted-foreground mb-6">Consultas realizadas, receitas e prontuários</p>
 
-        {loading ? <div className="shimmer-v2 h-20 rounded-2xl"/> :
+        {loading ? (
+          <div className="space-y-4" aria-label="Carregando histórico">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="rounded-lg border border-border p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-28" />
+                  </div>
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-full mb-2" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+            ))}
+          </div>
+        ) :
         appointments.length === 0 ? (
           <div className="text-center py-8 rounded-2xl border border-dashed border-border/40 bg-muted/10"><img src={mascotReading} alt="Pingo" className="w-20 h-20 object-contain mx-auto drop-shadow-md mb-3 select-none" loading="lazy" decoding="async" width={80} height={80} /><p className="text-[13px] font-semibold text-foreground mb-1">Nenhuma consulta realizada ainda</p><p className="text-[11px] text-muted-foreground">Seu histórico médico aparecerá aqui após sua primeira consulta</p></div>
         ) : (

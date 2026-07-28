@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, Zap, Phone, RefreshCw, AlertTriangle, QrCode, CreditCard, FileBarChart, Lock, Copy, CheckCircle2, Shield, MapPin, Ambulance, ChevronRight, Building2, Navigation, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { toastError } from "@/lib/errorMessages";
@@ -456,7 +457,18 @@ const UrgentCareQueue = () => {
         </div>
       )}
       <div className="w-full max-w-5xl mx-auto pb-24 md:pb-6">
-        {loading ? <div className="shimmer-v2 h-5 rounded w-32 inline-block" aria-label="Carregando" /> : myEntry ? (
+        {loading ? (
+          <div className="space-y-5" aria-label="Carregando fila">
+            <div className="rounded-[30px] border border-border p-6">
+              <Skeleton className="h-10 w-10 rounded-full mx-auto mb-3" />
+              <Skeleton className="h-5 w-40 mx-auto mb-3" />
+              <Skeleton className="h-12 w-24 mx-auto mb-2" />
+              <Skeleton className="h-4 w-28 mx-auto mb-5" />
+              <Skeleton className="h-2 w-full max-w-xs mx-auto mb-5 rounded-full" />
+              <Skeleton className="h-11 w-full rounded-full" />
+            </div>
+          </div>
+        ) : myEntry ? (
           /* ═══ IN QUEUE ═══ */
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
             {/* Queue position card - amber tinted */}
