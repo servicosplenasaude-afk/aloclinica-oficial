@@ -34,14 +34,18 @@ vi.mock("@/components/dashboards/DashboardLayout", () => ({
 
 vi.mock("@/components/doctor/doctorNav", () => ({ getDoctorNav: () => [] }));
 vi.mock("@/components/patient/patientNav", () => ({ getPatientNav: () => [] }));
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...p }: any) => <div {...p}>{children}</div>,
-    button: ({ children, ...p }: any) => <button {...p}>{children}</button>,
-    tr: ({ children, ...p }: any) => <tr {...p}>{children}</tr>,
-  },
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-}));
+vi.mock("framer-motion", () => {
+  // Proxy: motion.<anyTag> (div, button, tr, section, h1, ...) vira wrapper passthrough
+  const passthrough = (Tag: any) =>
+    function Wrapped({ children, ...p }: any) {
+      const { initial, animate, exit, transition, variants, whileHover, whileTap, whileInView, viewport, layout, layoutId, ...rest } = p;
+      return <Tag {...rest}>{children}</Tag>;
+    };
+  return {
+    motion: new Proxy({}, { get: (_t, tag: string) => passthrough(tag) }),
+    AnimatePresence: ({ children }: any) => <>{children}</>,
+  };
+});
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────

@@ -50,7 +50,8 @@ describe("Header", () => {
 describe("StatsSection", () => {
   it("renders stat labels", () => {
     render(<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><StatsSection /></BrowserRouter>);
-    expect(screen.getByText("Pacientes atendidos")).toBeInTheDocument();
-    expect(screen.getByText("Médicos especialistas")).toBeInTheDocument();
+    // Rótulos honestos (conteúdo CFM) definidos em StatsSection.fallbackStats
+    expect(screen.getByText("Atendimento")).toBeInTheDocument();
+    expect(screen.getByText("Médicos verificados")).toBeInTheDocument();
   });
 });

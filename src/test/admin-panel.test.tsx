@@ -65,8 +65,8 @@ vi.mock("recharts", () => ({
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const mockDoctors = [
-  { id: "d1", user_id: "u1", crm: "111111", crm_state: "SP", is_approved: true, created_at: new Date().toISOString(), consultation_price: 200 },
-  { id: "d2", user_id: "u2", crm: "222222", crm_state: "RJ", is_approved: false, created_at: new Date().toISOString(), consultation_price: 180 },
+  { id: "d1", user_id: "u1", crm: "111111", crm_state: "SP", is_approved: true, created_at: new Date().toISOString(), price: 200 },
+  { id: "d2", user_id: "u2", crm: "222222", crm_state: "RJ", is_approved: false, created_at: new Date().toISOString(), price: 180 },
 ];
 
 const mockPatients = [
@@ -110,7 +110,14 @@ describe("AdminDoctors - gerenciamento de médicos", () => {
           }),
         };
       }
-      return { select: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) };
+      if (table === "doctor_specialties") {
+        // fetchDoctors também consulta doctor_specialties com .select().in()
+        return { select: () => ({ in: () => Promise.resolve({ data: [], error: null }) }) };
+      }
+      return { select: () => ({
+        order: () => Promise.resolve({ data: [], error: null }),
+        in: () => Promise.resolve({ data: [], error: null }),
+      }) };
     });
   });
 

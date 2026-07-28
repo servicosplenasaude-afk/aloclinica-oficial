@@ -126,10 +126,12 @@ describe("PaymentHistory", () => {
       </BrowserRouter>
     );
     await waitFor(() => {
-      // Should render the active status badge
-      const ativos = screen.getAllByText(/ativa|plano ativo/i);
-      expect(ativos.length).toBeGreaterThan(0);
+      // A assinatura ativa é exibida no card "Plano atual" pelo nome do plano
+      // (em vez do estado vazio "Sem plano ativo"); o status é um ícone, não texto.
+      expect(screen.getAllByText("Plano Saúde Plus").length).toBeGreaterThan(0);
     });
+    // O selo de intervalo "Mensal" só renderiza quando há assinatura ativa
+    expect(screen.getByText("Mensal")).toBeInTheDocument();
   });
 
   it("busca assinaturas e planos quando o usuário está autenticado", async () => {

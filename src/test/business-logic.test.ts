@@ -9,7 +9,8 @@ describe('Financial calculations', () => {
     const price = 89;
     const doctorEarnings = price * (DEFAULT_DOCTOR_PERCENT / 100);
     const platformFee = price * (PLATFORM_FEE_PERCENT / 100);
-    expect(doctorEarnings).toBe(62.3);
+    // Repasse 50/50: médico recebe 50% de R$ 89 = R$ 44,50
+    expect(doctorEarnings).toBe(44.5);
     expect(platformFee).toBe(8.9);
     expect(doctorEarnings + platformFee).toBeLessThan(price);
   });

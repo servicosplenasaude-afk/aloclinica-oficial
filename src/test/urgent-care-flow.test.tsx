@@ -37,6 +37,21 @@ describe("UrgentCareQueue", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
+    // Chain thenable: suporta .eq().eq().order().order().maybeSingle()/single()
+    // (o cliente supabase real encadeia vários .eq()/.order() — ex.: useSavedCards.list)
+    const makeChain = (data: any): any => {
+      const resolved = Promise.resolve({ data, error: null });
+      return Object.assign(resolved, {
+        eq: () => makeChain(data),
+        in: () => makeChain(data),
+        order: () => makeChain(data),
+        limit: () => makeChain(data),
+        range: () => makeChain(data),
+        single: () => Promise.resolve({ data: Array.isArray(data) ? (data[0] ?? null) : data, error: null }),
+        maybeSingle: () => Promise.resolve({ data: Array.isArray(data) ? (data[0] ?? null) : data, error: null }),
+      });
+    };
+
     // Default: no active entry, no discount
     mockFrom.mockImplementation((table: string) => {
       if (table === "discount_cards") {
@@ -60,7 +75,8 @@ describe("UrgentCareQueue", () => {
           insert: () => Promise.resolve({ error: null }),
         };
       }
-      return { select: () => ({ eq: () => ({ maybeSingle: () => Promise.resolve({ data: null }) }) }) };
+      // Fallback chainable (ex.: saved_cards faz .eq().eq().order().order())
+      return { select: () => makeChain([]), insert: () => Promise.resolve({ error: null }) };
     });
   });
 
