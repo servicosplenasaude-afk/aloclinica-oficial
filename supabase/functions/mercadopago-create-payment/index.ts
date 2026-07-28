@@ -249,6 +249,13 @@ Deno.serve(async (req) => {
         .from("appointments")
         .update({ payment_status: "approved", payment_confirmed_at: new Date().toISOString() } as any)
         .eq("id", apptId);
+    } else if (internalStatus === "approved" && reference_id.startsWith("package_")) {
+      // Pacote: aprova a 1ª consulta E todas as recorrentes ligadas a ela.
+      const firstId = reference_id.replace("package_", "");
+      await admin
+        .from("appointments")
+        .update({ payment_status: "approved", payment_confirmed_at: new Date().toISOString() } as any)
+        .or(`id.eq.${firstId},original_appointment_id.eq.${firstId}`);
     }
 
     // SECURITY (F1): consome o cupom de forma IDEMPOTENTE (uma vez por reference,
@@ -423,6 +430,38 @@ async function resolveServerAmount(admin: any, referenceId: string, callerId: st
     return requirePrice(final);
   }
 
+  if (prefix === "package") {
+    // Pacote de agendamento recorrente: a 1ª consulta (id = resourceId) + as
+    // recorrentes ligadas a ela (original_appointment_id = resourceId). Cobra N×preço
+    // do médico numa vez só; ao aprovar, TODAS ficam approved (evita o bug antigo de
+    // "cria N, cobra 1, cancela N-1"). Preço-base SEMPRE da fonte do médico.
+    const { data: first, error } = await admin
+      .from("appointments")
+      .select("patient_id, doctor_id")
+      .eq("id", resourceId)
+      .maybeSingle();
+    if (error || !first) throw new AmountError("Pacote não encontrado", 404);
+    requireOwner(first.patient_id);
+    const { count } = await admin
+      .from("appointments")
+      .select("id", { count: "exact", head: true })
+      .eq("patient_id", first.patient_id)
+      .or(`id.eq.${resourceId},original_appointment_id.eq.${resourceId}`)
+      .neq("status", "cancelled");
+    const n = Math.max(1, count ?? 1);
+    const { data: doc, error: docErr } = await admin
+      .from("doctor_profiles")
+      .select("price")
+      .eq("id", first.doctor_id)
+      .maybeSingle();
+    if (docErr || !doc) throw new AmountError("Médico não encontrado", 404);
+    const base = Number(doc.price);
+    // Pacotes são consultas de 1ª vez (sem desconto de retorno); cupom aplica ao total.
+    const pct = await resolveCouponPercent(admin, couponCode);
+    const final = Math.round(n * base * (1 - pct / 100) * 100) / 100;
+    return requirePrice(final);
+  }
+
   if (prefix === "queue") {
     const { data, error } = await admin
       .from("on_demand_queue")
@@ -492,6 +531,7 @@ function extractResourceId(reference: string): string {
 
 function extractResourceType(reference: string): string {
   if (reference.startsWith("appointment_")) return "appointment";
+  if (reference.startsWith("package_")) return "appointment";
   if (reference.startsWith("queue_")) return "urgent_queue";
   if (reference.startsWith("renewal_")) return "prescription_renewal";
   if (reference.startsWith("sub_")) return "subscription";

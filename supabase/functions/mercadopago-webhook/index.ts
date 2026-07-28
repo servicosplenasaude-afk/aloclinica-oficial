@@ -145,6 +145,32 @@ async function handlePayment(admin: any, paymentId: string) {
         .update({ payment_status: "refused" } as any)
         .eq("id", apptId);
     }
+  } else if (externalRef.startsWith("package_")) {
+    // Pacote recorrente: aprova a 1ª consulta + todas as recorrentes ligadas a ela.
+    const firstId = externalRef.replace("package_", "");
+    if (internalStatus === "approved") {
+      await admin
+        .from("appointments")
+        .update({ payment_status: "approved", payment_confirmed_at: now } as any)
+        .or(`id.eq.${firstId},original_appointment_id.eq.${firstId}`);
+      await admin.from("notifications").insert({
+        type: "payment",
+        title: "Pagamento confirmado",
+        message: "Suas consultas do pacote estão garantidas.",
+        link: `/dashboard/appointments?role=patient`,
+        user_id: await getUserIdFromAppointment(admin, firstId),
+      } as any);
+      try {
+        await admin.functions.invoke("appointment-confirmed", { body: { appointment_id: firstId } });
+      } catch (e) {
+        console.error("[mp-webhook] falha ao enviar recibo (pacote)", e);
+      }
+    } else if (internalStatus === "refused" || internalStatus === "cancelled") {
+      await admin
+        .from("appointments")
+        .update({ payment_status: "refused" } as any)
+        .or(`id.eq.${firstId},original_appointment_id.eq.${firstId}`);
+    }
   } else if (externalRef.startsWith("queue_")) {
     const qId = externalRef.replace("queue_", "");
     await admin

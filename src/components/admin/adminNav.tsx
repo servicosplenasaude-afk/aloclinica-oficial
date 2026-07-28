@@ -7,7 +7,7 @@ import {
     , TestTube, Handshake, Layout, Browser, Shield, Graph,
     Database, FileText, DeviceMobile,
     IdentificationCard, EnvelopeSimple, ShieldWarning,
-    Gauge, Funnel
+    Gauge, Funnel, ArrowsClockwise
  } from "@phosphor-icons/react";
 import { NavIcon } from "@/components/ui/nav-icon";
 
@@ -20,6 +20,7 @@ export const getAdminNav = (active: string) => [
    { label: "Centro de Controle", href: "/dashboard/admin/panel-center?role=admin", icon: <NavIcon icon={<SquaresFour size={16} weight="fill" />}    color="blue"   />, active: active === "overview" || active === "panel-center", group: "Visão Geral" },
    { label: "Monitor ao Vivo",  href: "/dashboard/admin/live?role=admin",         icon: <NavIcon icon={<VideoCamera size={16} weight="fill" />}    color="rose"   />, active: active === "live",     group: "Visão Geral" },
    { label: "Relatórios",      href: "/dashboard/admin/reports?role=admin",      icon: <NavIcon icon={<Graph size={16} weight="fill" />}          color="emerald" />, active: active === "reports",  group: "Visão Geral" },
+   { label: "Retenção",        href: "/dashboard/admin/retention?role=admin",    icon: <NavIcon icon={<ArrowsClockwise size={16} weight="fill" />} color="purple"  />, active: active === "retention", group: "Visão Geral" },
    { label: "NPS & Satisfação", href: "/dashboard/admin/nps?role=admin",         icon: <NavIcon icon={<Star size={16} weight="fill" />}           color="amber"   />, active: active === "nps",      group: "Visão Geral" },
    { label: "Capacidade & Demanda", href: "/dashboard/admin/capacity?role=admin", icon: <NavIcon icon={<Gauge size={16} weight="fill" />}        color="cyan"    />, active: active === "capacity", group: "Visão Geral" },
 
