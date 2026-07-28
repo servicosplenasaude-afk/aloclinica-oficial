@@ -35,8 +35,6 @@ import {
   type PaymentMethod,
   type DoctorInfo,
   STEPS,
-  RECURRENCE_OPTIONS,
-  RECURRENCE_WEEKS,
   KYC_PENDING_KEY,
 } from "./BookAppointment.types";
 import { usePixCountdown } from "@/hooks/usePixCountdown";
@@ -66,8 +64,6 @@ const BookAppointment = () => {
   const [dependents, setDependents] = useState<{ id: string; name: string; relationship: string; user_id?: string | null; source?: "legacy" | "family" }[]>([]);
   const [bookingFor, setBookingFor] = useState<string>("self");
   const [feriados, setFeriados] = useState<Date[]>([]);
-  const [recurrence, setRecurrence] = useState("none");
-  const [recurrenceCount, setRecurrenceCount] = useState(4);
 
   // Return eligibility — retorno com 50% de desconto (consulta concluída dentro do prazo de retorno).
   // returnOffered: paciente é elegível (existe consulta concluída no prazo) → controla a OFERTA na UI.
@@ -510,14 +506,8 @@ const BookAppointment = () => {
           : `Consulta para dependente: ${dependentInfo.name} (${dependentInfo.relationship})`)
       : null;
 
-    // Build list of dates (single or recurring)
+    // Só consulta avulsa (sem recorrência/pacote).
     const datesToBook: Date[] = [scheduledAt];
-    if (recurrence !== "none") {
-      const weeksGap = RECURRENCE_WEEKS[recurrence] ?? 1;
-      for (let i = 1; i < recurrenceCount; i++) {
-        datesToBook.push(addDays(scheduledAt, weeksGap * 7 * i));
-      }
-    }
 
     // Revalida disponibilidade de todos os slots no momento da confirmação (anti double-booking)
     {

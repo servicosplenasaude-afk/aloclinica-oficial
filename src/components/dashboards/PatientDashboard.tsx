@@ -244,6 +244,7 @@ const PatientDashboard = () => {
           returnAppts={returnAppts}
           favoriteDoctors={favoriteDoctors}
           healthMetrics={healthMetrics}
+          healthTip={todayTip}
           navigate={navigate}
         />
       </div>
@@ -251,7 +252,7 @@ const PatientDashboard = () => {
   );
 };
 
-const PatientHomeModern = ({ firstName, stats, nextAppt, timelineEvents, returnAppts = [], favoriteDoctors = [], healthMetrics = [], navigate }: any) => {
+const PatientHomeModern = ({ firstName, stats, nextAppt, timelineEvents, returnAppts = [], favoriteDoctors = [], healthMetrics = [], healthTip, navigate }: any) => {
   const scheduledAt = nextAppt ? new Date(nextAppt.scheduled_at) : null;
   const activities = (timelineEvents ?? []).slice(0, 3);
   const PAID_STATUSES = ["approved", "confirmed", "received", "paid"];
@@ -361,6 +362,25 @@ const PatientHomeModern = ({ firstName, stats, nextAppt, timelineEvents, returnA
             <ArrowRight size={14} weight="bold" />
           </span>
         </motion.button>
+      )}
+
+      {healthTip && (
+        <section className="flex items-center gap-4 rounded-[28px] border border-primary/15 bg-primary/[0.04] p-4 shadow-sm md:p-5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-2xl" aria-hidden="true">
+            {healthTip.emoji}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary/80">Dica de saúde do dia</p>
+            <p className="mt-0.5 text-sm font-bold text-foreground">{healthTip.title}</p>
+            <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{healthTip.body}</p>
+          </div>
+          {healthTip.metric && (
+            <div className="hidden shrink-0 text-right sm:block">
+              <p className="font-[Manrope] text-lg font-black text-primary tabular-nums">{healthTip.metric}</p>
+              <p className="text-[10px] text-muted-foreground">{healthTip.metricLabel}</p>
+            </div>
+          )}
+        </section>
       )}
 
       <div className="grid gap-4 lg:grid-cols-[1.05fr_.95fr]">
