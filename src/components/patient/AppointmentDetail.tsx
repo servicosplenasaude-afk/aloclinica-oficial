@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { toastError } from "@/lib/errorMessages";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import CancelRescheduleDialog from "./CancelRescheduleDialog";
+import NfseLink from "./NfseLink";
 
 interface AppointmentData {
   id: string;
@@ -414,6 +415,9 @@ const AppointmentDetail = () => {
             </div>
           </motion.div>
         )}
+
+        {/* Nota fiscal da consulta (NFS-e) — visível apenas quando autorizada */}
+        <NfseLink appointmentId={appt.id} className="mb-3" />
 
         {/* Actions */}
         {appt.status === "scheduled" && (

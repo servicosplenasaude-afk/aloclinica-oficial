@@ -14,6 +14,7 @@ import QRCode from "qrcode";
 import { QRCodeSVG } from "qrcode.react";
 import { drawSafeText, safeQrBox, clampWidth } from "@/lib/pdf-layout";
 import { applyBrandDefaults, drawBrandHeader, drawBrandFooter } from "@/lib/pdf-brand";
+import NfseLink from "./NfseLink";
 
 const nav = getPatientNav("appointments");
 
@@ -390,6 +391,9 @@ const AppointmentReceipt = () => {
               <span className="text-sm font-semibold text-muted-foreground">Valor total</span>
               <span className="text-2xl font-black text-foreground tabular-nums">{formatBRL(data.price_at_booking)}</span>
             </div>
+
+            {/* Nota fiscal (NFS-e) — aparece apenas quando autorizada */}
+            <NfseLink appointmentId={data.id} className="mt-6 print:hidden" />
 
             <div className="mt-8 flex items-start gap-4">
               <div className="flex-1">

@@ -11,6 +11,7 @@ import { ptBR } from "date-fns/locale";
 import { getPatientNav } from "./patientNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
+import NfseLink from "./NfseLink";
 import mascotWave from "@/assets/mascot-wave.png";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -41,9 +42,32 @@ const PaymentHistory = () => {
   const navigate = useNavigate();
   const [subs, setSubs] = useState<SubscriptionEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [nfseApptIds, setNfseApptIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (user) fetchPayments();
+  }, [user]);
+
+  // Notas fiscais (NFS-e) das consultas do paciente — escopado por RLS (patient_id = auth.uid()).
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    const fetchNfse = async () => {
+      try {
+        const { data } = await db
+          .from("nfse_invoices")
+          .select("resource_id, status")
+          .eq("resource_type", "appointment")
+          .in("status", ["autorizado", "processando"]);
+        if (!active) return;
+        const ids = [...new Set(((data as any[]) ?? []).map((r) => r.resource_id).filter(Boolean))];
+        setNfseApptIds(ids as string[]);
+      } catch {
+        if (active) setNfseApptIds([]);
+      }
+    };
+    fetchNfse();
+    return () => { active = false; };
   }, [user]);
 
   const fetchPayments = async () => {
@@ -222,6 +246,20 @@ const PaymentHistory = () => {
                 <Button className="relative mt-5 h-11 rounded-full bg-[hsl(var(--p-primary))] px-5 font-bold text-white shadow-[var(--p-shadow-btn)]" onClick={() => navigate("/dashboard/plans")}>
                   Ver planos disponiveis
                 </Button>
+              </div>
+            )}
+
+            {nfseApptIds.length > 0 && (
+              <div className="rounded-[30px] border border-border/40 bg-card/95 p-4 shadow-sm md:p-5">
+                <div className="mb-4">
+                  <h2 className="font-[Manrope] text-lg font-black text-foreground">Notas fiscais</h2>
+                  <p className="text-xs text-muted-foreground">Baixe a NFS-e das suas consultas.</p>
+                </div>
+                <div className="space-y-2">
+                  {nfseApptIds.map((id) => (
+                    <NfseLink key={id} appointmentId={id} />
+                  ))}
+                </div>
               </div>
             )}
 

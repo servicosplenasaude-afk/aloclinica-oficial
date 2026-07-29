@@ -101,6 +101,7 @@ const AdminContractNew = lazy(() => import("@/components/admin/AdminContractNew"
 const AdminInviteCodes = lazy(() => import("@/components/admin/AdminInviteCodes"));
 const AdminReports = lazy(() => import("@/components/admin/AdminReports"));
 const AdminRetention = lazy(() => import("@/components/admin/AdminRetention"));
+const AdminNFSe = lazy(() => import("@/components/admin/AdminNFSe"));
 const AdminUsers = lazy(() => import("@/components/admin/AdminUsers"));
 const AdminApprovals = lazy(() => import("@/components/admin/AdminApprovals"));
 const AdminKycReview = lazy(() => import("@/components/admin/AdminKycReview"));
@@ -394,6 +395,7 @@ const Dashboard = () => {
       <Route path="admin/invite-codes" element={<RoleGuard allowed={[]} roles={roles}><AdminInviteCodes /></RoleGuard>} />
       <Route path="admin/reports" element={<RoleGuard allowed={[]} roles={roles}><AdminReports /></RoleGuard>} />
       <Route path="admin/retention" element={<RoleGuard allowed={[]} roles={roles}><AdminRetention /></RoleGuard>} />
+      <Route path="admin/nfse" element={<RoleGuard allowed={[]} roles={roles}><AdminNFSe /></RoleGuard>} />
       <Route path="admin/approvals" element={<RoleGuard allowed={[]} roles={roles}><AdminApprovals /></RoleGuard>} />
       <Route path="admin/kyc-review" element={<RoleGuard allowed={[]} roles={roles}><AdminKycReview /></RoleGuard>} />
       

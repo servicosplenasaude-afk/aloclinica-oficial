@@ -147,10 +147,27 @@ async function handlePayment(admin: any, paymentId: string) {
     }
   } else if (externalRef.startsWith("queue_")) {
     const qId = externalRef.replace("queue_", "");
-    await admin
-      .from("on_demand_queue")
-      .update({ payment_status: internalStatus, paid_at: internalStatus === "approved" ? now : null } as any)
-      .eq("id", qId);
+    if (internalStatus === "approved") {
+      // Confirmação assíncrona (PIX/boleto): avança a fila e registra o pagamento.
+      // (colunas status/payment_id/paid_at — as mesmas que o fluxo síncrono usa.)
+      await admin
+        .from("on_demand_queue")
+        .update({ status: "waiting", payment_id: String(paymentId), paid_at: now } as any)
+        .eq("id", qId);
+      // Emite a NFS-e do plantão (fail-open enquanto NFS-e não estiver configurada).
+      try {
+        await admin.functions.invoke("emit-nfse", {
+          body: { resource_type: "queue", resource_id: qId },
+        });
+      } catch (e) {
+        console.error("[mp-webhook] falha ao emitir NFS-e (queue)", e);
+      }
+    } else if (internalStatus === "refused" || internalStatus === "cancelled") {
+      await admin
+        .from("on_demand_queue")
+        .update({ status: "cancelled" } as any)
+        .eq("id", qId);
+    }
   } else if (externalRef.startsWith("renewal_")) {
     const rId = externalRef.replace("renewal_", "");
     await admin

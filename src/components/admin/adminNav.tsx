@@ -32,6 +32,7 @@ export const getAdminNav = (active: string) => [
   { label: "Consultas",           href: "/dashboard/admin/appointments?role=admin",        icon: <NavIcon icon={<CalendarCheck size={16} weight="fill" />}  color="blue"    />, active: active === "appointments",        group: "Operação" },
   { label: "Financeiro",          href: "/dashboard/admin/financial?role=admin",           icon: <NavIcon icon={<Wallet size={16} weight="fill" />}         color="green"   />, active: active === "financial",           group: "Operação" },
   { label: "Repasses",            href: "/dashboard/admin/payouts?role=admin",             icon: <NavIcon icon={<CreditCard size={16} weight="fill" />}     color="green"   />, active: active === "payouts",             group: "Operação" },
+  { label: "Notas Fiscais",       href: "/dashboard/admin/nfse?role=admin",                icon: <NavIcon icon={<FileText size={16} weight="fill" />}       color="amber"   />, active: active === "nfse",                group: "Operação" },
   { label: "Contratos",           href: "/dashboard/admin/contratos?role=admin",           icon: <NavIcon icon={<Handshake size={16} weight="fill" />}      color="emerald" />, active: active === "contratos",           group: "Operação" },
   { label: "Leads",               href: "/dashboard/admin/leads?role=admin",               icon: <NavIcon icon={<ChartLineUp size={16} weight="fill" />}    color="blue"    />, active: active === "leads",               group: "Operação" },
 
