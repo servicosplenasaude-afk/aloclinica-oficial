@@ -34,7 +34,7 @@ const endpoints = [
   { name: "kyc-face", url: process.env.FACE_URL ?? "https://aloclinica-compreface.fqr8ne.easypanel.host/", ok: [200], critical: true },
   {
     name: "whatsapp-gateway",
-    url: process.env.WHATSAPP_URL ?? "https://whatsapp.telemedicinaaloclinica.sbs/",
+    url: process.env.WHATSAPP_URL ?? "https://aloclinica-evolution-api.fqr8ne.easypanel.host/",
     ok: [200, 401, 403],
     critical: false,
   },
@@ -165,7 +165,7 @@ const hosts = [
   new URL(baseUrl).hostname,
   "meet.telemedicinaaloclinica.sbs",
   "aloclinica-compreface.fqr8ne.easypanel.host",
-  "whatsapp.telemedicinaaloclinica.sbs",
+  "aloclinica-evolution-api.fqr8ne.easypanel.host",
 ];
 
 const results = [
