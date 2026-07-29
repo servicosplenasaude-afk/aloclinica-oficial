@@ -16,7 +16,7 @@
 // reprocessador (nfse-reprocess).
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { isInternalOrService } from "../_shared/auth.ts";
+import { isInternalOrService, getCaller } from "../_shared/auth.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -120,7 +120,12 @@ function buildEmitBody(p: {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
-  if (!isInternalOrService(req)) return json({ error: "forbidden" }, 403);
+  // Aceita chamadas internas/serviço (webhook, cron, reprocessador) OU um admin logado
+  // (botão "Reprocessar" da tela de NFS-e). Qualquer outro → 403.
+  if (!isInternalOrService(req)) {
+    const caller = await getCaller(req);
+    if (!caller.isAdmin) return json({ error: "forbidden" }, 403);
+  }
 
   try {
     const body = await req.json().catch(() => ({}));

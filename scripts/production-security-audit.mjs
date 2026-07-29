@@ -52,6 +52,15 @@ const expectedPublicFunctions = new Set([
   "suggest-reschedule",
   "verify-crm",
   "rate-limiter",
+  // Públicas por natureza / que se autoprotegem (guard interno) — adicionadas conforme criadas:
+  "log-failed-login",        // pré-autenticação (registra tentativas de login falhas)
+  "mp-oauth-callback",       // callback OAuth do Mercado Pago (redirect externo)
+  "public-api",              // API pública (autentica por api_key)
+  "doctor-ical-feed",        // feed iCal autenticado por token na URL (ical_token)
+  "emit-nfse",               // NFS-e — guard isInternalOrService + admin
+  "post-consultation-survey",// cron — guard isInternalOrService
+  "patient-nudges",          // cron — guard isInternalOrService
+  "no-show-reminder-tick",   // cron — guard x-tick-secret
 ]);
 
 const config = read("supabase/config.toml");
