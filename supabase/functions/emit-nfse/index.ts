@@ -68,6 +68,18 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
+
+    // PING (não-destrutivo): verifica se o token autentica em determinado ambiente,
+    // fazendo só um GET de uma NFS-e inexistente. 401 = token inválido; 404 = token OK.
+    if (body.ping === true) {
+      const amb = String(body.ambiente ?? CFG.ambiente).toLowerCase();
+      const host = amb === "producao" ? "https://api.focusnfe.com.br" : "https://homologacao.focusnfe.com.br";
+      if (!CFG.token) return json({ ping: true, ok: false, reason: "FOCUS_NFE_TOKEN não configurado" });
+      const g = await fetch(`${host}/v2/nfse/ping_auth_check_naoexiste`, { headers: { Authorization: auth() } });
+      const txt = await g.text().catch(() => "");
+      return json({ ping: true, ambiente: amb, host, status: g.status, authenticated: g.status !== 401, body: txt.slice(0, 250) });
+    }
+
     const isTest = body.test === true;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
