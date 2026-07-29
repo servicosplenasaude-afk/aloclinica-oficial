@@ -64,12 +64,37 @@ Passo a passo completo em **`docs/security/REMEDIATION-mirotalk-jwt.md`** (vari�
 ---
 
 ## 🟠 6. Conformidade / operacional (contador)
-- **Inscrição municipal** (Boa Vista/RR) para emissão de NFS-e. Enquanto não houver, a
-  emissão de nota fica **dormante** (não quebra o pagamento). Ao regularizar, configure os
-  secrets `NFSE_*` / Focus NFe.
 - **CRM-PJ** (registro da pessoa jurídica no Conselho) + **Responsável Técnico (RT)** — exigência
   do CFM para a clínica operar.
 - Rever a **DPA** e a designação de RT (modelos em `docs/compliance/`).
+
+### 🧾 6.1 Nota Fiscal (NFS-e) — ligar a emissão automática
+A plataforma **já emite, registra e envia** a NFS-e sozinha (por consulta e por plantão):
+grava cada nota, mostra ao paciente (recibo/detalhe/histórico), tem tela de gestão no Admin
+(**Operação → Notas Fiscais**) e um reprocessador automático a cada 15 min. Tudo isso fica
+**dormante (fail-open)** — não emite e **não quebra o pagamento** — até o contador preencher
+os dados fiscais. Para **ligar**:
+
+1. **Inscrição municipal** (Boa Vista/RR) da empresa (CNPJ) habilitada a emitir NFS-e.
+2. Criar conta na **Focus NFe** (focusnfe.com.br), cadastrar a empresa e enviar o
+   **certificado digital A1** (.pfx) no painel da Focus.
+3. Preencher os **secrets** no Supabase (Settings → Edge Functions → Secrets):
+   - `FOCUS_NFE_TOKEN` — token da Focus (produção).
+   - `FOCUS_NFE_AMBIENTE` = `producao` (use `homologacao` para testar antes).
+   - `NFSE_CNPJ` — CNPJ da clínica (só números).
+   - `NFSE_INSCRICAO_MUNICIPAL` — inscrição municipal.
+   - `NFSE_CITY_IBGE` — código IBGE do município (Boa Vista/RR = `1400100`).
+   - `NFSE_ITEM_LISTA_SERVICO` — item da lista de serviço (o contador informa; telemedicina
+     costuma ser **4.05** — "Aquisição/atenção domiciliar/serviços de saúde"; confirme com ele).
+   - `NFSE_CODIGO_TRIBUTARIO_MUNICIPIO` — código de tributação do município (o contador informa).
+   - `NFSE_ISS_RATE` — alíquota de ISS (ex.: `2` para 2%).
+   - `NFSE_SERVICE_DESC` (opcional) — descrição do serviço na nota.
+4. Testar em `homologacao` (1 consulta paga → conferir a nota na tela **Notas Fiscais**),
+   depois trocar `FOCUS_NFE_AMBIENTE` para `producao`.
+
+> A partir daí, toda consulta/plantão pago gera a nota automaticamente, envia o PDF ao
+> paciente (e-mail + WhatsApp) e aparece no Admin. As notas que a prefeitura demorar a
+> autorizar são reconciliadas sozinhas pelo job a cada 15 min.
 
 ---
 
