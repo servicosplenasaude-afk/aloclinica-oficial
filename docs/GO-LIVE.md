@@ -64,8 +64,9 @@ Passo a passo completo em **`docs/security/REMEDIATION-mirotalk-jwt.md`** (vari�
 ---
 
 ## 🟠 6. Conformidade / operacional (contador)
-- **CRM-PJ** (registro da pessoa jurídica no Conselho) + **Responsável Técnico (RT)** — exigência
-  do CFM para a clínica operar.
+- ✅ **CRM-PJ** (registro da pessoa jurídica no Conselho) — **CONCLUÍDO** (CRM-PJ **nº 680/RR**,
+  classificação Telemedicina, Diretora Técnica Dra. Tâmara Oliveira Vieira, regular até 17/07/2027).
+  O dado público no app (rodapé, termos, `/responsavel-tecnico`) já foi atualizado.
 - Rever a **DPA** e a designação de RT (modelos em `docs/compliance/`).
 
 ### 🧾 6.1 Nota Fiscal (NFS-e) — ligar a emissão automática
