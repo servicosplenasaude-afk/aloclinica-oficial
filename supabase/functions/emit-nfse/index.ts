@@ -68,52 +68,91 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    // Resolve o recurso: legado (appointment_id) ou genérico (resource_type/id).
-    const resourceType: string = body.appointment_id ? "appointment" : String(body.resource_type ?? "");
-    const resourceId: string = body.appointment_id ? String(body.appointment_id) : String(body.resource_id ?? "");
-    if (!["appointment", "queue"].includes(resourceType) || !resourceId) {
-      return json({ error: "resource_type (appointment|queue) + resource_id obrigatórios" }, 400);
-    }
-    const ref = `${resourceType}_${resourceId}`;
-
-    if (!isConfigured()) {
-      return json({ skipped: true, reason: "NFS-e não configurada (defina FOCUS_NFE_TOKEN e NFSE_*)" });
-    }
+    const isTest = body.test === true;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    // Carrega o recurso (paciente + valor + status de pagamento).
+    // Dados resolvidos (modo normal OU modo de teste).
+    let resourceType: string;
+    let resourceId: string | null;
+    let ref: string;
     let patientId: string | null = null;
     let valor = 0;
-    let paid = false;
-    if (resourceType === "appointment") {
-      const { data } = await supabase.from("appointments")
-        .select("patient_id, price_at_booking, payment_status").eq("id", resourceId).single();
-      if (!data) return json({ error: "appointment not found" }, 404);
-      patientId = data.patient_id;
-      valor = Number(data.price_at_booking ?? 0);
-      paid = ["approved", "confirmed", "received", "paid"].includes(String(data.payment_status));
-    } else {
-      const { data } = await supabase.from("on_demand_queue")
-        .select("patient_id, price, payment_id, status").eq("id", resourceId).single();
-      if (!data) return json({ error: "queue item not found" }, 404);
-      patientId = data.patient_id;
-      valor = Number(data.price ?? 0);
-      // Plantão: "pago" = tem payment_id (fluxo síncrono) ou já entrou/concluiu na fila.
-      paid = Boolean(data.payment_id) || ["waiting", "assigned", "in_progress", "completed"].includes(String(data.status));
-    }
-    if (!paid || valor <= 0) return json({ skipped: true, reason: "sem pagamento aprovado / valor zero" });
-
-    const { data: patient } = patientId
-      ? await supabase.from("profiles").select("first_name, last_name, phone, cpf").eq("user_id", patientId).single()
-      : { data: null } as { data: null };
+    let patientCpf = "";
+    let patientPhone = "";
     let patientEmail = "";
-    if (patientId) {
-      const { data: au } = await supabase.auth.admin.getUserById(patientId);
-      patientEmail = au?.user?.email ?? "";
+    let patientName = "Paciente";
+    // Dados fiscais — do CFG por padrão; sobrescrevíveis inline SÓ no modo de teste.
+    let fiscItem = CFG.itemListaServico;
+    let fiscIss = CFG.issRate;
+    let fiscIM = CFG.inscricaoMunicipal;
+    let fiscCTM = CFG.codigoTributarioMunicipio;
+    let fiscDesc = CFG.serviceDesc;
+
+    if (isTest) {
+      // Emissão de TESTE (homologação/sandbox — SEM valor fiscal). Usa dados inline,
+      // não toca em appointments/on_demand_queue e não exige os NFSE_* completos.
+      if (CFG.ambiente === "producao") return json({ error: "modo de teste bloqueado em produção" }, 400);
+      if (!(CFG.token && CFG.cnpj && CFG.cityIbge)) {
+        return json({ skipped: true, reason: "faltam FOCUS_NFE_TOKEN / NFSE_CNPJ / NFSE_CITY_IBGE" });
+      }
+      resourceType = "test";
+      resourceId = null;
+      ref = String(body.ref || `test_${Date.now()}`);
+      valor = Number(body.valor ?? 1);
+      patientCpf = String(body.patient_cpf ?? "");
+      patientPhone = String(body.patient_phone ?? "");
+      patientEmail = String(body.patient_email ?? "");
+      patientName = String(body.patient_name ?? "Paciente Teste");
+      if (body.item_lista_servico) fiscItem = String(body.item_lista_servico);
+      if (body.iss_rate != null) fiscIss = Number(body.iss_rate);
+      if (body.inscricao_municipal) fiscIM = String(body.inscricao_municipal);
+      if (body.codigo_tributario_municipio) fiscCTM = String(body.codigo_tributario_municipio);
+      if (body.service_desc) fiscDesc = String(body.service_desc);
+    } else {
+      // Modo normal: resolve o recurso (consulta agendada OU plantão) do banco.
+      resourceType = body.appointment_id ? "appointment" : String(body.resource_type ?? "");
+      resourceId = body.appointment_id ? String(body.appointment_id) : String(body.resource_id ?? "");
+      if (!["appointment", "queue"].includes(resourceType) || !resourceId) {
+        return json({ error: "resource_type (appointment|queue) + resource_id obrigatórios" }, 400);
+      }
+      ref = `${resourceType}_${resourceId}`;
+      if (!isConfigured()) {
+        return json({ skipped: true, reason: "NFS-e não configurada (defina FOCUS_NFE_TOKEN e NFSE_*)" });
+      }
+
+      let paid = false;
+      if (resourceType === "appointment") {
+        const { data } = await supabase.from("appointments")
+          .select("patient_id, price_at_booking, payment_status").eq("id", resourceId).single();
+        if (!data) return json({ error: "appointment not found" }, 404);
+        patientId = data.patient_id;
+        valor = Number(data.price_at_booking ?? 0);
+        paid = ["approved", "confirmed", "received", "paid"].includes(String(data.payment_status));
+      } else {
+        const { data } = await supabase.from("on_demand_queue")
+          .select("patient_id, price, payment_id, status").eq("id", resourceId).single();
+        if (!data) return json({ error: "queue item not found" }, 404);
+        patientId = data.patient_id;
+        valor = Number(data.price ?? 0);
+        // Plantão: "pago" = tem payment_id (fluxo síncrono) ou já entrou/concluiu na fila.
+        paid = Boolean(data.payment_id) || ["waiting", "assigned", "in_progress", "completed"].includes(String(data.status));
+      }
+      if (!paid || valor <= 0) return json({ skipped: true, reason: "sem pagamento aprovado / valor zero" });
+
+      const { data: patient } = patientId
+        ? await supabase.from("profiles").select("first_name, last_name, phone, cpf").eq("user_id", patientId).single()
+        : { data: null } as { data: null };
+      if (patientId) {
+        const { data: au } = await supabase.auth.admin.getUserById(patientId);
+        patientEmail = au?.user?.email ?? "";
+      }
+      patientCpf = patient?.cpf ?? "";
+      patientPhone = patient?.phone ?? "";
+      patientName = patient ? `${patient.first_name ?? ""} ${patient.last_name ?? ""}`.trim() : "Paciente";
     }
-    const patientName = patient ? `${patient.first_name ?? ""} ${patient.last_name ?? ""}`.trim() : "Paciente";
+
     const amountBRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
 
     // Registro inicial (processando) — idempotente por ref.
@@ -125,12 +164,12 @@ serve(async (req) => {
     // Emite via Focus.
     const dpsBody: Record<string, unknown> = {
       data_emissao: new Date().toISOString().slice(0, 19),
-      prestador: { cnpj: CFG.cnpj, inscricao_municipal: CFG.inscricaoMunicipal || undefined, codigo_municipio: CFG.cityIbge },
-      tomador: { cpf: (patient?.cpf ?? "").replace(/\D/g, "") || undefined, razao_social: patientName, email: patientEmail || undefined },
+      prestador: { cnpj: CFG.cnpj, inscricao_municipal: fiscIM || undefined, codigo_municipio: CFG.cityIbge },
+      tomador: { cpf: patientCpf.replace(/\D/g, "") || undefined, razao_social: patientName, email: patientEmail || undefined },
       servico: {
-        aliquota: CFG.issRate, discriminacao: CFG.serviceDesc, iss_retido: false,
-        item_lista_servico: CFG.itemListaServico,
-        codigo_tributario_municipio: CFG.codigoTributarioMunicipio || undefined,
+        aliquota: fiscIss, discriminacao: fiscDesc, iss_retido: false,
+        item_lista_servico: fiscItem,
+        codigo_tributario_municipio: fiscCTM || undefined,
         valor_servicos: Number(valor.toFixed(2)),
       },
     };
@@ -174,17 +213,17 @@ serve(async (req) => {
         try {
           const r = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
             method: "POST", headers: hdrs,
-            body: JSON.stringify({ type: "nfse_invoice", to: patientEmail, data: { patient_name: patientName, amount: amountBRL, nfse_url: pdfUrl, appointment_id: resourceId } }),
+            body: JSON.stringify({ type: "nfse_invoice", to: patientEmail, data: { patient_name: patientName, amount: amountBRL, nfse_url: pdfUrl, appointment_id: resourceId ?? ref } }),
           });
           results.push(`email: ${r.ok ? "sent" : "failed"}`);
         } catch (e) { results.push(`email: error ${(e as Error).message}`); }
       }
-      if (patient?.phone) {
+      if (patientPhone) {
         try {
           const msg = `🧾 *Nota Fiscal — AloClínica*\n\nOlá ${patientName}, a nota fiscal da sua consulta foi emitida.\n\nValor: *${amountBRL}*\n\n📄 Baixar a NFS-e:\n${pdfUrl}\n\n_Documento fiscal oficial. Guarde para reembolso junto ao seu plano de saúde._`;
           const r = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp`, {
             method: "POST", headers: hdrs,
-            body: JSON.stringify({ phone: patient.phone, message: msg, user_id: patientId, category: "payment" }),
+            body: JSON.stringify({ phone: patientPhone, message: msg, user_id: patientId, category: "payment" }),
           });
           results.push(`whatsapp: ${r.ok ? "sent" : "failed"}`);
         } catch (e) { results.push(`whatsapp: error ${(e as Error).message}`); }
