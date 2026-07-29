@@ -76,13 +76,15 @@ Passo a passo completo em **`docs/security/REMEDIATION-mirotalk-jwt.md`** (vari�
 > 1. **No painel da Focus, o contador precisa habilitar "Ambiente da NFSe Nacional"** na empresa
 >    (flags `habilita_nfsen_homologacao` + `habilita_nfsen_producao = true` e `habilita_nfse = false`).
 >    Isso **só dá para fazer no painel/conta da Focus** — os tokens da empresa não alteram essa config.
-> 2. O código de emissão será **adaptado para o padrão nacional** (`/v2/nfsen`) — feito pelo
->    desenvolvedor assim que a empresa estiver habilitada e o **código de tributação nacional**
->    da teleconsulta for informado (no padrão nacional não se usa o "item 4.05" antigo).
+> 2. ✅ O código de emissão **já foi adaptado para o padrão nacional** (`/v2/nfsen`, DPS) — e
+>    **validado em homologação**: a Focus aceitou a estrutura do payload (passou da validação de
+>    campos). No padrão nacional **não se usa o "item 4.05" antigo** — usa-se o **código de
+>    tributação nacional** (secret `NFSE_CODIGO_TRIBUTACAO_NACIONAL`).
 >
-> **Status dos tokens (28/07):** o **token de produção** cadastrado é **válido** ✅. O **token de
-> homologação** também foi validado. Falta só habilitar o ambiente nacional na empresa (item 1 acima)
-> + o código de tributação nacional, e então rodar 1 nota de teste.
+> **Status (29/07):** tokens de produção **e** homologação **válidos** ✅. Código nacional **pronto** ✅.
+> **Falta só, no painel da Focus (contador):** (a) habilitar o **Ambiente da NFSe Nacional** da
+> empresa (`habilita_nfsen_homologacao` + `habilita_nfsen_producao`), e (b) informar o **código de
+> tributação nacional** da teleconsulta. Feito isso, rodamos 1 nota de teste e ligamos a produção.
 
 A plataforma **já emite, registra e envia** a NFS-e sozinha (por consulta e por plantão):
 grava cada nota, mostra ao paciente (recibo/detalhe/histórico), tem tela de gestão no Admin
@@ -99,11 +101,13 @@ ser concluída. Para **ligar** (após habilitar o ambiente nacional acima):
    - `NFSE_CNPJ` — CNPJ da clínica (só números).
    - `NFSE_INSCRICAO_MUNICIPAL` — inscrição municipal.
    - `NFSE_CITY_IBGE` — código IBGE do município (Boa Vista/RR = `1400100`).
-   - `NFSE_ITEM_LISTA_SERVICO` — item da lista de serviço (o contador informa; telemedicina
-     costuma ser **4.05** — "Aquisição/atenção domiciliar/serviços de saúde"; confirme com ele).
-   - `NFSE_CODIGO_TRIBUTARIO_MUNICIPIO` — código de tributação do município (o contador informa).
-   - `NFSE_ISS_RATE` — alíquota de ISS (ex.: `2` para 2%).
+   - `NFSE_PADRAO` — `nacional` (padrão; usado por Boa Vista/RR) ou `municipal`. **Já é `nacional` por padrão.**
+   - **[padrão nacional]** `NFSE_CODIGO_TRIBUTACAO_NACIONAL` — código de tributação nacional da
+     teleconsulta (o contador informa — é o que substitui o "item 4.05" antigo).
+   - `NFSE_INSCRICAO_MUNICIPAL` — inscrição municipal (opcional/quando houver).
    - `NFSE_SERVICE_DESC` (opcional) — descrição do serviço na nota.
+   - **[só padrão municipal]** `NFSE_ITEM_LISTA_SERVICO`, `NFSE_CODIGO_TRIBUTARIO_MUNICIPIO`,
+     `NFSE_ISS_RATE` — não usados em Boa Vista (que é nacional).
 4. Testar em `homologacao` (1 consulta paga → conferir a nota na tela **Notas Fiscais**),
    depois trocar `FOCUS_NFE_AMBIENTE` para `producao`.
 
