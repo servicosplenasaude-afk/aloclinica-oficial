@@ -28,7 +28,10 @@ const endpoints = [
   { name: "site-health", url: `${baseUrl}/health`, ok: [200], critical: true },
   { name: "site-status", url: `${baseUrl}/status`, ok: [200], critical: true },
   { name: "video-meet", url: process.env.MEET_URL ?? "https://meet.telemedicinaaloclinica.sbs/", ok: [200], critical: true },
-  { name: "kyc-face", url: process.env.FACE_URL ?? "https://face.aloclinica.com.br/", ok: [200], critical: true },
+  // CompreFace (KYC): checamos o host que o app realmente usa (secret COMPREFACE_URL).
+  // Boa Vista/RR usa o domínio automático do EasyPanel; o customizado face.aloclinica.com.br
+  // (serviço compose) só roteia se recriado na UI — pendência cosmética.
+  { name: "kyc-face", url: process.env.FACE_URL ?? "https://aloclinica-compreface.fqr8ne.easypanel.host/", ok: [200], critical: true },
   {
     name: "whatsapp-gateway",
     url: process.env.WHATSAPP_URL ?? "https://whatsapp.telemedicinaaloclinica.sbs/",
@@ -161,7 +164,7 @@ async function checkVpsDocker() {
 const hosts = [
   new URL(baseUrl).hostname,
   "meet.telemedicinaaloclinica.sbs",
-  "face.aloclinica.com.br",
+  "aloclinica-compreface.fqr8ne.easypanel.host",
   "whatsapp.telemedicinaaloclinica.sbs",
 ];
 
