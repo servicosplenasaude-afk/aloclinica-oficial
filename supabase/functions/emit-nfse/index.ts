@@ -28,22 +28,35 @@ const json = (b: unknown, s = 200) =>
 const CFG = {
   token: Deno.env.get("FOCUS_NFE_TOKEN") ?? "",
   ambiente: (Deno.env.get("FOCUS_NFE_AMBIENTE") ?? "homologacao").toLowerCase(),
+  // Padrão da NFS-e: "nacional" (endpoint /v2/nfsen, DPS — usado por Boa Vista/RR e
+  // demais municípios no Ambiente Nacional) ou "municipal" (/v2/nfse). Default nacional.
+  padrao: (Deno.env.get("NFSE_PADRAO") ?? "nacional").toLowerCase(),
   cnpj: (Deno.env.get("NFSE_CNPJ") ?? "").replace(/\D/g, ""),
   inscricaoMunicipal: Deno.env.get("NFSE_INSCRICAO_MUNICIPAL") ?? "",
   cityIbge: Deno.env.get("NFSE_CITY_IBGE") ?? "",
   itemListaServico: Deno.env.get("NFSE_ITEM_LISTA_SERVICO") ?? "",
   codigoTributarioMunicipio: Deno.env.get("NFSE_CODIGO_TRIBUTARIO_MUNICIPIO") ?? "",
+  // Código de tributação nacional do serviço (padrão nacional). Ex.: teleconsulta.
+  codigoTributacaoNacional: Deno.env.get("NFSE_CODIGO_TRIBUTACAO_NACIONAL") ?? "",
   issRate: Number(Deno.env.get("NFSE_ISS_RATE") ?? "0"),
   serviceDesc: Deno.env.get("NFSE_SERVICE_DESC") ?? "Teleconsulta médica (telemedicina) — prestação de serviço de saúde à distância.",
 };
+const isNacional = () => CFG.padrao === "nacional";
 export const nfseBaseUrl = () => (CFG.ambiente === "producao" ? "https://api.focusnfe.com.br" : "https://homologacao.focusnfe.com.br");
-const isConfigured = () => Boolean(CFG.token && CFG.cnpj && CFG.cityIbge && CFG.itemListaServico);
-const auth = () => "Basic " + btoa(`${CFG.token}:`);
+// Endpoint da Focus por padrão: nacional → /v2/nfsen, municipal → /v2/nfse.
+const nfseEndpoint = () => (isNacional() ? "nfsen" : "nfse");
+// "Configurada" = tem credenciais + o código fiscal do padrão em uso.
+const isConfigured = () => Boolean(
+  CFG.token && CFG.cnpj && CFG.cityIbge &&
+  (isNacional() ? CFG.codigoTributacaoNacional : CFG.itemListaServico),
+);
+const auth = (tok: string = CFG.token) => "Basic " + btoa(`${tok}:`);
 
-async function emitFocus(ref: string, body: unknown) {
-  const post = await fetch(`${nfseBaseUrl()}/v2/nfse?ref=${encodeURIComponent(ref)}`, {
+async function emitFocus(ref: string, body: unknown, tok: string = CFG.token) {
+  const ep = nfseEndpoint();
+  const post = await fetch(`${nfseBaseUrl()}/v2/${ep}?ref=${encodeURIComponent(ref)}`, {
     method: "POST",
-    headers: { Authorization: auth(), "Content-Type": "application/json" },
+    headers: { Authorization: auth(tok), "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   const posted = await post.json().catch(() => ({}));
@@ -52,7 +65,7 @@ async function emitFocus(ref: string, body: unknown) {
   }
   let last: Record<string, unknown> = posted;
   for (let i = 0; i < 6; i++) {
-    const g = await fetch(`${nfseBaseUrl()}/v2/nfse/${encodeURIComponent(ref)}`, { headers: { Authorization: auth() } });
+    const g = await fetch(`${nfseBaseUrl()}/v2/${ep}/${encodeURIComponent(ref)}`, { headers: { Authorization: auth(tok) } });
     last = await g.json().catch(() => ({}));
     const st = String(last?.status ?? "");
     if (st === "autorizado") return last;
@@ -60,6 +73,49 @@ async function emitFocus(ref: string, body: unknown) {
     await new Promise((r) => setTimeout(r, 2500));
   }
   return last; // ainda processando
+}
+
+// Monta o corpo da emissão conforme o padrão (nacional/DPS ou municipal).
+function buildEmitBody(p: {
+  valor: number; patientCpf: string; patientName: string; patientEmail: string;
+  item: string; iss: number; im: string; ctm: string; desc: string; codNacional: string;
+}): Record<string, unknown> {
+  const cpf = p.patientCpf.replace(/\D/g, "") || undefined;
+  if (isNacional()) {
+    // Padrão NACIONAL (DPS) — endpoint /v2/nfsen. Estrutura PLANA (campos com prefixo).
+    // Focus auto-numera série/número da DPS quando a empresa tem numeração automática.
+    return {
+      data_emissao: new Date().toISOString(),
+      data_competencia: new Date().toISOString().slice(0, 10),
+      codigo_municipio_emissora: CFG.cityIbge,
+      // Prestador
+      cnpj_prestador: CFG.cnpj,
+      inscricao_municipal_prestador: p.im || undefined,
+      // Tomador (pessoa física)
+      cpf_tomador: cpf,
+      razao_social_tomador: p.patientName,
+      email_tomador: p.patientEmail || undefined,
+      // Serviço
+      codigo_municipio_prestacao: CFG.cityIbge,
+      codigo_tributacao_nacional_iss: p.codNacional,
+      descricao_servico: p.desc,
+      // Valores
+      valor_servico: Number(p.valor.toFixed(2)),
+      tributacao_iss: 1, // 1 = operação tributável no município
+    };
+  }
+  // Padrão MUNICIPAL — endpoint /v2/nfse.
+  return {
+    data_emissao: new Date().toISOString().slice(0, 19),
+    prestador: { cnpj: CFG.cnpj, inscricao_municipal: p.im || undefined, codigo_municipio: CFG.cityIbge },
+    tomador: { cpf, razao_social: p.patientName, email: p.patientEmail || undefined },
+    servico: {
+      aliquota: p.iss, discriminacao: p.desc, iss_retido: false,
+      item_lista_servico: p.item,
+      codigo_tributario_municipio: p.ctm || undefined,
+      valor_servicos: Number(p.valor.toFixed(2)),
+    },
+  };
 }
 
 serve(async (req) => {
@@ -74,8 +130,9 @@ serve(async (req) => {
     if (body.ping === true) {
       const amb = String(body.ambiente ?? CFG.ambiente).toLowerCase();
       const host = amb === "producao" ? "https://api.focusnfe.com.br" : "https://homologacao.focusnfe.com.br";
-      if (!CFG.token) return json({ ping: true, ok: false, reason: "FOCUS_NFE_TOKEN não configurado" });
-      const g = await fetch(`${host}/v2/nfse/ping_auth_check_naoexiste`, { headers: { Authorization: auth() } });
+      const pingTok = body.token ? String(body.token) : CFG.token;
+      if (!pingTok) return json({ ping: true, ok: false, reason: "FOCUS_NFE_TOKEN não configurado" });
+      const g = await fetch(`${host}/v2/${nfseEndpoint()}/ping_auth_check_naoexiste`, { headers: { Authorization: auth(pingTok) } });
       const txt = await g.text().catch(() => "");
       return json({ ping: true, ambiente: amb, host, status: g.status, authenticated: g.status !== 401, body: txt.slice(0, 250) });
     }
@@ -101,6 +158,7 @@ serve(async (req) => {
     let fiscIM = CFG.inscricaoMunicipal;
     let fiscCTM = CFG.codigoTributarioMunicipio;
     let fiscDesc = CFG.serviceDesc;
+    let fiscCodNacional = CFG.codigoTributacaoNacional;
 
     if (isTest) {
       // Emissão de TESTE (homologação/sandbox — SEM valor fiscal). Usa dados inline,
@@ -121,6 +179,7 @@ serve(async (req) => {
       if (body.iss_rate != null) fiscIss = Number(body.iss_rate);
       if (body.inscricao_municipal) fiscIM = String(body.inscricao_municipal);
       if (body.codigo_tributario_municipio) fiscCTM = String(body.codigo_tributario_municipio);
+      if (body.codigo_tributacao_nacional) fiscCodNacional = String(body.codigo_tributacao_nacional);
       if (body.service_desc) fiscDesc = String(body.service_desc);
     } else {
       // Modo normal: resolve o recurso (consulta agendada OU plantão) do banco.
@@ -173,19 +232,15 @@ serve(async (req) => {
       status: "processando", provider: "focusnfe", updated_at: new Date().toISOString(),
     } as never, { onConflict: "ref" });
 
-    // Emite via Focus.
-    const dpsBody: Record<string, unknown> = {
-      data_emissao: new Date().toISOString().slice(0, 19),
-      prestador: { cnpj: CFG.cnpj, inscricao_municipal: fiscIM || undefined, codigo_municipio: CFG.cityIbge },
-      tomador: { cpf: patientCpf.replace(/\D/g, "") || undefined, razao_social: patientName, email: patientEmail || undefined },
-      servico: {
-        aliquota: fiscIss, discriminacao: fiscDesc, iss_retido: false,
-        item_lista_servico: fiscItem,
-        codigo_tributario_municipio: fiscCTM || undefined,
-        valor_servicos: Number(valor.toFixed(2)),
-      },
-    };
-    const nfse = await emitFocus(ref, dpsBody);
+    // Emite via Focus — corpo conforme o padrão (nacional/DPS ou municipal).
+    const dpsBody = buildEmitBody({
+      valor, patientCpf, patientName, patientEmail,
+      item: fiscItem, iss: fiscIss, im: fiscIM, ctm: fiscCTM, desc: fiscDesc, codNacional: fiscCodNacional,
+    });
+    // Token efetivo: no modo de teste aceita override inline (ex.: token de homologação);
+    // caso contrário usa o secret FOCUS_NFE_TOKEN.
+    const effToken = isTest && body.token ? String(body.token) : CFG.token;
+    const nfse = await emitFocus(ref, dpsBody, effToken);
     const st = String(nfse?.status ?? "processando");
     const pdfPath = (nfse?.caminho_danfse as string) || "";
     const xmlPath = (nfse?.caminho_xml_nota_fiscal as string) || "";
