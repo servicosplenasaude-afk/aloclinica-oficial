@@ -69,11 +69,25 @@ Passo a passo completo em **`docs/security/REMEDIATION-mirotalk-jwt.md`** (vari�
 - Rever a **DPA** e a designação de RT (modelos em `docs/compliance/`).
 
 ### 🧾 6.1 Nota Fiscal (NFS-e) — ligar a emissão automática
+
+> **⚠️ Boa Vista/RR usa a NFS-e NACIONAL** (ambiente nacional, endpoint `/v2/nfsen` da Focus),
+> não o padrão municipal. Isso foi confirmado direto na Focus em 28/07/2026. Duas consequências:
+> 1. **No painel da Focus, o contador precisa habilitar "Ambiente da NFSe Nacional"** na empresa
+>    (flags `habilita_nfsen_homologacao` + `habilita_nfsen_producao = true` e `habilita_nfse = false`).
+>    Isso **só dá para fazer no painel/conta da Focus** — os tokens da empresa não alteram essa config.
+> 2. O código de emissão será **adaptado para o padrão nacional** (`/v2/nfsen`) — feito pelo
+>    desenvolvedor assim que a empresa estiver habilitada e o **código de tributação nacional**
+>    da teleconsulta for informado (no padrão nacional não se usa o "item 4.05" antigo).
+>
+> **Status dos tokens (28/07):** o **token de produção** cadastrado é **válido** ✅. O **token de
+> homologação** também foi validado. Falta só habilitar o ambiente nacional na empresa (item 1 acima)
+> + o código de tributação nacional, e então rodar 1 nota de teste.
+
 A plataforma **já emite, registra e envia** a NFS-e sozinha (por consulta e por plantão):
 grava cada nota, mostra ao paciente (recibo/detalhe/histórico), tem tela de gestão no Admin
 (**Operação → Notas Fiscais**) e um reprocessador automático a cada 15 min. Tudo isso fica
-**dormante (fail-open)** — não emite e **não quebra o pagamento** — até o contador preencher
-os dados fiscais. Para **ligar**:
+**dormante (fail-open)** — não emite e **não quebra o pagamento** — até a configuração fiscal
+ser concluída. Para **ligar** (após habilitar o ambiente nacional acima):
 
 1. **Inscrição municipal** (Boa Vista/RR) da empresa (CNPJ) habilitada a emitir NFS-e.
 2. Criar conta na **Focus NFe** (focusnfe.com.br), cadastrar a empresa e enviar o
