@@ -15,7 +15,7 @@ export const COMPLIANCE = {
   foroComarca: "Comarca de Boa Vista, Estado de Roraima",
   diretorTecnicoMedico: "Dra. Tâmara Oliveira Vieira",
   diretorTecnicoCRM: "CRM 2352/RR",
-  crmPessoaJuridica: "Em processo de inscrição — CRM/RR",
+  crmPessoaJuridica: "CRM-PJ nº 680/RR",
   contatoTecnico: "rt@aloclinica.com.br",
 
   // Identidade pública / contato (fonte única para termos e rodapé)

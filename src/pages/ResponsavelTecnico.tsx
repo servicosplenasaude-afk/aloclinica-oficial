@@ -50,7 +50,7 @@ const ResponsavelTecnico = () => {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">CRM-PJ</p>
-                <p className="font-medium text-foreground">Em processo de inscrição / CRM-RR</p>
+                <p className="font-medium text-foreground">CRM-PJ nº 680/RR — Classificação: Telemedicina · Regular (válido até 17/07/2027)</p>
               </div>
               <div className="flex items-start gap-2 pt-2 border-t">
                 <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
