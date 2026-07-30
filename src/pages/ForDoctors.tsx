@@ -402,7 +402,7 @@ const ForDoctors = forwardRef<HTMLDivElement>((_, ref) => {
               { q: "Quanto eu ganho por consulta?", a: "O valor por consulta varia conforme a especialidade e o preço que você define, normalmente entre R$ 30 e R$ 80 por consulta de 20-30 min. O repasse é creditado em até 48h. Os valores variam conforme demanda e disponibilidade." },
               { q: "Preciso abandonar meu consultório?", a: "Não! A teleconsulta é complemento de renda. Muitos médicos atendem 2-3 pacientes online entre consultas presenciais. Você controla 100% da sua agenda." },
               { q: "Vocês controlam meus horários?", a: "Zero controle. Você define quando está disponível — pode ser de manhã, de madrugada, no fim de semana. Pacientes encaixam nos seus horários." },
-              { q: "Meus dados de paciente ficam seguros?", a: "Sim. LGPD compliant, criptografia AES-256, prontuário eletrônico em nuvem com backup automático. Auditoria e conformidade 100% CFM." },
+              { q: "Meus dados de paciente ficam seguros?", a: "Sim. LGPD compliant, criptografia AES-256, prontuário eletrônico em nuvem com backup automático. Estruturado conforme a LGPD e as resoluções do CFM (2.314/2022)." },
               { q: "Como funciona o pagamento?", a: "Após cada consulta, o valor é creditado na sua carteira digital. Você pode sacar via PIX a qualquer momento, sem taxas de saque." },
               { q: "Posso atender qualquer especialidade?", a: "Atendemos 30+ especialidades. Basta ter CRM ativo e, quando necessário, RQE válido para sua especialidade." },
             ].map((faq, i) => (

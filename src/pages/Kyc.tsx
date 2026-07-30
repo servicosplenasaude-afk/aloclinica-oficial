@@ -198,7 +198,7 @@ export default function Kyc() {
 
             <div className="hidden lg:flex items-center gap-2 text-[11px] text-muted-foreground pt-2">
               <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-              <span>Tecnologia auditada · ISO 27001 ready · Dados hospedados no Brasil</span>
+              <span>Criptografia de ponta a ponta · Conformidade LGPD · Dados hospedados no Brasil</span>
             </div>
           </aside>
 
