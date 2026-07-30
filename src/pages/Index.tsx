@@ -171,7 +171,7 @@ const Index = forwardRef<HTMLDivElement>((_, ref) => {
 
       {isOn("for_doctors") !== false && <ForDoctorsSection />}
       {isOn("faq") !== false && <FAQSection />}
-      {isOn("cta_banner") !== false && <CTABanner />}
+      {isOn("cta_banner") !== false && <CTABanner config={sectionData.cta_banner} />}
 
       {isOn("footer") && <Footer config={sectionData.footer} />}
     </div>
