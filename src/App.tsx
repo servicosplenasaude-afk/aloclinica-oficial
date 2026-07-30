@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ContratoProvider } from "@/contexts/ContratoContext";
 import MaintenanceBanner from "@/components/MaintenanceBanner";
+import MaintenanceGate from "@/components/MaintenanceGate";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import ThemeApplier from "@/components/ThemeApplier";
 import { ThemeProvider } from "next-themes";
@@ -342,7 +343,9 @@ const App = () => {
                   </a>
                   <main id="main-content">
                     <Suspense fallback={<PingoLoader />}>
-                      <AnimatedRoutes />
+                      <MaintenanceGate>
+                        <AnimatedRoutes />
+                      </MaintenanceGate>
                     </Suspense>
                   </main>
 
