@@ -113,6 +113,7 @@ function FieldRow({ field, value, onChange, onPickImage }: {
         </div>
       );
     case "list":
+    case "array": // alias — alguns schemas antigos usam "array" para listas repetíveis
       return <ListField field={field} value={value ?? []} onChange={onChange} onPickImage={onPickImage} />;
     default:
       return (
@@ -125,7 +126,8 @@ function FieldRow({ field, value, onChange, onPickImage }: {
 
 function ListField({ field, value, onChange, onPickImage }: any) {
   const items: any[] = Array.isArray(value) ? value : [];
-  const itemFields: BlockField[] = field.item_schema?.fields ?? [];
+  // Aceita variações de schema: item_schema.fields | items.fields | fields | item_fields
+  const itemFields: BlockField[] = field.item_schema?.fields ?? field.items?.fields ?? field.item_fields ?? field.fields ?? [];
   const add = () => {
     const blank: Record<string, any> = {};
     itemFields.forEach((f) => { blank[f.key] = ""; });

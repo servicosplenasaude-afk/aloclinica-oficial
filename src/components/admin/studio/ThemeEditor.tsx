@@ -74,8 +74,25 @@ export function ThemeEditor({ open, onOpenChange }: { open: boolean; onOpenChang
         og_image_url: theme.og_image_url,
       }).eq("id", theme.id);
       if (error) throw error;
+
+      // Propaga para o SITE PÚBLICO: o ThemeApplier lê app_settings.theme via
+      // get_active_theme(). Mapeia font_body→font_family e faz MERGE (preserva
+      // tokens não editados aqui, ex.: muted/border/destructive).
+      const t = theme.tokens ?? {};
+      const publicTokens: Record<string, string> = {
+        primary: t.primary, secondary: t.secondary, accent: t.accent,
+        background: t.background, foreground: t.foreground,
+        radius: t.radius, font_heading: t.font_heading, font_family: t.font_body,
+      };
+      const clean = Object.fromEntries(Object.entries(publicTokens).filter(([, v]) => v != null && v !== ""));
+      try {
+        const { data: existing } = await (db as any).from("app_settings").select("value").eq("key", "theme").maybeSingle();
+        const merged = { ...(existing?.value ?? {}), ...clean };
+        await (db as any).from("app_settings").upsert({ key: "theme", value: merged }, { onConflict: "key" });
+      } catch (e) { /* se falhar, o tema do editor ainda ficou salvo em site_themes */ }
+
       try { sessionStorage.removeItem("aloc_theme_v1"); } catch {}
-      toast.success("Tema salvo");
+      toast.success("Tema salvo e aplicado ao site");
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e.message);

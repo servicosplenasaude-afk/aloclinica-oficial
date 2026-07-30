@@ -18,6 +18,8 @@ const HeroSection = memo(
     const navigate = useNavigate();
     const prefetchPaciente = usePrefetchRoute(() => import("@/pages/AuthPaciente"));
 
+    const titleMain   = config?.title || "Cuidado médico de";
+    const titleAccent = config?.title_highlight || "excelência";
     const subtitle  = config?.subtitle || "Conecte-se a médicos especialistas verificados pelo CFM. Consultas por vídeo em HD, receitas digitais válidas e prontuário eletrônico completo.";
     const ctaText   = config?.cta_text || "Agendar consulta";
     const ctaUrl    = config?.cta_url || "/agendar";
@@ -58,10 +60,10 @@ const HeroSection = memo(
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-[64px] font-extrabold leading-[1.02] mb-5 tracking-[-0.02em] relative">
-                <span className="text-slate-900">Cuidado médico de </span>
+                <span className="text-slate-900">{titleMain} </span>
                 <br className="hidden sm:block" />
                 <span className="bg-gradient-to-r from-[#0ea5e9] via-[#0284c7] to-[#0369a1] bg-clip-text text-transparent">
-                  excelência
+                  {titleAccent}
                 </span>
               </h1>
 

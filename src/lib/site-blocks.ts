@@ -29,9 +29,12 @@ export type SiteBlock = {
 export type BlockField = {
   key: string;
   label: string;
-  type: "text" | "textarea" | "richtext" | "image" | "color" | "url" | "number" | "select" | "switch" | "list";
+  type: "text" | "textarea" | "richtext" | "image" | "color" | "url" | "link" | "number" | "select" | "switch" | "list" | "array";
   options?: string[];
   item_schema?: { fields: BlockField[] };
+  items?: { fields: BlockField[] };
+  item_fields?: BlockField[];
+  fields?: BlockField[];
   placeholder?: string;
 };
 
@@ -142,9 +145,11 @@ let _publicPromise: Promise<PublicBlock[]> | null = null;
 async function fetchPublicBlocks(): Promise<PublicBlock[]> {
   if (_publicCache) return _publicCache;
   if (_publicPromise) return _publicPromise;
+  // RPC get_public_blocks(): devolve TODOS os blocos com is_enabled (inclusive os
+  // desativados, com conteúdo oculto) — assim o site sabe quando uma seção está OFF.
+  // Sem ela, a RLS esconderia os desativados e o toggle "ligar/desligar" não teria efeito.
   _publicPromise = (db as any)
-    .from("site_blocks")
-    .select("page_slug, block_key, is_enabled, published, i18n")
+    .rpc("get_public_blocks")
     .then(({ data, error }: any) => {
       if (error) { warn("[site-blocks] public fetch", error); return []; }
       _publicCache = (data ?? []) as PublicBlock[];
