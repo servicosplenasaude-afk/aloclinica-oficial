@@ -67,6 +67,9 @@ verify_jwt = false
 [functions.emit-nfse]
 verify_jwt = false
 
+[functions.auth-email-hook]
+verify_jwt = false
+
 [functions.appointment-reminders]
 verify_jwt = false
 

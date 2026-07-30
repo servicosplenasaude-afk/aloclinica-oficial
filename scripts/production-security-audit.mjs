@@ -61,6 +61,7 @@ const expectedPublicFunctions = new Set([
   "post-consultation-survey",// cron — guard isInternalOrService
   "patient-nudges",          // cron — guard isInternalOrService
   "no-show-reminder-tick",   // cron — guard x-tick-secret
+  "auth-email-hook",         // Send Email Hook do GoTrue — guard: assinatura Standard Webhooks
 ]);
 
 const config = read("supabase/config.toml");
