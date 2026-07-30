@@ -6,12 +6,16 @@ que só você (ou o contador/TI) pode fazer. Ordem sugerida: faça os 🔴 **cr�
 
 ---
 
-## 🔴 1. Brevo — verificar o domínio de e-mail (BLOQUEADOR Nº 1)
-Sem isto, **nenhum e-mail transacional sai** (confirmação de consulta, recibo, aprovação de
-médico, redefinição de senha). A chave (`BREVO_API_KEY`) já está configurada — falta **verificar
-o domínio** `telemedicinaaloclinica.sbs` no Brevo.
+## ✅ 1. Brevo — envio de e-mail (RESOLVIDO — antes era o bloqueador nº 1)
+**Status 29/07:** e-mail **funcionando e entregando na CAIXA DE ENTRADA** do Gmail (testado com
+reset real). Corrigimos dois problemas: (a) os e-mails de **autenticação** (confirmação de
+cadastro + redefinição de senha) falhavam no SMTP (erro 500) e agora saem por um **Send Email
+Hook** que usa a **API do Brevo** (função `auth-email-hook`); (b) a **chave SMTP** no Supabase
+Auth estava errada — corrigida. Os e-mails transacionais (recibo, avisos) já usavam a API do
+Brevo e funcionam.
 
-Passos (no painel do Brevo):
+> **Recomendado (não bloqueia):** ainda vale **verificar/autenticar o domínio** no Brevo
+> (SPF/DKIM/DMARC) para blindar a deliverability a longo prazo. Passos (no painel do Brevo):
 1. Acesse **Settings → Senders, Domains & Dedicated IPs → Domains**.
 2. Adicione o domínio `telemedicinaaloclinica.sbs` (o mesmo do `EMAIL_FROM_ADDRESS`).
 3. O Brevo mostra registros **SPF, DKIM e DMARC** — adicione-os no DNS do domínio
