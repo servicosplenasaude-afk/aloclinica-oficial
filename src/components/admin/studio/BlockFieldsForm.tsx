@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, ImagePlus } from "lucide-react";
 import type { BlockField } from "@/lib/site-blocks";
+import { RichTextEditor } from "@/components/admin/studio/RichTextEditor";
 
 type Props = {
   fields: BlockField[];
@@ -60,11 +61,16 @@ function FieldRow({ field, value, onChange, onPickImage }: {
   const lbl = <Label className="text-[13px] font-semibold">{field.label}</Label>;
 
   switch (field.type) {
-    case "textarea":
     case "richtext":
       return (
         <div className="space-y-1.5">{lbl}
-          <Textarea rows={field.type === "richtext" ? 8 : 4} value={value ?? ""} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} />
+          <RichTextEditor value={value ?? ""} onChange={onChange} placeholder={field.placeholder} />
+        </div>
+      );
+    case "textarea":
+      return (
+        <div className="space-y-1.5">{lbl}
+          <Textarea rows={4} value={value ?? ""} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder} />
         </div>
       );
     case "switch":
