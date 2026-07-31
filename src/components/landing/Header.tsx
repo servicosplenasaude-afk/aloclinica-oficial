@@ -66,6 +66,8 @@ const Header = memo(forwardRef<HTMLElement, { config?: any }>(({ config }, ref) 
   // White-label: logo do tenant (contrato) tem prioridade sobre o do site.
   const tenantLogo = (contratoAtivo?.branding as Record<string, unknown> | undefined)?.logo_url;
   const logoUrl = (typeof tenantLogo === "string" && tenantLogo) || config?.logo_url || mascot;
+  // Marca própria AloClínica (não white-label): mostra o wordmark "Alô Clínica" ao lado.
+  const isDefaultLogo = !((typeof tenantLogo === "string" && tenantLogo) || config?.logo_url);
   const baseMenuItems = config?.menu_items || [
     { label: "Especialidades", href: "/#especialidades" },
     { label: "Para Médicos", href: "/#para-medicos" },
@@ -115,12 +117,17 @@ const Header = memo(forwardRef<HTMLElement, { config?: any }>(({ config }, ref) 
       )}
     >
       <div className="max-w-[1800px] mx-auto flex items-center gap-2 lg:gap-3 xl:gap-4 h-14 lg:h-[64px] px-4 sm:px-6 lg:px-6 xl:px-10 2xl:px-16">
-        <Link to="/" className="flex items-center shrink-0 group" aria-label="AloClínica — início">
+        <Link to="/" className="flex items-center gap-2.5 shrink-0 group" aria-label="Alô Clínica — início">
           <img
             src={logoUrl}
-            alt="AloClínica"
-            className="h-8 lg:h-9 w-auto max-w-[170px] object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+            alt="Alô Clínica"
+            className="w-10 h-10 lg:w-11 lg:h-11 rounded-2xl object-contain transition-transform duration-200 group-hover:scale-105"
           />
+          {isDefaultLogo && (
+            <span className="text-xl xl:text-2xl font-extrabold tracking-tight leading-none whitespace-nowrap">
+              <span className="text-[#0f2e6e]">Alô</span> <span className="text-[#18a9bf]">Clínica</span>
+            </span>
+          )}
         </Link>
 
         <div className="hidden lg:flex items-center flex-1 justify-center min-w-0">
