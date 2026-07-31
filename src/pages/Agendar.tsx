@@ -700,22 +700,61 @@ const Agendar = () => {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="text-center py-16"
+                      className="rounded-2xl border border-border/60 bg-card shadow-sm overflow-hidden"
                     >
-                      <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                        <Stethoscope className="w-10 h-10 text-primary/60" />
+                      <div className="flex flex-col sm:flex-row items-center gap-6 p-6 sm:p-8">
+                        <div className="relative shrink-0">
+                          <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl" aria-hidden="true" />
+                          <img
+                            src={currentSpecialty?.img ?? pingoClinicoGeral}
+                            alt="Pingo, mascote da AloClínica"
+                            loading="lazy"
+                            className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover ring-4 ring-primary/10"
+                          />
+                        </div>
+
+                        <div className="flex-1 min-w-0 text-center sm:text-left">
+                          <div className="inline-flex w-11 h-11 rounded-xl bg-primary/10 items-center justify-center mb-3">
+                            <Stethoscope className="w-5 h-5 text-primary" />
+                          </div>
+                          <h3 className="text-lg sm:text-xl font-bold text-foreground mb-1.5">
+                            Nenhum profissional encontrado
+                          </h3>
+                          <p className="text-sm text-muted-foreground mb-5 max-w-md">
+                            {debouncedSearch
+                              ? "Não encontramos resultados para essa busca. Tente outro termo ou ajuste os filtros."
+                              : "Não encontramos profissionais com os filtros selecionados no momento. Tente ajustar os filtros ou explorar outras especialidades."}
+                          </p>
+                          <div className="flex flex-wrap justify-center sm:justify-start gap-2.5">
+                            <Button className="rounded-xl gap-2" onClick={handleBackToSpecialties}>
+                              Ver outras especialidades <ArrowRight className="w-4 h-4" />
+                            </Button>
+                            <Button variant="outline" className="rounded-xl gap-2" onClick={resetFilters}>
+                              Limpar filtros <RotateCcw className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="text-lg font-bold text-foreground mb-2">
-                        Nenhum profissional encontrado
-                      </h3>
-                      <p className="text-muted-foreground text-sm mb-6 max-w-md mx-auto">
-                        {debouncedSearch
-                          ? "Tente outro termo de busca ou volte para ver todas as especialidades."
-                          : "No momento não há profissionais disponíveis nesta especialidade."}
-                      </p>
-                      <Button variant="outline" className="rounded-xl" onClick={handleBackToSpecialties}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Voltar às especialidades
-                      </Button>
+
+                      <div className="border-t border-border/50 bg-muted/20 p-5 sm:p-6">
+                        <p className="text-sm font-semibold text-foreground mb-4">
+                          Sugestões para encontrar mais opções
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:divide-x sm:divide-border/50">
+                          {[
+                            { icon: SlidersHorizontal, text: "Remova ou altere alguns filtros para ampliar os resultados." },
+                            { icon: Clock, text: "Verifique outros horários disponíveis para essa especialidade." },
+                            { icon: Zap, text: "Profissionais online agora podem te atender mais rápido." },
+                          ].map(({ icon: Icon, text }, idx) => (
+                            <div key={text} className={cn("flex items-start gap-3 min-w-0", idx > 0 && "sm:pl-4")}>
+                              <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                <Icon className="w-4 h-4 text-primary" />
+                              </span>
+                              <p className="text-xs leading-relaxed text-muted-foreground">{text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </motion.div>
                   ) : (
                     <div className="space-y-4">
