@@ -290,7 +290,7 @@ const Header = memo(forwardRef<HTMLElement, { config?: any }>(({ config }, ref) 
 
               {/* Sub-itens "Sobre Nós" */}
               <div className="px-1 py-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 mb-2 px-2">Sobre Nós</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-2">Sobre Nós</p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {[
                     { label: "Quem somos", href: "/sobre/quem-somos", icon: Users },

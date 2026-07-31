@@ -67,7 +67,7 @@ const Footer = memo(forwardRef<HTMLElement, { config?: any }>(({ config }, ref) 
               <h3 className="text-xl lg:text-2xl font-extrabold text-white mb-1.5 tracking-tight">
                 Receba dicas de saúde 💙
               </h3>
-              <p className="text-sm text-white/50 leading-relaxed">
+              <p className="text-sm text-white/80 leading-relaxed">
                 Conteúdos exclusivos, novidades e ofertas — direto no seu e-mail.
               </p>
             </div>
@@ -104,7 +104,7 @@ const Footer = memo(forwardRef<HTMLElement, { config?: any }>(({ config }, ref) 
                 Alo<span className="text-primary">Clínica</span>
               </span>
             </Link>
-            <p className="text-sm text-white/50 leading-relaxed mb-5 max-w-xs">{footerTag}</p>
+            <p className="text-sm text-white/80 leading-relaxed mb-5 max-w-xs">{footerTag}</p>
 
             {/* Contato direto */}
             <ul className="space-y-2.5 mb-6">
