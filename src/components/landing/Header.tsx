@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { Stethoscope, VideoCamera, Buildings, FileText, SignIn, SignOut, SquaresFour, CaretRight, Eye, CreditCard, Users, Heart, Star, ChatsCircle, House, Info, FirstAidKit, Question } from "@phosphor-icons/react";
 import { PINGO_LOGO_URL } from "@/lib/constants";
-const mascot = PINGO_LOGO_URL;
+import brandLogo from "@/assets/logo.png";
+const mascot = brandLogo; // logo oficial AloClínica (pinguim + wordmark)
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useContrato } from "@/contexts/ContratoContext";
@@ -114,11 +115,12 @@ const Header = memo(forwardRef<HTMLElement, { config?: any }>(({ config }, ref) 
       )}
     >
       <div className="max-w-[1800px] mx-auto flex items-center gap-2 lg:gap-3 xl:gap-4 h-14 lg:h-[64px] px-4 sm:px-6 lg:px-6 xl:px-10 2xl:px-16">
-        <Link to="/" className="flex items-center gap-2 shrink-0 group">
-          <img src={logoUrl} alt="Logo" className="w-9 h-9 rounded-xl object-contain transition-transform duration-200 group-hover:scale-105" width={36} height={36} />
-          <span className="text-lg xl:text-xl font-extrabold text-[#1a1c1e] tracking-tight">
-            Alo<span className="text-[#1a4fcf]">Clinica</span>
-          </span>
+        <Link to="/" className="flex items-center shrink-0 group" aria-label="AloClínica — início">
+          <img
+            src={logoUrl}
+            alt="AloClínica"
+            className="h-8 lg:h-9 w-auto max-w-[170px] object-contain transition-transform duration-200 group-hover:scale-[1.03]"
+          />
         </Link>
 
         <div className="hidden lg:flex items-center flex-1 justify-center min-w-0">
