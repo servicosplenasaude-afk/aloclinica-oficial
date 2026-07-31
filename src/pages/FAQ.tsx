@@ -167,9 +167,20 @@ const FAQ = forwardRef<HTMLDivElement>((_, ref) => {
       <div className="absolute inset-0 -z-10 bg-[image:var(--landing-bg)] pointer-events-none" />
 
       <SEOHead
-        title="FAQ - Perguntas Frequentes | AloClínica"
+        title="Perguntas Frequentes | AloClínica"
         description="Respostas para as principais dúvidas sobre telemedicina, agendamento, pagamento e segurança."
         canonical="https://aloclinica.com.br/faq"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: Object.values(faqCategories).flatMap((cat) =>
+            cat.questions.map((q) => ({
+              "@type": "Question",
+              name: q.q,
+              acceptedAnswer: { "@type": "Answer", text: q.a },
+            }))
+          ),
+        }}
       />
 
       <Header />
