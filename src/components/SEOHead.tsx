@@ -8,8 +8,8 @@ interface SEOHeadProps {
   jsonLd?: Record<string, unknown>;
 }
 
-const SITE_NAME = "AloClínica — Telemedicina Online";
-const DEFAULT_OG_IMAGE = "https://aloclinica.com.br/og-image.png";
+const SITE_NAME = "AloClínica";
+const DEFAULT_OG_IMAGE = "https://aloclinica.com.br/pwa-512x512.png";
 // Produção; canonical/og:url devem apontar pra ela pra Google nao indexar preview
 const BASE_URL = "https://aloclinica.com.br";
 
@@ -51,7 +51,13 @@ const removeJsonLd = () => {
 
 const SEOHead = ({ title, description, canonical, ogImage, jsonLd }: SEOHeadProps) => {
   useEffect(() => {
-    const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
+    const base = title?.trim();
+    // Evita sufixo duplicado e mantém o título abaixo de 60 caracteres.
+    const fullTitle = !base
+      ? "AloClínica — Telemedicina Online"
+      : base.toLowerCase().includes("aloclínica") || base.toLowerCase().includes("aloclinica")
+        ? base
+        : `${base} | ${SITE_NAME}`;
     document.title = fullTitle;
 
     if (description) {

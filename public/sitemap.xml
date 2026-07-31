@@ -6,8 +6,17 @@
   <url><loc>https://aloclinica.com.br/paciente</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/medico</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/clinica</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://aloclinica.com.br/parceiro</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
-  <url><loc>https://aloclinica.com.br/afiliado</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/paciente/cadastro</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/medico/cadastro</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/clinica/cadastro</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/especialidades</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/agendar</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/como-funciona</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/faq</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/sobre</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/seguranca</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/contato</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://aloclinica.com.br/responsavel-tecnico</loc><priority>0.4</priority><changefreq>yearly</changefreq></url>
   <url><loc>https://aloclinica.com.br/validar</loc><priority>0.5</priority><changefreq>monthly</changefreq></url>
   <url><loc>https://aloclinica.com.br/terms</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>
   <url><loc>https://aloclinica.com.br/privacy</loc><priority>0.3</priority><changefreq>yearly</changefreq></url>

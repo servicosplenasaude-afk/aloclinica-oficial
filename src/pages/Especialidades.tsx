@@ -78,9 +78,26 @@ const Especialidades = forwardRef<HTMLDivElement>((_, ref) => {
       <div className="absolute inset-0 -z-10 bg-[image:var(--landing-bg)] pointer-events-none" />
 
       <SEOHead
-        title="Especialidades Médicas | AloClínica - 30+ Áreas de Saúde"
+        title="Especialidades Médicas | AloClínica"
         description="Conheça as 30+ especialidades disponíveis na AloClínica. De Cardiologia a Psicologia, encontre o médico ideal."
         canonical="https://aloclinica.com.br/especialidades"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Especialidades Médicas — AloClínica",
+          url: "https://aloclinica.com.br/especialidades",
+          mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: specialties.length,
+            itemListElement: specialties.map((s, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: s.name,
+              description: s.desc,
+              url: `https://aloclinica.com.br/especialidades/${slugify(s.name)}`,
+            })),
+          },
+        }}
       />
 
       <Header />

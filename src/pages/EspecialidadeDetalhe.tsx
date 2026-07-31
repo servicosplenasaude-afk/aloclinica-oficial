@@ -284,9 +284,32 @@ const EspecialidadeDetalhe = () => {
   return (
     <div className="relative min-h-screen bg-background">
       <SEOHead
-        title={`${specialty.name} Online - Teleconsulta com Especialistas | AloClínica`}
+        title={`${specialty.name} Online | AloClínica`}
         description={`${specialty.shortDesc} Agende uma teleconsulta com médicos especialistas em ${specialty.name.toLowerCase()} a partir de R$ ${specialty.fromPrice}.`}
         canonical={`https://aloclinica.com.br/especialidades/${specialty.slug}`}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "MedicalWebPage",
+          name: `${specialty.name} Online — AloClínica`,
+          url: `https://aloclinica.com.br/especialidades/${specialty.slug}`,
+          description: specialty.shortDesc,
+          about: {
+            "@type": "MedicalSpecialty",
+            name: specialty.name,
+          },
+          mainEntity: {
+            "@type": "MedicalProcedure",
+            name: `Teleconsulta em ${specialty.name}`,
+            procedureType: "https://schema.org/NoninvasiveProcedure",
+            offers: {
+              "@type": "Offer",
+              price: specialty.fromPrice,
+              priceCurrency: "BRL",
+              availability: "https://schema.org/InStock",
+              url: `https://aloclinica.com.br/especialidades/${specialty.slug}`,
+            },
+          },
+        }}
       />
 
       <Header />

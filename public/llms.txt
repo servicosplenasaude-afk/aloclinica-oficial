@@ -1,0 +1,28 @@
+# AloClínica
+
+> Plataforma brasileira de telemedicina: teleconsultas por vídeo 24h, receitas digitais válidas e mais de 30 especialidades.
+
+## Pages
+
+- [Início](/): Visão geral da plataforma e agendamento rápido.
+- [Teleconsulta](/teleconsulta): Como funciona a consulta médica por vídeo.
+- [Especialidades](/especialidades): Todas as áreas de saúde atendidas.
+- [Agendar](/agendar): Busca de profissionais e agendamento de consulta.
+- [Como funciona](/como-funciona): Passo a passo do atendimento online.
+- [Para empresas](/para-empresas): Planos de saúde corporativa e B2B.
+- [Para profissionais](/para-profissionais): Informações para médicos e clínicas.
+- [Segurança](/seguranca): Práticas de segurança e privacidade dos dados.
+- [FAQ](/faq): Perguntas frequentes sobre consultas, pagamento e receitas.
+- [Sobre](/sobre): Quem somos e nossa missão.
+- [Contato](/contato): Canais de atendimento.
+- [Validar documento](/validar): Verificação de receitas e atestados emitidos.
+- [Responsável técnico](/responsavel-tecnico): Dados legais e diretor técnico médico.
+
+## Optional
+
+- [Termos de uso](/terms): Condições de uso da plataforma.
+- [Política de privacidade](/privacy): Tratamento de dados pessoais.
+- [LGPD](/lgpd): Conformidade com a Lei Geral de Proteção de Dados.
+- [Cookies](/cookies): Política de cookies.
+- [Reembolso](/refund): Política de cancelamento e reembolso.
+- [Acessibilidade](/accessibility): Compromissos de acessibilidade.
