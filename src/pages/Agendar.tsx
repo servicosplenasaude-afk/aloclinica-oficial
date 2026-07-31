@@ -12,6 +12,7 @@ import {
   Search, Stethoscope, UserCheck, BadgePercent,
   ChevronDown, MapPin, GraduationCap, Heart, Zap,
   CalendarCheck, CheckCircle2, HeartPulse, CalendarClock, Filter,
+  RotateCcw, SlidersHorizontal,
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
