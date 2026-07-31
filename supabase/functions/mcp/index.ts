@@ -2,7 +2,100 @@
 // To take ownership, delete this banner line; the plugin then leaves the file alone.
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
+// src/lib/mcp/index.ts
+import { defineMcp } from "npm:@lovable.dev/mcp-js@0.20.0";
+
+// src/lib/mcp/tools/list-specialties.ts
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient } from "npm:@supabase/supabase-js@^2.108.2";
+import { z } from "npm:zod@^3.23.8";
+var list_specialties_default = defineTool({
+  name: "list_specialties",
+  title: "List medical specialties",
+  description: "List the medical specialties offered on the AloCl\xEDnica telemedicine platform. Returns each specialty's name, slug, and short description.",
+  inputSchema: {
+    search: z.string().trim().optional().describe("Optional case-insensitive substring to filter specialty names.")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ search }) => {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+    const sb = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+    let q = sb.from("medical_specialties").select("name, slug, description, is_active").eq("is_active", true).order("name");
+    if (search) q = q.ilike("name", `%${search}%`);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { specialties: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/search-doctors.ts
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.20.0";
+import { createClient as createClient2 } from "npm:@supabase/supabase-js@^2.108.2";
+import { z as z2 } from "npm:zod@^3.23.8";
+var search_doctors_default = defineTool2({
+  name: "search_doctors",
+  title: "Search approved doctors",
+  description: "Search AloCl\xEDnica's directory of approved, publicly-listed doctors. Filter by specialty slug and/or a name substring. Returns only public profile fields (never contact info or private data).",
+  inputSchema: {
+    specialty: z2.string().trim().optional().describe("Optional specialty slug (e.g. 'cardiologia'). Use list_specialties to discover valid slugs."),
+    name: z2.string().trim().optional().describe("Optional case-insensitive substring to match doctor display name."),
+    limit: z2.number().int().min(1).max(50).optional().describe("Max results (default 10, max 50).")
+  },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async ({ specialty, name, limit }) => {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY;
+    const sb = createClient2(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+    let q = sb.from("doctor_profiles").select("user_id, display_name, specialty, crm, uf, bio, avatar_url, price_cents, is_active, approval_status").eq("approval_status", "approved").eq("is_active", true).limit(limit ?? 10);
+    if (specialty) q = q.eq("specialty", specialty);
+    if (name) q = q.ilike("display_name", `%${name}%`);
+    const { data, error } = await q;
+    if (error) return { content: [{ type: "text", text: error.message }], isError: true };
+    return {
+      content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
+      structuredContent: { doctors: data ?? [] }
+    };
+  }
+});
+
+// src/lib/mcp/tools/platform-info.ts
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.20.0";
+var platform_info_default = defineTool3({
+  name: "platform_info",
+  title: "AloCl\xEDnica platform info",
+  description: "Return a short description of the AloCl\xEDnica telemedicine platform: what it does, main features, and public URLs.",
+  inputSchema: {},
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: () => ({
+    content: [
+      {
+        type: "text",
+        text: [
+          "AloCl\xEDnica \u2014 plataforma brasileira de telemedicina.",
+          "Servi\xE7os: agendamento de consultas online, plant\xE3o 24h, receitas digitais assinadas (ICP-Brasil), atestados e cart\xE3o de sa\xFAde digital.",
+          "Site p\xFAblico: https://aloclinica.lovable.app",
+          "Especialidades atendidas: use a ferramenta list_specialties.",
+          "Diret\xF3rio de m\xE9dicos aprovados: use a ferramenta search_doctors.",
+          "Conformidade: CFM 2.314/2022 e LGPD."
+        ].join("\n")
+      }
+    ]
+  })
+});
+
+// src/lib/mcp/index.ts
+var mcp_default = defineMcp({
+  name: "aloclinica-mcp",
+  title: "AloCl\xEDnica MCP",
+  version: "0.1.0",
+  instructions: "Public read-only tools for the AloCl\xEDnica telemedicine platform. Use platform_info to introduce the service, list_specialties to discover medical specialties, and search_doctors to find publicly-listed approved doctors. No patient, appointment, or medical-record data is exposed.",
+  tools: [platform_info_default, list_specialties_default, search_doctors_default]
+});
+
 // lovable-mcp-supabase-entry.ts
-import mcp from "npm:C:\\Users\\lopes\\aloclinica-final\\src\\lib\\mcp\\index.ts";
 import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.20.0/stacks/supabase";
-Deno.serve(createSupabaseHandler(mcp, { functionName: "mcp" }));
+Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }));
