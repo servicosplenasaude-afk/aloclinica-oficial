@@ -310,6 +310,14 @@ const Agendar = () => {
     setSearch("");
   };
 
+  const resetFilters = () => {
+    setSearch("");
+    setCouncilFilter("all");
+    setOnlyAvailable(false);
+    setPriceMin("");
+    setPriceMax("");
+  };
+
   const visibleSpecs = showAllSpecs ? specialties : specialties.slice(0, 12);
 
   return (
