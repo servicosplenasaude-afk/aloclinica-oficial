@@ -84,4 +84,5 @@ export const FEATURES = {
 } as const;
 
 // ─── Assets ───────────────────────────────────────────────────────────────────
-export const PINGO_LOGO_URL = "https://cvbgrjauqjawrsyknhyj.supabase.co/storage/v1/object/public/files/uploads/0XILPRqqUbSOh99ow53X5OBDOCC3/1776904700670-og955-1776788772275-bngbf-hero-doctor__4_-removebg-preview.png";
+export const PINGO_LOGO_URL = "/__l5e/assets-v1/23a80bc7-58dd-4a67-8d05-e40417cc332a/pingo-logo.png";
+
