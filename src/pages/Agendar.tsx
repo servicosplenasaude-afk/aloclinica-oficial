@@ -531,13 +531,13 @@ const Agendar = () => {
                     </div>
                   </div>
 
-                  {/* Specialty quick-switch + availability filter */}
+                  {/* Filtros agrupados em cartões */}
                   <div className="mb-6 space-y-3">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
-                        <Filter className="w-3 h-3" /> Tipo de profissional
+                    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                      <span className="inline-flex items-center gap-2 mb-3 text-xs font-semibold text-foreground">
+                        <UserCheck className="w-4 h-4 text-primary" /> Tipo de profissional
                       </span>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {[
                           { value: "all",     label: "Todos" },
                           { value: "CRM",     label: "Médicos" },
@@ -556,10 +556,10 @@ const Agendar = () => {
                               key={c.value}
                               onClick={() => setCouncilFilter(c.value)}
                               className={cn(
-                                "text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all",
+                                "text-xs font-medium px-3.5 py-1.5 rounded-lg border transition-all",
                                 active
                                   ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                                  : "bg-card border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary",
+                                  : "bg-card border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5",
                               )}
                             >
                               {c.label}
@@ -569,11 +569,11 @@ const Agendar = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
-                        <Filter className="w-3 h-3" /> Especialidade
+                    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm">
+                      <span className="inline-flex items-center gap-2 mb-3 text-xs font-semibold text-foreground">
+                        <HeartPulse className="w-4 h-4 text-primary" /> Especialidade
                       </span>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {specialties.map((s) => {
                           const active = s.name === selectedSpecialty;
                           return (
@@ -581,10 +581,10 @@ const Agendar = () => {
                               key={s.name}
                               onClick={() => handleSelectSpecialty(s.name)}
                               className={cn(
-                                "text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all",
+                                "text-xs font-medium px-3.5 py-1.5 rounded-lg border transition-all",
                                 active
                                   ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                                  : "bg-card border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary"
+                                  : "bg-card border-border/60 text-muted-foreground hover:border-primary/40 hover:text-primary hover:bg-primary/5"
                               )}
                             >
                               {s.name}
@@ -594,7 +594,7 @@ const Agendar = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <div className="rounded-2xl border border-border/60 bg-card p-4 shadow-sm flex flex-wrap items-center gap-x-6 gap-y-4">
                       <label className="inline-flex items-center gap-2 cursor-pointer select-none">
                         <span
                           className={cn(
@@ -621,10 +621,12 @@ const Agendar = () => {
                         </span>
                       </label>
 
+                      <div className="hidden sm:block w-px h-9 bg-border/60" />
+
                       {/* Price range filter */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
-                          Preço
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[11px] font-semibold text-muted-foreground">
+                          Faixa de preço (R$)
                         </span>
                         <div className="flex items-center gap-2">
                           <div className="relative">
@@ -635,7 +637,7 @@ const Agendar = () => {
                               min={0}
                               value={priceMin}
                               onChange={(e) => setPriceMin(e.target.value === "" ? "" : Number(e.target.value))}
-                              className="w-20 h-8 pl-6 pr-2 rounded-lg border border-border/60 bg-card text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                              className="w-24 h-9 pl-7 pr-2 rounded-lg border border-border/60 bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/25"
                             />
                           </div>
                           <span className="text-xs text-muted-foreground">-</span>
@@ -647,19 +649,20 @@ const Agendar = () => {
                               min={0}
                               value={priceMax}
                               onChange={(e) => setPriceMax(e.target.value === "" ? "" : Number(e.target.value))}
-                              className="w-20 h-8 pl-6 pr-2 rounded-lg border border-border/60 bg-card text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                              className="w-24 h-9 pl-7 pr-2 rounded-lg border border-border/60 bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/25"
                             />
                           </div>
-                          {(priceMin !== "" || priceMax !== "") && (
-                            <button
-                              onClick={() => { setPriceMin(""); setPriceMax(""); }}
-                              className="text-[10px] text-primary font-medium hover:underline"
-                            >
-                              Limpar
-                            </button>
-                          )}
                         </div>
                       </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-auto rounded-lg gap-1.5 text-xs"
+                        onClick={resetFilters}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" /> Limpar filtros
+                      </Button>
                     </div>
                   </div>
 
