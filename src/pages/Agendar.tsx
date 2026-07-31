@@ -533,9 +533,9 @@ const Agendar = () => {
 
                   {/* Specialty quick-switch + availability filter */}
                   <div className="mb-6 space-y-3">
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="rounded-2xl border border-border/60 bg-card shadow-sm p-4 space-y-2.5">
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
-                        <Filter className="w-3 h-3" /> Tipo de profissional
+                        <Filter className="w-3 h-3 text-primary" /> Tipo de profissional
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {[
@@ -569,9 +569,9 @@ const Agendar = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="rounded-2xl border border-border/60 bg-card shadow-sm p-4 space-y-2.5">
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
-                        <Filter className="w-3 h-3" /> Especialidade
+                        <Stethoscope className="w-3 h-3 text-primary" /> Especialidade
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {specialties.map((s) => {
@@ -594,7 +594,7 @@ const Agendar = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <div className="rounded-2xl border border-border/60 bg-card shadow-sm p-4 flex flex-wrap items-center gap-x-6 gap-y-3">
                       <label className="inline-flex items-center gap-2 cursor-pointer select-none">
                         <span
                           className={cn(
@@ -650,16 +650,15 @@ const Agendar = () => {
                               className="w-20 h-8 pl-6 pr-2 rounded-lg border border-border/60 bg-card text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
                             />
                           </div>
-                          {(priceMin !== "" || priceMax !== "") && (
-                            <button
-                              onClick={() => { setPriceMin(""); setPriceMax(""); }}
-                              className="text-[10px] text-primary font-medium hover:underline"
-                            >
-                              Limpar
-                            </button>
-                          )}
                         </div>
                       </div>
+
+                      <button
+                        onClick={resetFilters}
+                        className="ml-auto text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        Limpar filtros
+                      </button>
                     </div>
                   </div>
 
