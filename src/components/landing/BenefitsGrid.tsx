@@ -54,7 +54,20 @@ const bottomCards = [
   },
 ];
 
-function BenefitsGrid() {
+function BenefitsGrid({ config }: { config?: any }) {
+  const badge          = config?.badge || "Soluções Modernas";
+  const title          = config?.title || "Saúde moderna,";
+  const titleHighlight = config?.title_highlight || "sem complicação";
+  const familyTitle    = config?.family_title || "Consultas para toda a família, de onde vocês estiverem";
+  const familyDesc     = config?.family_desc || "Cuide de quem você ama com praticidade. Adicione dependentes e gerencie a saúde de todos em um só lugar.";
+  const benefits = Array.isArray(config?.side_benefits) && config.side_benefits.length
+    ? config.side_benefits.map((b: any, i: number) => ({
+        icon: sideBenefits[i % sideBenefits.length].icon,
+        iconBg: sideBenefits[i % sideBenefits.length].iconBg,
+        iconColor: sideBenefits[i % sideBenefits.length].iconColor,
+        title: b.title, description: b.description,
+      }))
+    : sideBenefits;
   return (
     <section className="py-16 md:py-28 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 flex flex-col gap-12">
@@ -67,10 +80,10 @@ function BenefitsGrid() {
           className="flex flex-col items-center text-center space-y-4"
         >
           <div className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold tracking-widest uppercase border border-primary/10">
-            Soluções Modernas
+            {badge}
           </div>
           <h2 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight">
-            Saúde moderna, <span className="text-primary">sem complicação</span>
+            {title} <span className="text-primary">{titleHighlight}</span>
           </h2>
         </motion.div>
 
@@ -98,17 +111,17 @@ function BenefitsGrid() {
                 <span className="text-white text-[10px] font-bold uppercase tracking-widest">Para toda a família</span>
               </div>
               <h3 className="text-2xl md:text-4xl font-bold text-white leading-tight max-w-xl">
-                Consultas para toda a família, de onde vocês estiverem
+                {familyTitle}
               </h3>
               <p className="text-white/80 text-base md:text-lg max-w-lg leading-relaxed">
-                Cuide de quem você ama com praticidade. Adicione dependentes e gerencie a saúde de todos em um só lugar.
+                {familyDesc}
               </p>
             </div>
           </motion.div>
 
           {/* Right column: 3 benefit cards */}
           <div className="md:col-span-4 flex flex-col gap-6">
-            {sideBenefits.map((b, i) => (
+            {benefits.map((b, i) => (
               <motion.div
                 key={b.title}
                 initial={{ opacity: 0, x: 20 }}

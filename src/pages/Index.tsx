@@ -163,7 +163,7 @@ const Index = forwardRef<HTMLDivElement>((_, ref) => {
       <TechnologySection config={sectionData.technology} />
       <ConsultaInfoBanner />
       {isOn("how_it_works") !== false && <HowItWorksSection />}
-      {isOn("benefits") !== false && <BenefitsGrid />}
+      {isOn("benefits") !== false && <BenefitsGrid config={sectionData.benefits} />}
       <TrustBanner />
 
       {/* Seção de depoimentos removida: as normas de publicidade médica do CFM
