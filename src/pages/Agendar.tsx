@@ -695,22 +695,42 @@ const Agendar = () => {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="text-center py-16"
+                      className="rounded-3xl border border-border/60 bg-card shadow-sm px-6 py-12 text-center"
                     >
-                      <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                        <Stethoscope className="w-10 h-10 text-primary/60" />
+                      <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6 overflow-hidden">
+                        <img
+                          src={currentSpecialtyImg ?? pingoClinicoGeral}
+                          alt="Pingo, mascote da AloClínica, não encontrou profissionais"
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
                       </div>
-                      <h3 className="text-lg font-bold text-foreground mb-2">
+                      <h3 className="text-xl font-bold text-foreground mb-2">
                         Nenhum profissional encontrado
                       </h3>
                       <p className="text-muted-foreground text-sm mb-6 max-w-md mx-auto">
                         {debouncedSearch
-                          ? "Tente outro termo de busca ou volte para ver todas as especialidades."
-                          : "No momento não há profissionais disponíveis nesta especialidade."}
+                          ? "Tente outro termo de busca ou ajuste os filtros aplicados."
+                          : "No momento não há profissionais disponíveis com esses filtros."}
                       </p>
-                      <Button variant="outline" className="rounded-xl" onClick={handleBackToSpecialties}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Voltar às especialidades
-                      </Button>
+                      <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                        <Button variant="outline" className="rounded-xl" onClick={handleBackToSpecialties}>
+                          <ArrowLeft className="w-4 h-4 mr-2" /> Ver outras especialidades
+                        </Button>
+                        <Button className="rounded-xl" onClick={resetFilters}>
+                          <Filter className="w-4 h-4 mr-2" /> Limpar filtros
+                        </Button>
+                      </div>
+                      <div className="max-w-md mx-auto rounded-2xl bg-muted/40 border border-border/40 p-4 text-left">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                          Sugestões
+                        </p>
+                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                          <li className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Desative "Apenas com horários disponíveis"</li>
+                          <li className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Amplie a faixa de preço</li>
+                          <li className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Selecione "Todos" em tipo de profissional</li>
+                        </ul>
+                      </div>
                     </motion.div>
                   ) : (
                     <div className="space-y-4">
