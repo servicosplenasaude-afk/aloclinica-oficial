@@ -267,7 +267,7 @@ const AdminAppointments = () => {
     let peerIds: string[] = [];
     if (specialtyIds.length > 0) {
       const { data: peers } = await db.from("doctor_specialties").select("doctor_id").in("specialty_id", specialtyIds);
-      peerIds = [...new Set((peers ?? []).map((r: any) => r.doctor_id))].filter(id => id !== a.doctor_id);
+      peerIds = ([...new Set((peers ?? []).map((r: any) => r.doctor_id))] as string[]).filter(id => id !== a.doctor_id);
     }
 
     // Filtra por especialidade só quando existem colegas; caso contrário lista todos os médicos aprovados.

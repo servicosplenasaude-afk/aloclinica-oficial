@@ -55,9 +55,14 @@ const formatDateTime = (isoString: string) => {
 
 // Fire-and-forget helpers — errors are logged but never thrown to callers.
 
-const sendWhatsApp = (phone: string, message: string) =>
+interface WhatsAppOptions {
+  userId?: string;
+  category?: string;
+}
+
+const sendWhatsApp = (phone: string, message: string, options?: WhatsAppOptions) =>
   db.functions
-    .invoke("send-whatsapp", { body: { phone, message } })
+    .invoke("send-whatsapp", { body: { phone, message, ...options } })
     .catch(err => logError("sendWhatsApp failed", err, { phone: phone.slice(0, 5) + "…" }));
 
 const sendEmail = (type: string, to: string, data: Record<string, string>) =>

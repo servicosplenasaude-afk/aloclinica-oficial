@@ -51,6 +51,7 @@ const BookAppointment = () => {
   const { doctorId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isContratoMode, contratoAtivo } = useContrato();
   const kycPending = localStorage.getItem(KYC_PENDING_KEY) === "true";
 

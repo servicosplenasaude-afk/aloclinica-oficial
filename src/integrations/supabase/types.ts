@@ -602,6 +602,7 @@ export type Database = {
           started_at: string | null
           status: Database["public"]["Enums"]["appointment_status"]
           updated_at: string
+          video_room_secret: string
           video_room_url: string | null
         }
         Insert: {
@@ -635,6 +636,7 @@ export type Database = {
           started_at?: string | null
           status?: Database["public"]["Enums"]["appointment_status"]
           updated_at?: string
+          video_room_secret?: string
           video_room_url?: string | null
         }
         Update: {
@@ -668,6 +670,7 @@ export type Database = {
           started_at?: string | null
           status?: Database["public"]["Enums"]["appointment_status"]
           updated_at?: string
+          video_room_secret?: string
           video_room_url?: string | null
         }
         Relationships: [
@@ -1125,6 +1128,60 @@ export type Database = {
           is_active?: boolean
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      clinical_referrals: {
+        Row: {
+          appointment_id: string | null
+          clinical_summary: string | null
+          created_at: string
+          doctor_id: string
+          id: string
+          patient_cpf: string | null
+          patient_id: string | null
+          patient_name: string
+          pdf_url: string | null
+          reason: string
+          specialty: string
+          status: string
+          storage_path: string | null
+          urgency: string
+          verification_code: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          clinical_summary?: string | null
+          created_at?: string
+          doctor_id: string
+          id?: string
+          patient_cpf?: string | null
+          patient_id?: string | null
+          patient_name: string
+          pdf_url?: string | null
+          reason: string
+          specialty: string
+          status?: string
+          storage_path?: string | null
+          urgency?: string
+          verification_code?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          clinical_summary?: string | null
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          patient_cpf?: string | null
+          patient_id?: string | null
+          patient_name?: string
+          pdf_url?: string | null
+          reason?: string
+          specialty?: string
+          status?: string
+          storage_path?: string | null
+          urgency?: string
+          verification_code?: string | null
         }
         Relationships: []
       }
@@ -1771,6 +1828,30 @@ export type Database = {
         }
         Relationships: []
       }
+      coupon_usages: {
+        Row: {
+          coupon_code: string
+          created_at: string
+          id: string
+          reference_id: string
+          user_id: string | null
+        }
+        Insert: {
+          coupon_code: string
+          created_at?: string
+          id?: string
+          reference_id: string
+          user_id?: string | null
+        }
+        Update: {
+          coupon_code?: string
+          created_at?: string
+          id?: string
+          reference_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       coupons: {
         Row: {
           code: string
@@ -2192,6 +2273,7 @@ export type Database = {
           release_at: string
           status: string
           updated_at: string
+          withdrawal_id: string | null
         }
         Insert: {
           appointment_id?: string | null
@@ -2208,6 +2290,7 @@ export type Database = {
           release_at: string
           status?: string
           updated_at?: string
+          withdrawal_id?: string | null
         }
         Update: {
           appointment_id?: string | null
@@ -2224,6 +2307,7 @@ export type Database = {
           release_at?: string
           status?: string
           updated_at?: string
+          withdrawal_id?: string | null
         }
         Relationships: [
           {
@@ -2299,6 +2383,7 @@ export type Database = {
           pix_key: string | null
           price: number | null
           price_suggestion_sent_at: string | null
+          professional_address: string | null
           professional_photo_url: string | null
           rating_avg: number | null
           rating_count: number | null
@@ -2345,6 +2430,7 @@ export type Database = {
           pix_key?: string | null
           price?: number | null
           price_suggestion_sent_at?: string | null
+          professional_address?: string | null
           professional_photo_url?: string | null
           rating_avg?: number | null
           rating_count?: number | null
@@ -2391,6 +2477,7 @@ export type Database = {
           pix_key?: string | null
           price?: number | null
           price_suggestion_sent_at?: string | null
+          professional_address?: string | null
           professional_photo_url?: string | null
           rating_avg?: number | null
           rating_count?: number | null
@@ -3813,6 +3900,42 @@ export type Database = {
           },
         ]
       }
+      medication_reminders: {
+        Row: {
+          active: boolean
+          created_at: string
+          dosage: string | null
+          id: string
+          last_sent_slot: string | null
+          medication_name: string
+          patient_id: string
+          times: Json
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          dosage?: string | null
+          id?: string
+          last_sent_slot?: string | null
+          medication_name: string
+          patient_id: string
+          times?: Json
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          dosage?: string | null
+          id?: string
+          last_sent_slot?: string | null
+          medication_name?: string
+          patient_id?: string
+          times?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           appointment_id: string | null
@@ -3899,6 +4022,66 @@ export type Database = {
         }
         Relationships: []
       }
+      nfse_invoices: {
+        Row: {
+          codigo_verificacao: string | null
+          created_at: string
+          error: string | null
+          id: string
+          numero: string | null
+          patient_id: string | null
+          pdf_url: string | null
+          provider: string
+          raw: Json | null
+          ref: string
+          resource_id: string | null
+          resource_type: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+          valor: number | null
+          xml_url: string | null
+        }
+        Insert: {
+          codigo_verificacao?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          numero?: string | null
+          patient_id?: string | null
+          pdf_url?: string | null
+          provider?: string
+          raw?: Json | null
+          ref: string
+          resource_id?: string | null
+          resource_type: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          valor?: number | null
+          xml_url?: string | null
+        }
+        Update: {
+          codigo_verificacao?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          numero?: string | null
+          patient_id?: string | null
+          pdf_url?: string | null
+          provider?: string
+          raw?: Json | null
+          ref?: string
+          resource_id?: string | null
+          resource_type?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          valor?: number | null
+          xml_url?: string | null
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           channel: string
@@ -3971,6 +4154,24 @@ export type Database = {
           status?: string
           tipo?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          prefs: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          prefs?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          prefs?: Json
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -4066,36 +4267,54 @@ export type Database = {
       }
       on_demand_queue: {
         Row: {
+          appointment_id: string | null
           assigned_doctor_id: string | null
+          completed_at: string | null
           created_at: string
           id: string
+          paid_at: string | null
           patient_id: string
+          payment_id: string | null
+          position: number | null
           price: number
           priority: number | null
+          shift: string | null
           specialty_id: string | null
           status: string | null
           symptoms: string | null
           updated_at: string
         }
         Insert: {
+          appointment_id?: string | null
           assigned_doctor_id?: string | null
+          completed_at?: string | null
           created_at?: string
           id?: string
+          paid_at?: string | null
           patient_id: string
+          payment_id?: string | null
+          position?: number | null
           price?: number
           priority?: number | null
+          shift?: string | null
           specialty_id?: string | null
           status?: string | null
           symptoms?: string | null
           updated_at?: string
         }
         Update: {
+          appointment_id?: string | null
           assigned_doctor_id?: string | null
+          completed_at?: string | null
           created_at?: string
           id?: string
+          paid_at?: string | null
           patient_id?: string
+          payment_id?: string | null
+          position?: number | null
           price?: number
           priority?: number | null
+          shift?: string | null
           specialty_id?: string | null
           status?: string | null
           symptoms?: string | null
@@ -5695,6 +5914,7 @@ export type Database = {
           is_continuous: boolean | null
           is_signed: boolean | null
           medications: Json | null
+          memed_prescription_id: string | null
           observations: string | null
           patient_id: string
           pdf_url: string | null
@@ -5718,6 +5938,7 @@ export type Database = {
           is_continuous?: boolean | null
           is_signed?: boolean | null
           medications?: Json | null
+          memed_prescription_id?: string | null
           observations?: string | null
           patient_id: string
           pdf_url?: string | null
@@ -5741,6 +5962,7 @@ export type Database = {
           is_continuous?: boolean | null
           is_signed?: boolean | null
           medications?: Json | null
+          memed_prescription_id?: string | null
           observations?: string | null
           patient_id?: string
           pdf_url?: string | null
@@ -7453,6 +7675,10 @@ export type Database = {
       fn_auto_no_show: { Args: never; Returns: undefined }
       fn_auto_pause_doctor_no_shows: { Args: never; Returns: undefined }
       fn_calculate_doctor_risk_score: { Args: never; Returns: undefined }
+      fn_claim_ready_payouts: {
+        Args: { p_doctor_id: string; p_withdrawal_id?: string }
+        Returns: number
+      }
       fn_consumir_contrato: {
         Args: {
           p_appointment_id: string
@@ -7468,6 +7694,10 @@ export type Database = {
         Returns: boolean
       }
       fn_detect_churn: { Args: never; Returns: undefined }
+      fn_doctor_available_balance: {
+        Args: { p_doctor_id: string }
+        Returns: number
+      }
       fn_doctor_onboarding_progress: {
         Args: { p_user_id: string }
         Returns: Json
@@ -7505,8 +7735,27 @@ export type Database = {
         Args: { p_data: Json; p_to: string; p_type: string }
         Returns: undefined
       }
+      fn_unclaim_payouts: {
+        Args: { p_doctor_id: string; p_withdrawal_id?: string }
+        Returns: undefined
+      }
+      fn_whatsapp_allowed: {
+        Args: { p_category?: string; p_user_id: string }
+        Returns: boolean
+      }
       get_active_theme: { Args: never; Returns: Json }
+      get_contract_invite_by_token: { Args: { p_token: string }; Returns: Json }
       get_maintenance_status: { Args: never; Returns: Json }
+      get_public_blocks: {
+        Args: never
+        Returns: {
+          block_key: string
+          i18n: Json
+          is_enabled: boolean
+          page_slug: string
+          published: Json
+        }[]
+      }
       get_public_doctor_profile: {
         Args: { p_doctor_id: string }
         Returns: Json
@@ -7608,6 +7857,22 @@ export type Database = {
       validate_doctor_signup_invite: {
         Args: { p_code: string; p_email: string }
         Returns: Json
+      }
+      validate_signature_public: {
+        Args: { p_document_id: string }
+        Returns: {
+          certificate_alias: string
+          doctor_crm: string
+          doctor_name: string
+          document_hash: string
+          document_id: string
+          document_type: string
+          is_valid: boolean
+          patient_name: string
+          revoke_reason: string
+          revoked_at: string
+          signed_at: string
+        }[]
       }
       verify_document_by_code: {
         Args: { _code: string }
