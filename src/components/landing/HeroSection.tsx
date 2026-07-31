@@ -128,7 +128,7 @@ const HeroSection = memo(
                     <VideoCamera className="w-5 h-5 text-[#0ea5e9]" weight="fill" />
                   </div>
                   <div className="leading-tight">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Teleconsulta</p>
+                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">Teleconsulta</p>
                     <p className="text-sm font-bold text-slate-800">Vídeo em HD</p>
                   </div>
                 </div>
