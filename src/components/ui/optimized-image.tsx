@@ -48,8 +48,8 @@ const OptimizedImage = ({
       className={cn("relative overflow-hidden", aspectRatio && "w-full")}
       style={aspectRatio ? { aspectRatio, ...style } : style}
     >
-      {/* Skeleton placeholder */}
-      {!loaded && (
+      {/* Skeleton placeholder (nunca para a imagem LCP, que deve pintar de imediato) */}
+      {!loaded && !priority && (
         <div className="absolute inset-0 bg-muted/40 shimmer-v2 rounded-inherit" />
       )}
       <img
@@ -62,7 +62,7 @@ const OptimizedImage = ({
         src={!inView ? undefined : error ? fallback : props.src}
         className={cn(
           "transition-all duration-500 w-full h-full object-cover",
-          loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-[1.02]",
+          loaded || priority ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-[1.02]",
           className
         )}
         onLoad={(e) => {
