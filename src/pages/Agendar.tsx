@@ -706,7 +706,7 @@ const Agendar = () => {
                         <div className="relative shrink-0">
                           <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl" aria-hidden="true" />
                           <img
-                            src={currentSpecialty?.img ?? pingoClinicoGeral}
+                            src={specialties.find((s) => s.name === selectedSpecialty)?.img ?? pingoClinicoGeral}
                             alt="Pingo, mascote da AloClínica"
                             loading="lazy"
                             className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover ring-4 ring-primary/10"
