@@ -176,6 +176,9 @@ const Agendar = () => {
   const [priceMax, setPriceMax] = useState<number | "">("");
   const [councilFilter, setCouncilFilter] = useState<string>("all");
   const [doctorSlots, setDoctorSlots] = useState<Record<string, {day_of_week: number; start_time: string}[]>>({});
+  // Contagem REAL de profissionais para a barra de disponibilidade (passo 1).
+  // Nunca exibimos número fictício: se não houver médico, a tira some.
+  const [availStats, setAvailStats] = useState<{ total: number; online: number } | null>(null);
 
   const resetFilters = () => {
     setSearch("");
@@ -184,6 +187,21 @@ const Agendar = () => {
     setPriceMax("");
     setCouncilFilter("all");
   };
+
+  // Contagem real de profissionais (uma vez, ao montar) — alimenta a barra do passo 1.
+  useEffect(() => {
+    let active = true;
+    const base = () =>
+      db.from("doctor_profiles_public" as any)
+        .select("id", { count: "exact", head: true })
+        .eq("available_for_telemedicine", true);
+    Promise.all([base(), base().eq("available_now", true)])
+      .then(([{ count: total }, { count: online }]) => {
+        if (active) setAvailStats({ total: total ?? 0, online: online ?? 0 });
+      })
+      .catch(() => { if (active) setAvailStats({ total: 0, online: 0 }); });
+    return () => { active = false; };
+  }, []);
 
   // Load doctors when a specialty is selected
   useEffect(() => {
@@ -368,25 +386,25 @@ const Agendar = () => {
                     </p>
                   </div>
 
-                  {/* Live availability strip */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6"
-                  >
-                    <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                  {/* Live availability strip — só aparece com dado REAL (nunca número fictício) */}
+                  {availStats && (availStats.online > 0 || availStats.total > 0) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6"
+                    >
+                      <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                        </span>
+                        {availStats.online > 0
+                          ? `${availStats.online} ${availStats.online === 1 ? "médico" : "médicos"} online agora`
+                          : `${availStats.total} ${availStats.total === 1 ? "médico disponível" : "médicos disponíveis"}`}
                       </span>
-                      48 médicos online agora
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-card border border-border/60 text-muted-foreground text-xs font-medium">
-                      <Clock className="w-3.5 h-3.5 text-primary" />
-                      Atendimento médio: <strong className="text-foreground">8 min</strong>
-                    </span>
-                  </motion.div>
+                    </motion.div>
+                  )}
 
                   {/* Popular searches */}
                   <div className="max-w-3xl mx-auto mb-6">
