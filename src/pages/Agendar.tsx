@@ -177,6 +177,14 @@ const Agendar = () => {
   const [councilFilter, setCouncilFilter] = useState<string>("all");
   const [doctorSlots, setDoctorSlots] = useState<Record<string, {day_of_week: number; start_time: string}[]>>({});
 
+  const resetFilters = () => {
+    setSearch("");
+    setOnlyAvailable(true);
+    setPriceMin("");
+    setPriceMax("");
+    setCouncilFilter("all");
+  };
+
   // Load doctors when a specialty is selected
   useEffect(() => {
     if (!selectedSpecialty) {
