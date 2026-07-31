@@ -177,6 +177,14 @@ const Agendar = () => {
   const [councilFilter, setCouncilFilter] = useState<string>("all");
   const [doctorSlots, setDoctorSlots] = useState<Record<string, {day_of_week: number; start_time: string}[]>>({});
 
+  const resetFilters = () => {
+    setSearch("");
+    setOnlyAvailable(true);
+    setPriceMin("");
+    setPriceMax("");
+    setCouncilFilter("all");
+  };
+
   // Load doctors when a specialty is selected
   useEffect(() => {
     if (!selectedSpecialty) {
@@ -533,9 +541,9 @@ const Agendar = () => {
 
                   {/* Specialty quick-switch + availability filter */}
                   <div className="mb-6 space-y-3">
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="rounded-2xl border border-border/60 bg-card shadow-sm p-4 space-y-2.5">
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
-                        <Filter className="w-3 h-3" /> Tipo de profissional
+                        <Filter className="w-3 h-3 text-primary" /> Tipo de profissional
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {[
@@ -569,9 +577,9 @@ const Agendar = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="rounded-2xl border border-border/60 bg-card shadow-sm p-4 space-y-2.5">
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0">
-                        <Filter className="w-3 h-3" /> Especialidade
+                        <Stethoscope className="w-3 h-3 text-primary" /> Especialidade
                       </span>
                       <div className="flex flex-wrap gap-1.5">
                         {specialties.map((s) => {
@@ -594,7 +602,7 @@ const Agendar = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <div className="rounded-2xl border border-border/60 bg-card shadow-sm p-4 flex flex-wrap items-center gap-x-6 gap-y-3">
                       <label className="inline-flex items-center gap-2 cursor-pointer select-none">
                         <span
                           className={cn(
@@ -650,16 +658,15 @@ const Agendar = () => {
                               className="w-20 h-8 pl-6 pr-2 rounded-lg border border-border/60 bg-card text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
                             />
                           </div>
-                          {(priceMin !== "" || priceMax !== "") && (
-                            <button
-                              onClick={() => { setPriceMin(""); setPriceMax(""); }}
-                              className="text-[10px] text-primary font-medium hover:underline"
-                            >
-                              Limpar
-                            </button>
-                          )}
                         </div>
                       </div>
+
+                      <button
+                        onClick={resetFilters}
+                        className="ml-auto text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        Limpar filtros
+                      </button>
                     </div>
                   </div>
 
@@ -688,22 +695,42 @@ const Agendar = () => {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="text-center py-16"
+                      className="rounded-3xl border border-border/60 bg-card shadow-sm px-6 py-12 text-center"
                     >
-                      <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                        <Stethoscope className="w-10 h-10 text-primary/60" />
+                      <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6 overflow-hidden">
+                        <img
+                          src={specialties.find((s) => s.name === selectedSpecialty)?.img ?? pingoClinicoGeral}
+                          alt="Pingo, mascote da AloClínica, não encontrou profissionais"
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
                       </div>
-                      <h3 className="text-lg font-bold text-foreground mb-2">
+                      <h3 className="text-xl font-bold text-foreground mb-2">
                         Nenhum profissional encontrado
                       </h3>
                       <p className="text-muted-foreground text-sm mb-6 max-w-md mx-auto">
                         {debouncedSearch
-                          ? "Tente outro termo de busca ou volte para ver todas as especialidades."
-                          : "No momento não há profissionais disponíveis nesta especialidade."}
+                          ? "Tente outro termo de busca ou ajuste os filtros aplicados."
+                          : "No momento não há profissionais disponíveis com esses filtros."}
                       </p>
-                      <Button variant="outline" className="rounded-xl" onClick={handleBackToSpecialties}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Voltar às especialidades
-                      </Button>
+                      <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                        <Button variant="outline" className="rounded-xl" onClick={handleBackToSpecialties}>
+                          <ArrowLeft className="w-4 h-4 mr-2" /> Ver outras especialidades
+                        </Button>
+                        <Button className="rounded-xl" onClick={resetFilters}>
+                          <Filter className="w-4 h-4 mr-2" /> Limpar filtros
+                        </Button>
+                      </div>
+                      <div className="max-w-md mx-auto rounded-2xl bg-muted/40 border border-border/40 p-4 text-left">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                          Sugestões
+                        </p>
+                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                          <li className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Desative "Apenas com horários disponíveis"</li>
+                          <li className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Amplie a faixa de preço</li>
+                          <li className="flex gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" /> Selecione "Todos" em tipo de profissional</li>
+                        </ul>
+                      </div>
                     </motion.div>
                   ) : (
                     <div className="space-y-4">
