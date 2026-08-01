@@ -1851,6 +1851,7 @@ div[style*="Edit with Lovable"],
   position: relative;
   width: 100%;
   padding-block: clamp(3.5rem, 7vw, 7rem);
+  padding-inline: clamp(1rem, 3vw, 1.75rem);
   overflow: hidden;
 }
 .section-band > .section-inner {
@@ -1859,7 +1860,6 @@ div[style*="Edit with Lovable"],
   width: 100%;
   max-width: 1200px;
   margin-inline: auto;
-  padding-inline: clamp(1rem, 4vw, 2rem);
 }
 
 /* Variações de fundo alternadas para as faixas */
