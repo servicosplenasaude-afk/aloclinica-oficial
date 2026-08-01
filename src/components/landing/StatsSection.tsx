@@ -50,6 +50,8 @@ const AnimatedCounter = ({ value, suffix = "" }: { value: string; suffix?: strin
   );
 };
 
+const HUES = ["var(--pingo-sky)", "var(--pingo-mint)", "var(--pingo-blue)", "var(--pingo-grape)"];
+
 const StatsSection = forwardRef<HTMLElement>((_, ref) => {
   const [stats, setStats] = useState(fallbackStats);
   const { get, loading: configLoading } = useSiteConfig();
@@ -77,8 +79,8 @@ const StatsSection = forwardRef<HTMLElement>((_, ref) => {
   }, [configLoading, get]);
 
   return (
-    <section ref={ref} className="py-8 md:py-12 relative">
-      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
+    <section ref={ref} className="section-band band-tint band-divider !py-10 md:!py-14">
+      <div className="section-inner">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {stats.map((stat, i) => (
             <motion.div
@@ -87,13 +89,14 @@ const StatsSection = forwardRef<HTMLElement>((_, ref) => {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ y: -4, transition: { duration: 0.25 } }}
-              className="group flex items-center gap-3.5 rounded-2xl bg-card/90 backdrop-blur-sm border border-border/25 px-5 py-5 sm:py-6 hover:shadow-xl hover:border-primary/20 transition-all duration-300 cursor-default"
+              style={{ ["--card-hue" as string]: HUES[i % HUES.length] } as React.CSSProperties}
+              className="surface-card group flex items-center gap-3.5 px-5 py-5 sm:py-6 cursor-default overflow-hidden"
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300">
-                <stat.icon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" weight="fill" aria-hidden="true" />
+              <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-[hsl(var(--card-hue)/0.18)] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[hsl(var(--card-hue)/0.12)] group-hover:bg-[hsl(var(--card-hue))] group-hover:shadow-[0_10px_26px_-10px_hsl(var(--card-hue)/0.7)] transition-all duration-300">
+                <stat.icon className="w-5 h-5 text-[hsl(var(--card-hue))] group-hover:text-white transition-colors duration-300" weight="fill" aria-hidden="true" />
               </div>
-              <div className="min-w-0">
+              <div className="relative min-w-0">
                 <AnimatedCounter value={stat.value} />
                 <p className="mt-1 text-xs text-muted-foreground font-semibold truncate">
                   {stat.label}
