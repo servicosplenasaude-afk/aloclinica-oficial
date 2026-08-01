@@ -77,11 +77,6 @@ const CARD_HUES = [
   "var(--pingo-blue)",
 ];
 
-const _unusedGetSpecialtyImage = (name: string) => {
-  const alias = specialtyImageAliases[name] ?? name;
-  return PINGO_SPECIALTIES[alias] ?? PINGO_SPECIALTIES["Clínico Geral"];
-};
-
 const topSpecialties = [
   { name: "Clínico geral", desc: "Seu primeiro contato para qualquer sintoma. Eu te ajudo a começar!" },
   { name: "Dermatologista", desc: "Cuidando da sua pele, cabelos e unhas com todo carinho." },
