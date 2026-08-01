@@ -5,41 +5,59 @@ const mascotImg = PINGO_LOGO_URL;
 
 const PingoLoader = memo(() => (
   <motion.div
-    className="flex flex-col items-center justify-center min-h-screen bg-background gap-5"
+    className="relative flex flex-col items-center justify-center min-h-screen bg-background gap-6 overflow-hidden"
     initial={{ opacity: 1 }}
     exit={{ opacity: 0 }}
     transition={{ duration: 0.3 }}
   >
-    {/* Mascot with float animation */}
-    <div className="relative">
-      <div className="absolute inset-0 rounded-full bg-primary/10 blur-2xl scale-125 animate-pulse" />
-      <motion.img
-        src={mascotImg}
-        alt="Pingo carregando"
-        className="relative w-20 h-20 md:w-24 md:h-24 object-contain drop-shadow-lg"
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity }}
-        draggable={false}
-        width={80}
-        height={80}
+    {/* Ambient light */}
+    <div className="pointer-events-none absolute inset-0">
+      <div className="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" />
+      <div className="absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-secondary/10 blur-[90px]" />
+    </div>
+
+    {/* Mascot with orbit ring */}
+    <div className="relative flex items-center justify-center">
+      <motion.span
+        className="absolute h-32 w-32 md:h-36 md:w-36 rounded-full border border-primary/15"
+        animate={{ scale: [1, 1.18, 1], opacity: [0.6, 0, 0.6] }}
+        transition={{ duration: 2.4, ease: "easeOut", repeat: Infinity }}
       />
-    </div>
-
-    {/* Loading dots */}
-    <div className="flex items-center gap-1.5">
-      {[0, 1, 2].map((i) => (
-        <motion.span
-          key={i}
-          className="block w-2 h-2 rounded-full bg-primary/60"
-          animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.2, 0.8] }}
-          transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity, delay: i * 0.2 }}
+      <motion.span
+        className="absolute h-28 w-28 md:h-32 md:w-32 rounded-full border-2 border-transparent border-t-primary/70 border-r-secondary/50"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 2.2, ease: "linear", repeat: Infinity }}
+      />
+      <div className="relative flex h-24 w-24 md:h-28 md:w-28 items-center justify-center rounded-full bg-card/80 shadow-[0_18px_45px_-18px_hsl(var(--primary)/0.55)] ring-1 ring-border/60 backdrop-blur-sm">
+        <motion.img
+          src={mascotImg}
+          alt="Pingo carregando"
+          className="w-16 h-16 md:w-20 md:h-20 object-contain"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 1.8, ease: "easeInOut", repeat: Infinity }}
+          draggable={false}
+          width={80}
+          height={80}
         />
-      ))}
+      </div>
     </div>
 
-    <p className="text-[13px] text-muted-foreground font-medium tracking-wide">
-      Carregando...
-    </p>
+    <div className="relative flex flex-col items-center gap-3">
+      <p className="text-sm font-semibold tracking-tight text-foreground">Carregando</p>
+
+      {/* Progress shimmer bar */}
+      <div className="h-1 w-40 overflow-hidden rounded-full bg-muted">
+        <motion.div
+          className="h-full w-1/3 rounded-full bg-gradient-to-r from-primary via-secondary to-primary"
+          animate={{ x: ["-120%", "320%"] }}
+          transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity }}
+        />
+      </div>
+
+      <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+        Alô Clínica
+      </p>
+    </div>
   </motion.div>
 ));
 
