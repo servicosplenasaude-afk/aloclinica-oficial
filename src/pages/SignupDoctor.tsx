@@ -388,7 +388,7 @@ export default function SignupDoctor() {
               {[
                 { icon: CurrencyDollar, label: "Repasse de R$ 30–80 por consulta, PIX em 48h" },
                 { icon: Clock,          label: "Agenda 100% sua: dias e horários livres" },
-                { icon: ShieldCheck,    label: "100% CFM, LGPD e KYC compliant" },
+                { icon: ShieldCheck,    label: "Conforme CFM, LGPD e KYC" },
                 { icon: CheckCircle,    label: "Prontuário, receita digital e atestado inclusos" },
               ].map((b) => (
                 <li key={b.label} className="flex items-start gap-3">
@@ -404,8 +404,8 @@ export default function SignupDoctor() {
           <div className="relative z-10 flex items-center gap-4 pt-8 border-t border-primary-foreground/15">
             <img src={doctorSignup} alt="" aria-hidden className="w-16 h-16 object-contain drop-shadow-lg" />
             <div className="text-xs text-primary-foreground/75">
-              <p className="font-bold text-primary-foreground">+500 médicos parceiros</p>
-              <p>4.9★ de satisfação na plataforma</p>
+              <p className="font-bold text-primary-foreground">Junte-se à rede de médicos parceiros</p>
+              <p>Cadastro gratuito e validação em até 24h</p>
             </div>
           </div>
         </aside>
