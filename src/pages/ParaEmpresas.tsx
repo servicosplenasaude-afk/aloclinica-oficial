@@ -271,9 +271,9 @@ const ParaEmpresas = () => {
 
             <div className="flex flex-wrap gap-x-6 gap-y-3 mb-7">
               {[
-                { value: "60%", label: "menos custo" },
+                { value: "Previsível", label: "custo fixo por colaborador" },
                 { value: "24h", label: "disponível" },
-                { value: "+500", label: "empresas" },
+                { value: "Escalável", label: "para empresas de todo porte" },
               ].map((stat) => (
                 <div key={stat.label} className="flex items-baseline gap-2">
                   <span className="text-2xl md:text-3xl font-extrabold text-primary">{stat.value}</span>
