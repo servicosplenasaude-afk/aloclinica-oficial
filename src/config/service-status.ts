@@ -20,3 +20,13 @@ export const SERVICE_MAINTENANCE: {
   services: ["criação de conta", "envio de e-mail", "WhatsApp"],
   note: "Estamos trabalhando para normalizar o quanto antes. Obrigado pela compreensão.",
 };
+
+/**
+ * Serviços ainda NÃO configurados (pré-lançamento). No monitor de saúde do admin
+ * eles aparecem como "pendente" (âmbar) em vez de "falha" (vermelho) — evita
+ * alarme falso por algo que nunca foi ligado. Ao configurar o serviço, REMOVA a
+ * chave daqui para o monitor voltar a tratá-lo como crítico.
+ *
+ * Chaves possíveis: database, whatsapp, email, video, kyc, payments, nfse.
+ */
+export const SERVICES_PENDING_SETUP: string[] = ["kyc"];

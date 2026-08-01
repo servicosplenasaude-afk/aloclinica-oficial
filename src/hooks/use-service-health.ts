@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import { useAuth } from "@/contexts/AuthContext";
+import { SERVICES_PENDING_SETUP } from "@/config/service-status";
 
 export type ServiceStatus = "ok" | "down" | "unconfigured";
 export type HealthMode = "server" | "browser";
@@ -112,7 +113,13 @@ export function useServiceHealth(options?: { enabled?: boolean; poll?: boolean }
     return () => { if (timer.current) clearInterval(timer.current); };
   }, [active, options?.poll, refresh]);
 
-  const services = data?.services ?? [];
+  // Serviços marcados como "pendentes de configuração" (pré-lançamento) não
+  // contam como falha — aparecem em âmbar e NÃO disparam o alerta vermelho.
+  const services = (data?.services ?? []).map((s) =>
+    SERVICES_PENDING_SETUP.includes(s.key) && s.status === "down"
+      ? { ...s, status: "unconfigured" as ServiceStatus, detail: "Pendente de configuração (pré-lançamento)" }
+      : s,
+  );
   const down = services.filter((s) => s.status === "down");
   const criticalDown = down.filter((s) => s.critical);
   const summary = {
