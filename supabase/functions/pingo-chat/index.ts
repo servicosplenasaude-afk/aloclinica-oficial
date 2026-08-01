@@ -1,7 +1,63 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 // SECURITY: createClient is now imported dynamically only inside the triage block below.
 import { streamClaudeAsOpenAI, DEFAULT_CLAUDE_MODEL } from "../_shared/anthropic.ts";
-import { streamLovableAI, DEFAULT_AI_MODEL } from "../_shared/lovable-ai.ts";
+
+const DEFAULT_AI_MODEL = "google/gemini-3.6-flash";
+const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+/** Streams an OpenAI-shaped SSE response from the Lovable AI Gateway. */
+async function streamLovableAI(opts: {
+  model?: string;
+  system?: string;
+  messages: Array<{ role: string; content: string }>;
+  temperature?: number;
+  max_tokens?: number;
+}): Promise<Response> {
+  const key = Deno.env.get("LOVABLE_API_KEY");
+  if (!key) {
+    console.error("Lovable AI: LOVABLE_API_KEY ausente");
+    const e: any = new Error("LOVABLE_API_KEY nao configurada");
+    e.status = 500;
+    throw e;
+  }
+
+  const msgs: Array<{ role: string; content: string }> = [];
+  if (opts.system) msgs.push({ role: "system", content: opts.system });
+  for (const m of opts.messages ?? []) {
+    if (!m?.content) continue;
+    msgs.push({ role: m.role === "assistant" ? "assistant" : "user", content: String(m.content) });
+  }
+
+  const upstream = await fetch(GATEWAY_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: opts.model || DEFAULT_AI_MODEL,
+      messages: msgs,
+      stream: true,
+      ...(typeof opts.temperature === "number" ? { temperature: opts.temperature } : {}),
+      ...(opts.max_tokens ? { max_tokens: opts.max_tokens } : {}),
+    }),
+  });
+
+  if (!upstream.ok || !upstream.body) {
+    const errText = await upstream.text().catch(() => "");
+    console.error("Lovable AI gateway error:", upstream.status, errText);
+    const e: any = new Error(`Lovable AI error: ${upstream.status}`);
+    e.status = upstream.status;
+    throw e;
+  }
+
+  return new Response(upstream.body, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}
+
 // SECURITY: use shared helpers so the rate limit can key on the authenticated user id (spoof-resistant).
 import { getCaller, checkRateLimit } from "../_shared/auth.ts";
 
