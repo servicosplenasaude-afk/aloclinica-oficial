@@ -248,9 +248,8 @@ const Dashboard = () => {
   })();
 
   const IndexDashboard = () => {
-    if (isAdmin && !forceRole) return <Navigate to="/dashboard/admin/panel-center" replace />;
+    if (isAdmin) return <Navigate to="/dashboard/admin/panel-center" replace />;
     switch (primaryRole) {
-      case "admin": return <AdminDashboard />;
       case "doctor": return <DoctorDashboard />;
       case "receptionist": return <ReceptionDashboard />;
       case "support": return <SupportDashboard />;
