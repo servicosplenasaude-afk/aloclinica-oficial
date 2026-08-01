@@ -1,6 +1,63 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 // SECURITY: createClient is now imported dynamically only inside the triage block below.
 import { streamClaudeAsOpenAI, DEFAULT_CLAUDE_MODEL } from "../_shared/anthropic.ts";
+
+const DEFAULT_AI_MODEL = "google/gemini-3.6-flash";
+const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+/** Streams an OpenAI-shaped SSE response from the Lovable AI Gateway. */
+async function streamLovableAI(opts: {
+  model?: string;
+  system?: string;
+  messages: Array<{ role: string; content: string }>;
+  temperature?: number;
+  max_tokens?: number;
+}): Promise<Response> {
+  const key = Deno.env.get("LOVABLE_API_KEY");
+  if (!key) {
+    console.error("Lovable AI: LOVABLE_API_KEY ausente");
+    const e: any = new Error("LOVABLE_API_KEY nao configurada");
+    e.status = 500;
+    throw e;
+  }
+
+  const msgs: Array<{ role: string; content: string }> = [];
+  if (opts.system) msgs.push({ role: "system", content: opts.system });
+  for (const m of opts.messages ?? []) {
+    if (!m?.content) continue;
+    msgs.push({ role: m.role === "assistant" ? "assistant" : "user", content: String(m.content) });
+  }
+
+  const upstream = await fetch(GATEWAY_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: opts.model || DEFAULT_AI_MODEL,
+      messages: msgs,
+      stream: true,
+      ...(typeof opts.temperature === "number" ? { temperature: opts.temperature } : {}),
+      ...(opts.max_tokens ? { max_tokens: opts.max_tokens } : {}),
+    }),
+  });
+
+  if (!upstream.ok || !upstream.body) {
+    const errText = await upstream.text().catch(() => "");
+    console.error("Lovable AI gateway error:", upstream.status, errText);
+    const e: any = new Error(`Lovable AI error: ${upstream.status}`);
+    e.status = upstream.status;
+    throw e;
+  }
+
+  return new Response(upstream.body, {
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
+  });
+}
+
 // SECURITY: use shared helpers so the rate limit can key on the authenticated user id (spoof-resistant).
 import { getCaller, checkRateLimit } from "../_shared/auth.ts";
 
@@ -13,6 +70,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    console.info("pingo-chat build: gateway-v2");
     const { messages, context, ticket_id, user_id } = await req.json();
 
     // SECURITY: rate limit — prefer the authenticated user id (x-forwarded-for is spoofable),
@@ -86,20 +144,41 @@ ${context ? `\n--- CONTEXTO DO PACIENTE LOGADO ---\n${context}\n---\nUse essas i
 
     let sseResponse: Response;
     try {
-      sseResponse = await streamClaudeAsOpenAI({
-        model: DEFAULT_CLAUDE_MODEL,
+      // Primary provider: Lovable AI Gateway (managed key, always available).
+      sseResponse = await streamLovableAI({
+        model: DEFAULT_AI_MODEL,
         system: systemContent,
         messages,
         temperature: 0.3,
         max_tokens: 800,
       });
     } catch (err: any) {
+      // Fallback: Anthropic, when a valid key is configured.
+      if (err?.status !== 429 && err?.status !== 402 && Deno.env.get("ANTHROPIC_API_KEY")) {
+        try {
+          sseResponse = await streamClaudeAsOpenAI({
+            model: DEFAULT_CLAUDE_MODEL,
+            system: systemContent,
+            messages,
+            temperature: 0.3,
+            max_tokens: 800,
+          });
+          return sseResponse;
+        } catch (fallbackErr) {
+          console.error("Anthropic fallback error:", fallbackErr);
+        }
+      }
       if (err?.status === 429) {
         return new Response(JSON.stringify({ error: "Muitas mensagens! Aguarde um momento e tente novamente." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      console.error("Anthropic error:", err);
+      if (err?.status === 402) {
+        return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Recarregue para continuar." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.error("AI error:", err);
       return new Response(JSON.stringify({ error: "Erro no serviço de IA" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
