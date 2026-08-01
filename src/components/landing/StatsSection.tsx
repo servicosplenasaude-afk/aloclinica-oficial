@@ -6,7 +6,7 @@ import { useSiteConfig } from "@/lib/site-config";
 
 const fallbackStats = [
   { icon: Users, value: "24h", label: "Atendimento" },
-  { icon: Stethoscope, value: "+30", label: "Especialidades" },
+  { icon: Stethoscope, value: "Especialidades", label: "Múltiplas áreas médicas" },
   { icon: ShieldCheck, value: "CFM", label: "Médicos verificados" },
   { icon: ShieldCheck, value: "LGPD", label: "Privacidade protegida" },
 ];
