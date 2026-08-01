@@ -141,7 +141,7 @@ const Seguranca = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Certifications Grid */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground text-center mb-16">
             Certificações & Conformidades
@@ -181,7 +181,7 @@ const Seguranca = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Security Features */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground text-center mb-16">
             Tecnologia de Segurança
@@ -209,7 +209,7 @@ const Seguranca = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Privacy Policies */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground text-center mb-16">
             Políticas de Privacidade
@@ -241,7 +241,7 @@ const Seguranca = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Compliance Info */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <div className="max-w-3xl mx-auto">
             <motion.div
@@ -266,7 +266,7 @@ const Seguranca = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Documents & Policies */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground text-center mb-12">
             Documentos Importantes
@@ -305,7 +305,7 @@ const Seguranca = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Contact Security Team */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

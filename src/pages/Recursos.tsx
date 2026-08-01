@@ -161,7 +161,7 @@ const Recursos = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Search & Filter */}
-      <section className="py-12 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider !py-12">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <div className="max-w-2xl mx-auto mb-6">
             <div className="relative">
@@ -193,7 +193,7 @@ const Recursos = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Articles Grid */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredArticles.map((article, i) => (
@@ -261,7 +261,7 @@ const Recursos = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Newsletter */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -65,7 +65,7 @@ const Servicos = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Services Grid */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service, i) => (
@@ -172,7 +172,7 @@ const Servicos = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-gradient-to-b from-muted/30 to-background">
+      <section className="section-band band-tint">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -230,7 +230,7 @@ const Servicos = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 relative overflow-hidden">
+      <section className="section-band band-plain">
         {/* Animated background elements */}
         <motion.div
           className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 blur-3xl"
