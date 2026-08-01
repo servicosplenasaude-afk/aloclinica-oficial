@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 // SECURITY: createClient is now imported dynamically only inside the triage block below.
 import { streamClaudeAsOpenAI, DEFAULT_CLAUDE_MODEL } from "../_shared/anthropic.ts";
+import { streamLovableAI, DEFAULT_AI_MODEL } from "../_shared/lovable-ai.ts";
 // SECURITY: use shared helpers so the rate limit can key on the authenticated user id (spoof-resistant).
 import { getCaller, checkRateLimit } from "../_shared/auth.ts";
 
@@ -86,20 +87,41 @@ ${context ? `\n--- CONTEXTO DO PACIENTE LOGADO ---\n${context}\n---\nUse essas i
 
     let sseResponse: Response;
     try {
-      sseResponse = await streamClaudeAsOpenAI({
-        model: DEFAULT_CLAUDE_MODEL,
+      // Primary provider: Lovable AI Gateway (managed key, always available).
+      sseResponse = await streamLovableAI({
+        model: DEFAULT_AI_MODEL,
         system: systemContent,
         messages,
         temperature: 0.3,
         max_tokens: 800,
       });
     } catch (err: any) {
+      // Fallback: Anthropic, when a valid key is configured.
+      if (err?.status !== 429 && err?.status !== 402 && Deno.env.get("ANTHROPIC_API_KEY")) {
+        try {
+          sseResponse = await streamClaudeAsOpenAI({
+            model: DEFAULT_CLAUDE_MODEL,
+            system: systemContent,
+            messages,
+            temperature: 0.3,
+            max_tokens: 800,
+          });
+          return sseResponse;
+        } catch (fallbackErr) {
+          console.error("Anthropic fallback error:", fallbackErr);
+        }
+      }
       if (err?.status === 429) {
         return new Response(JSON.stringify({ error: "Muitas mensagens! Aguarde um momento e tente novamente." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      console.error("Anthropic error:", err);
+      if (err?.status === 402) {
+        return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Recarregue para continuar." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.error("AI error:", err);
       return new Response(JSON.stringify({ error: "Erro no serviço de IA" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
