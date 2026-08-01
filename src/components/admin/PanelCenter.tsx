@@ -516,66 +516,27 @@ const PanelCenter = () => {
         {/* ─────── KPI CARDS ─────── */}
         <motion.section
           variants={container}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 md:gap-4"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"
         >
-          {stats.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <motion.div key={s.label} variants={fadeUp} whileHover={{ y: -3 }} transition={{ duration: 0.2 }}>
-                <Card className={cn(
-                  "relative h-full border-border/40 bg-gradient-to-br from-card via-card to-muted/20",
-                  "hover:shadow-lg transition-all duration-300 overflow-hidden group",
-                  s.glow
-                )}>
-                  {/* Top gradient line */}
-                  <div className={cn("h-[2px] bg-gradient-to-r opacity-80 group-hover:opacity-100 transition-opacity", s.gradient)} />
-                  {/* Subtle bg blob */}
-                  <div className={cn("absolute -top-8 -right-8 w-24 h-24 rounded-full bg-gradient-to-br opacity-10 blur-2xl pointer-events-none", s.gradient)} />
-
-                  <CardContent className="relative p-4 md:p-5">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className={cn(
-                        "w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-md ring-1 ring-white/20 dark:ring-white/10",
-                        s.gradient
-                      )}>
-                        <Icon className="w-5 h-5 text-white" strokeWidth={2.2} />
-                      </div>
-                      <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ring-1", s.ring, "text-muted-foreground")}>
-                        {s.badge}
-                      </span>
-                    </div>
-
-                    <div className="text-3xl md:text-4xl font-black tabular-nums leading-none text-foreground tracking-tight">
-                      {s.value}
-                    </div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-foreground/80 mt-1.5">
-                      {s.label}
-                    </div>
-                    <p className="text-[10.5px] text-muted-foreground mt-0.5">
-                      {s.sublabel}
-                    </p>
-
-                    <svg
-                      viewBox="0 0 120 24"
-                      className="w-full h-6 mt-2"
-                      fill="none"
-                      preserveAspectRatio="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d={sparkPaths[i]}
-                        className={cn(s.sparkColor, "opacity-70 group-hover:opacity-100 transition-opacity")}
-                        strokeWidth={1.5}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
+          {stats.map((s, i) => (
+            <KpiCard
+              key={s.label}
+              label={s.label}
+              sublabel={s.sublabel}
+              value={s.value}
+              badge={s.badge}
+              icon={s.icon}
+              gradient={s.gradient}
+              ring={s.ring}
+              glow={s.glow}
+              sparkColor={s.sparkColor}
+              route={s.route}
+              index={i}
+              onClick={() => navigate(s.route)}
+            />
+          ))}
         </motion.section>
+
 
         {/* ─────── PANELS GRID (now primary) ─────── */}
         <motion.section variants={fadeUp} className="space-y-4">
