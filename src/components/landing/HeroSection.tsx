@@ -145,7 +145,7 @@ const HeroSection = memo(
               >
                 <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-100 shadow-lg flex items-center gap-3">
                   <div className="p-2 bg-blue-50 rounded-lg">
-                    <VideoCamera className="w-5 h-5 text-[#0ea5e9]" />
+                    <Video className="w-5 h-5 text-[#0ea5e9]" />
                   </div>
                   <div className="leading-tight">
                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Teleconsulta</p>
