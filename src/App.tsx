@@ -9,6 +9,7 @@ import MaintenanceBanner from "@/components/MaintenanceBanner";
 import MaintenanceGate from "@/components/MaintenanceGate";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import ServiceMaintenanceBanner from "@/components/ServiceMaintenanceBanner";
+import AdminHealthAlert from "@/components/admin/AdminHealthAlert";
 import ThemeApplier from "@/components/ThemeApplier";
 import { ThemeProvider } from "next-themes";
 import { I18nProvider } from "@/i18n";
@@ -334,6 +335,7 @@ const App = () => {
                     <MaintenanceBanner />
                     <AnnouncementBanner />
                     <ServiceMaintenanceBanner />
+                    <AdminHealthAlert />
                     <ThemeApplier />
                   </Suspense>
                   <ScrollToTop />

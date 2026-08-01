@@ -9,6 +9,7 @@ import { RefreshCw, CheckCircle2, XCircle, Clock, Database, Bot, Globe, Server, 
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { SUPABASE_FUNCTIONS_URL, SUPABASE_PUBLISHABLE_KEY } from "@/lib/supabase-config";
+import { useServiceHealth } from "@/hooks/use-service-health";
 
 interface HealthCheck {
   name: string;
@@ -37,6 +38,8 @@ const SystemHealth = () => {
   const [dbStats, setDbStats] = useState<DbStats | null>(null);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
   const [running, setRunning] = useState(false);
+  // Verificação REAL dos serviços externos (WhatsApp, e-mail, vídeo, KYC, pagamentos, NFS-e).
+  const health = useServiceHealth();
 
   useEffect(() => { runChecks(); }, []);
 
@@ -62,6 +65,7 @@ const SystemHealth = () => {
 
   const runChecks = async () => {
     setRunning(true);
+    health.refresh(); // atualiza também a verificação real dos serviços externos
     const results: HealthCheck[] = [];
 
     // 1. Database
@@ -169,10 +173,10 @@ const SystemHealth = () => {
     // SECURITY: use HTTPS endpoints (via domínio) — chamar http://IP a partir de
     // uma página HTTPS é bloqueado pelo navegador (mixed content) e falha no app
     // mobile (Capacitor android allowMixedContent:false). URLs configuráveis por env.
+    // Obs.: vídeo (MiroTalk), KYC (CompreFace) e demais serviços externos são
+    // verificados de verdade na seção "Serviços externos (verificação real)".
     const vpsServices = [
-      { name: "CompreFace (Biometria)", url: import.meta.env.VITE_COMPREFACE_URL ?? "https://face.aloclinica.com.br", icon: <Shield className="w-5 h-5" /> },
       { name: "DocuSeal (Assinaturas)", url: import.meta.env.VITE_DOCUSEAL_URL ?? "https://sign.aloclinica.com.br", icon: <FileText className="w-5 h-5" /> },
-      { name: "Jitsi Meet (Vídeo)", url: "https://meet.telemedicinaaloclinica.sbs", icon: <Video className="w-5 h-5" /> },
     ];
 
     for (const svc of vpsServices) {
@@ -197,7 +201,6 @@ const SystemHealth = () => {
       { name: "VidaaS (Assinatura ICP)", fn: "vidaas-sign", icon: <FileSignature className="w-5 h-5" /> },
       { name: "CompreFace Proxy (KYC)", fn: "compreface-proxy", icon: <Eye className="w-5 h-5" /> },
       { name: "Didit KYC", fn: "didit-kyc", icon: <Shield className="w-5 h-5" /> },
-      { name: "Resend (E-mail)", fn: "send-email", icon: <Mail className="w-5 h-5" /> },
       { name: "Push Notifications", fn: "send-push-notification", icon: <Bell className="w-5 h-5" /> },
       { name: "Verify CRM (CFM)", fn: "verify-crm", icon: <Shield className="w-5 h-5" /> },
       { name: "Triagem por Sintomas (IA)", fn: "symptom-triage", icon: <Brain className="w-5 h-5" /> },
@@ -246,8 +249,11 @@ const SystemHealth = () => {
     fetchDbStats();
   };
 
-  const allOk = checks.length > 0 && checks.every(c => c.status === "ok");
-  const hasErrors = checks.some(c => c.status === "error");
+  // Falhas reais dos serviços externos (verificação no servidor) entram no status geral.
+  const serverDown = health.summary.down;
+  const allOk = checks.length > 0 && checks.every(c => c.status === "ok") && serverDown === 0;
+  const hasErrors = checks.some(c => c.status === "error") || serverDown > 0;
+  const failCount = checks.filter(c => c.status === "error").length + serverDown;
   const avgLatency = checks.length > 0 ? Math.round(checks.reduce((sum, c) => sum + (c.latency ?? 0), 0) / checks.length) : 0;
 
   const dbStatCards = dbStats ? [
@@ -293,7 +299,7 @@ const SystemHealth = () => {
                 )}
                 <div>
                   <h2 className="text-lg font-bold text-foreground">
-                    {allOk ? "Todos os sistemas operacionais" : `${checks.filter(c => c.status === "error").length} serviço(s) com falha`}
+                    {allOk ? "Todos os sistemas operacionais" : `${failCount} serviço(s) com falha`}
                   </h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
                     Latência média: {avgLatency}ms · Uptime: {allOk ? "100%" : `${Math.round((checks.filter(c => c.status === "ok").length / checks.length) * 100)}%`}
@@ -304,11 +310,73 @@ const SystemHealth = () => {
           </motion.div>
         )}
 
+        {/* Serviços externos — VERIFICAÇÃO REAL (via edge function service-health) */}
+        {(health.services.length > 0 || health.loading || health.error) && (
+          <motion.div variants={fadeUp}>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                <Globe className="w-4 h-4" /> Serviços externos {health.mode === "browser" ? "(verificação básica)" : "(verificação real)"}
+              </p>
+              {health.services.length > 0 && (
+                <Badge variant={health.summary.down === 0 ? "default" : "destructive"} className="text-[10px] h-5">
+                  {health.summary.ok}/{health.summary.total}
+                </Badge>
+              )}
+            </div>
+            {health.loading && health.services.length === 0 ? (
+              <p className="text-xs text-muted-foreground px-1">Verificando serviços…</p>
+            ) : health.error && health.services.length === 0 ? (
+              <p className="text-xs text-destructive px-1">Não foi possível verificar: {health.error}</p>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {health.services.map((s) => {
+                  const icon = ({
+                    database: <Database className="w-5 h-5" />, whatsapp: <MessageCircle className="w-5 h-5" />,
+                    email: <Mail className="w-5 h-5" />, video: <Video className="w-5 h-5" />,
+                    kyc: <Shield className="w-5 h-5" />, payments: <CreditCard className="w-5 h-5" />,
+                    nfse: <FileText className="w-5 h-5" />,
+                  } as Record<string, React.ReactNode>)[s.key] ?? <Plug className="w-5 h-5" />;
+                  const tone = s.status === "ok"
+                    ? "bg-success/10 text-success" : s.status === "down"
+                    ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground";
+                  const border = s.status === "ok" ? "border-success/20" : s.status === "down" ? "border-destructive/30" : "border-border";
+                  return (
+                    <Card key={s.key} className={`border ${border}`}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tone}`}>{icon}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-foreground text-sm truncate">{s.label}</p>
+                              <Badge variant={s.status === "ok" ? "default" : s.status === "down" ? "destructive" : "secondary"} className="text-[10px] h-5 shrink-0">
+                                {s.status === "ok" ? "ATIVO" : s.status === "down" ? "FALHA" : "NÃO CONFIG."}
+                              </Badge>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                              {s.detail}{s.latencyMs ? ` • ${s.latencyMs}ms` : ""}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+            {health.mode === "browser" && health.services.length > 0 && (
+              <p className="text-[11px] text-muted-foreground mt-2 px-1">
+                Verificação básica pelo navegador. A verificação completa no servidor
+                (WhatsApp, e-mail, pagamentos, NFS-e) liga após publicar a função <code>service-health</code>.
+              </p>
+            )}
+          </motion.div>
+        )}
+
         {/* Service checks agrupados */}
         {([
           { key: "core", label: "🧱 Núcleo Supabase", icon: <Database className="w-4 h-4" /> },
           { key: "vps", label: "🖥️ Servidores VPS", icon: <Server className="w-4 h-4" /> },
-          { key: "integration", label: "🔌 Integrações & Edge Functions", icon: <Plug className="w-4 h-4" /> },
+          { key: "integration", label: "🔌 Edge Functions (deploy)", icon: <Plug className="w-4 h-4" /> },
         ] as const).map((section) => {
           const items = checks.filter((c) => (c.group ?? "core") === section.key);
           if (items.length === 0) return null;

@@ -8,11 +8,15 @@
  * Mantido como constante (sem depender do Supabase) de propósito, para o aviso
  * ser 100% confiável mesmo se o banco/serviços estiverem instáveis.
  */
-export const SERVICE_MAINTENANCE = {
+export const SERVICE_MAINTENANCE: {
   /** Liga/desliga o banner global. */
-  enabled: true,
+  enabled: boolean;
   /** Serviços atualmente em manutenção (listados no aviso). */
-  services: ["criação de conta", "envio de e-mail", "WhatsApp"],
+  services: string[];
   /** Frase de complemento. */
+  note: string;
+} = {
+  enabled: true,
+  services: ["criação de conta", "envio de e-mail", "WhatsApp"],
   note: "Estamos trabalhando para normalizar o quanto antes. Obrigado pela compreensão.",
-} as const;
+};
