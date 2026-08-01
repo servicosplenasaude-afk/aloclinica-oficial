@@ -56,8 +56,9 @@ const FAQSection = forwardRef<HTMLElement>((_, ref) => {
   }, [faqs]);
 
   return (
-    <section id="faq" ref={ref} className="py-14 md:py-20 relative overflow-hidden bg-background" aria-labelledby="faq-heading">
-      <div className="container mx-auto px-4 relative z-10 max-w-3xl">
+    <section id="faq" ref={ref} className="section-band band-plain band-divider" aria-labelledby="faq-heading">
+      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[36rem] h-[36rem] rounded-full bg-[hsl(var(--pingo-ice)/0.35)] blur-3xl pointer-events-none" />
+      <div className="section-inner max-w-3xl">
         {/* Header compacto */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -66,12 +67,12 @@ const FAQSection = forwardRef<HTMLElement>((_, ref) => {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-bold tracking-wider uppercase mb-3">
+          <div className="section-eyebrow mb-4">
             <Sparkle className="w-3.5 h-3.5" weight="fill" />
             Dúvidas frequentes
           </div>
-          <h2 id="faq-heading" className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
-            Perguntas <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">frequentes</span>
+          <h2 id="faq-heading" className="section-title text-foreground">
+            Perguntas <span className="text-gradient-pingo">frequentes</span>
           </h2>
         </motion.div>
 
@@ -86,22 +87,26 @@ const FAQSection = forwardRef<HTMLElement>((_, ref) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ delay: i * 0.04, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className={`rounded-xl border transition-all overflow-hidden ${
-                  isOpen ? "bg-card border-primary/30 shadow-md" : "bg-card/60 border-border/60 hover:border-primary/20"
+                className={`rounded-2xl border transition-all duration-400 overflow-hidden ${
+                  isOpen
+                    ? "bg-[linear-gradient(135deg,hsl(var(--pingo-ice)/0.35),hsl(var(--pingo-mint)/0.10))] border-[hsl(var(--pingo-sky)/0.4)] shadow-[0_18px_45px_-24px_hsl(var(--pingo-blue)/0.55)]"
+                    : "bg-card/70 border-border/60 hover:border-[hsl(var(--pingo-sky)/0.35)] hover:bg-card"
                 }`}
               >
                 <button
                   onClick={() => setOpenItem(isOpen ? null : faq.q)}
                   className="w-full flex items-center gap-3 px-4 sm:px-5 py-4 text-left"
                 >
-                  <span className="flex-1 text-[14.5px] font-semibold text-foreground/90 leading-snug">
+                  <span className="flex-1 font-display text-[15px] font-bold text-foreground/90 leading-snug">
                     {faq.q}
                   </span>
                   <motion.div
                     animate={{ rotate: isOpen ? 45 : 0 }}
                     transition={{ duration: 0.25 }}
-                    className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
-                      isOpen ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                      isOpen
+                        ? "bg-[linear-gradient(135deg,hsl(var(--pingo-blue)),hsl(var(--pingo-mint)))] text-white shadow-[0_8px_20px_-8px_hsl(var(--pingo-blue)/0.7)]"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     <Plus weight="bold" style={{ width: 14, height: 14 }} />
