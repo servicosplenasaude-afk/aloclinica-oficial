@@ -271,7 +271,7 @@ const AdminDashboard = () => {
         {/* ── Premium Admin Hero ── */}
         <div className="-mx-4 -mt-5 md:-mx-6 md:-mt-5 lg:-mx-8 lg:-mt-6">
         <HeroBanner
-          gradient="from-[#3B0000] via-[#8B1515] to-[#C41A1A]"
+          gradient="from-[hsl(215_75%_18%)] via-[hsl(215_75%_32%)] to-[hsl(168_50%_36%)]"
           pingoSrc={pingoAdmin}
           pingoAlt="Pingo"
           liveDot={true}
@@ -317,20 +317,21 @@ const AdminDashboard = () => {
           pingImg={pingoAdmin}
           pingAlt="Pingo"
           pingSize={82}
-          bgClass="bg-red-50 dark:bg-red-950/20"
-          borderClass="border-red-100 dark:border-red-900/30"
+          bgClass="bg-primary/5 dark:bg-primary/10"
+          borderClass="border-primary/15"
           label="Controle Total"
-          labelColor="text-red-600 dark:text-red-400"
+          labelColor="text-primary"
           title="Plataforma operando"
           subtitle="Acompanhe métricas em tempo real"
         />
 
         {/* Header actions */}
-        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-          <div>
-            <h2 className="text-lg font-bold text-foreground tracking-tight">Detalhes Operacionais</h2>
+        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border/40 bg-card/70 backdrop-blur-sm px-4 py-3 shadow-sm">
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-foreground tracking-tight">Detalhes Operacionais</h2>
+            <p className="text-[11px] text-muted-foreground">Métricas consolidadas do período selecionado</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap sm:justify-end">
             <Select value={periodFilter} onValueChange={setPeriodFilter}>
               <SelectTrigger className="w-36 h-9 rounded-xl text-xs bg-background border-border/40">
                 <SelectValue />
@@ -465,9 +466,9 @@ const AdminDashboard = () => {
         )}
 
         {/* KPI Cards with trend indicators */}
-        <motion.div variants={fadeUp} ref={kpiRef} className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5" role="list" aria-label="Indicadores chave do sistema">
+        <motion.div variants={fadeUp} ref={kpiRef} className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3" role="list" aria-label="Indicadores chave do sistema">
           {loading ? (
-            Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-28 shimmer-v2 rounded-2xl" aria-hidden="true" />)
+            Array.from({ length: 7 }).map((_, i) => <div key={i} className="h-28 shimmer-v2 rounded-2xl" aria-hidden="true" />)
           ) : (
             [
               { label: "Receita (MRR)", value: `R$ ${stats.total_revenue.toFixed(0)}`, icon: DollarSign, color: "text-success", bg: "bg-success/10", trend: stats.total_revenue > 0 ? "↑" : null },
@@ -481,7 +482,7 @@ const AdminDashboard = () => {
               <button
                 key={kpi.label}
                 onClick={() => kpi.path && navigate(kpi.path)}
-                className="kpi-card p-3.5 rounded-2xl bg-background border border-border/20 hover:border-border/40 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left group"
+                className="kpi-card min-w-0 p-4 rounded-2xl bg-card border border-border/40 shadow-sm hover:border-primary/30 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-left group"
                 role="listitem"
                 aria-label={`${kpi.label}: ${kpi.value}${kpi.path ? " — clique para ver detalhes" : ""}`}
               >
@@ -498,8 +499,8 @@ const AdminDashboard = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-xl font-black text-foreground tabular-nums" aria-hidden="true">{kpi.value}</p>
-                <p className="text-[10px] font-semibold text-muted-foreground/70 mt-0.5">{kpi.label}</p>
+                <p className="text-xl font-black text-foreground tabular-nums truncate" aria-hidden="true">{kpi.value}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mt-1 truncate">{kpi.label}</p>
               </button>
             ))
           )}
