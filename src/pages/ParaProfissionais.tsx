@@ -60,7 +60,7 @@ function EarningsCalculator() {
   }, [consultsPerDay, daysPerWeek, pricePerConsult]);
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/30">
+    <section className="section-band band-tint">
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
         <motion.div
           className="text-center max-w-3xl mx-auto mb-12"
@@ -240,7 +240,7 @@ const ParaProfissionais = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Professions Grid */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {professions.map((prof, i) => (
@@ -373,7 +373,7 @@ const ParaProfissionais = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Why Join Section */}
-      <section className="py-20 px-4 bg-gradient-to-b from-muted/30 to-background">
+      <section className="section-band band-tint">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <motion.div
             className="text-center max-w-3xl mx-auto mb-12"
@@ -447,7 +447,7 @@ const ParaProfissionais = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Process Section */}
-      <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/20">
+      <section className="section-band band-tint">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <motion.div
             className="text-center max-w-3xl mx-auto mb-16"
@@ -545,7 +545,7 @@ const ParaProfissionais = forwardRef<HTMLDivElement>((_, ref) => {
       <EarningsCalculator />
 
       {/* FAQ Profissionais */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-3xl mx-auto px-4">
           <motion.div
             className="text-center mb-10"
@@ -581,7 +581,7 @@ const ParaProfissionais = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 px-4 bg-gradient-to-b from-background via-muted/20 to-background">
+      <section className="section-band band-plain band-divider">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <motion.div
             className="text-center max-w-3xl mx-auto mb-16"
@@ -653,7 +653,7 @@ const ParaProfissionais = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 bg-gradient-to-b from-background to-muted/20">
+      <section className="section-band band-tint">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
