@@ -144,7 +144,7 @@ const CTABanner = forwardRef<HTMLElement, { config?: any }>(({ config }, ref) =>
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.45, duration: 0.5 }}
-                className="flex flex-nowrap items-center justify-center gap-2 md:gap-3 overflow-x-auto no-scrollbar"
+                className="flex flex-nowrap items-center justify-center gap-2 md:gap-3 overflow-x-auto"
               >
                 {BADGES.map((item, i) => {
                   const Icon = item.icon;
