@@ -135,9 +135,9 @@ function BenefitsGrid({ config }: { config?: any }) {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="flex-1 bg-card p-7 rounded-[2rem] border border-border/40 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+                className={`flex-1 bg-card p-7 rounded-[2rem] border border-border/40 shadow-sm hover:-translate-y-1 transition-all duration-300 group ring-pingo sheen-pingo ${(b as any).glow ?? "hover:shadow-xl"}`}
               >
-                <div className={`w-12 h-12 rounded-2xl ${b.iconBg} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
+                <div className={`w-12 h-12 rounded-2xl ${b.iconBg} flex items-center justify-center mb-5 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6`}>
                   <b.icon className={`w-6 h-6 ${b.iconColor}`} weight="fill" />
                 </div>
                 <h4 className="font-bold text-foreground text-lg mb-2">{b.title}</h4>
@@ -156,15 +156,16 @@ function BenefitsGrid({ config }: { config?: any }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="group bg-card p-6 sm:p-7 md:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-border/40 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center h-full"
+              className="group relative bg-card p-6 sm:p-7 md:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-border/40 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 text-center flex flex-col items-center h-full ring-pingo sheen-pingo overflow-hidden"
             >
-              <div className="w-full h-40 sm:h-44 md:h-48 mb-5 sm:mb-6 flex items-end justify-center overflow-hidden">
+              <div className={`absolute inset-x-0 top-0 h-40 ${c.tint} opacity-70 group-hover:opacity-100 transition-opacity duration-500`} aria-hidden />
+              <div className="relative w-full h-40 sm:h-44 md:h-48 mb-5 sm:mb-6 flex items-end justify-center overflow-hidden">
                 <img
                   src={c.image}
                   alt={c.title}
                   loading="lazy"
                   decoding="async"
-                  className="max-h-full max-w-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                  className="max-h-full max-w-full w-auto h-auto object-contain group-hover:scale-105 group-hover:-translate-y-1 transition-transform duration-500"
                 />
               </div>
               <h4 className="font-bold text-foreground text-lg mb-2">{c.title}</h4>
