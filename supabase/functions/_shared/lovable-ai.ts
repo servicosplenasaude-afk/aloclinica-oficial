@@ -27,6 +27,7 @@ const corsHeaders = {
 export async function streamLovableAI(opts: StreamAIOptions): Promise<Response> {
   const key = Deno.env.get("LOVABLE_API_KEY");
   if (!key) {
+    console.error("Lovable AI gateway: LOVABLE_API_KEY ausente no ambiente da função");
     const err: any = new Error("LOVABLE_API_KEY não configurada");
     err.status = 500;
     throw err;
