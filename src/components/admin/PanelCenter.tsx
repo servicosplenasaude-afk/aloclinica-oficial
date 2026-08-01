@@ -68,6 +68,11 @@ const PanelCenter = () => {
   const [whatsappState, setWhatsappState] = useState<"loading" | "connected" | "offline" | "unconfigured">("loading");
   const [revenueData, setRevenueData] = useState<{ day: string; revenue: number }[]>([]);
 
+  const revenueTotal = useMemo(() => revenueData.reduce((acc, d) => acc + d.revenue, 0), [revenueData]);
+  const isRevenueEmpty = revenueTotal === 0;
+  const formatBrl = (n: number) =>
+    `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
   const fetchPresence = async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true);
     try {
