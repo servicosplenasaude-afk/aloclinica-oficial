@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getAdminNav } from "@/components/admin/adminNav";
+import { KpiCard } from "@/components/admin/KpiCard";
 import {
   Users, Stethoscope, Building2, Headphones,
   Handshake, Bot, ShieldCheck, ArrowRight,
@@ -23,6 +24,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import pingoAdmin from "@/assets/pingo-admin.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartTooltip, Cell, AreaChart, Area } from "recharts";
+
 
 interface RecentUser { name: string; page: string; lastSeen: string }
 interface PanelInfo {
@@ -298,12 +300,6 @@ const PanelCenter = () => {
       },
     ];
 
-  const sparkPaths = [
-    "M0,18 L12,14 L24,16 L36,10 L48,12 L60,6 L72,9 L84,4 L96,7 L108,3 L120,5",
-    "M0,15 L12,12 L24,14 L36,8 L48,11 L60,7 L72,10 L84,5 L96,8 L108,4 L120,6",
-    "M0,14 L12,10 L24,13 L36,7 L48,9 L60,5 L72,8 L84,3 L96,6 L108,2 L120,4",
-    "M0,16 L12,13 L24,15 L36,9 L48,11 L60,6 L72,10 L84,4 L96,7 L108,5 L120,3",
-  ];
 
     const quickActions = [
       { label: "Aprovações", icon: UserCheck, route: "/dashboard/admin/approvals?role=admin", color: "text-emerald-500", bg: "bg-emerald-500/10" },
@@ -514,66 +510,27 @@ const PanelCenter = () => {
         {/* ─────── KPI CARDS ─────── */}
         <motion.section
           variants={container}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 md:gap-4"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"
         >
-          {stats.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <motion.div key={s.label} variants={fadeUp} whileHover={{ y: -3 }} transition={{ duration: 0.2 }}>
-                <Card className={cn(
-                  "relative h-full border-border/40 bg-gradient-to-br from-card via-card to-muted/20",
-                  "hover:shadow-lg transition-all duration-300 overflow-hidden group",
-                  s.glow
-                )}>
-                  {/* Top gradient line */}
-                  <div className={cn("h-[2px] bg-gradient-to-r opacity-80 group-hover:opacity-100 transition-opacity", s.gradient)} />
-                  {/* Subtle bg blob */}
-                  <div className={cn("absolute -top-8 -right-8 w-24 h-24 rounded-full bg-gradient-to-br opacity-10 blur-2xl pointer-events-none", s.gradient)} />
-
-                  <CardContent className="relative p-4 md:p-5">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className={cn(
-                        "w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-md ring-1 ring-white/20 dark:ring-white/10",
-                        s.gradient
-                      )}>
-                        <Icon className="w-5 h-5 text-white" strokeWidth={2.2} />
-                      </div>
-                      <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ring-1", s.ring, "text-muted-foreground")}>
-                        {s.badge}
-                      </span>
-                    </div>
-
-                    <div className="text-3xl md:text-4xl font-black tabular-nums leading-none text-foreground tracking-tight">
-                      {s.value}
-                    </div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-foreground/80 mt-1.5">
-                      {s.label}
-                    </div>
-                    <p className="text-[10.5px] text-muted-foreground mt-0.5">
-                      {s.sublabel}
-                    </p>
-
-                    <svg
-                      viewBox="0 0 120 24"
-                      className="w-full h-6 mt-2"
-                      fill="none"
-                      preserveAspectRatio="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d={sparkPaths[i]}
-                        className={cn(s.sparkColor, "opacity-70 group-hover:opacity-100 transition-opacity")}
-                        strokeWidth={1.5}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
+          {stats.map((s, i) => (
+            <KpiCard
+              key={s.label}
+              label={s.label}
+              sublabel={s.sublabel}
+              value={s.value}
+              badge={s.badge}
+              icon={s.icon}
+              gradient={s.gradient}
+              ring={s.ring}
+              glow={s.glow}
+              sparkColor={s.sparkColor}
+              route={s.route}
+              index={i}
+              onClick={() => navigate(s.route)}
+            />
+          ))}
         </motion.section>
+
 
         {/* ─────── PANELS GRID (now primary) ─────── */}
         <motion.section variants={fadeUp} className="space-y-4">
