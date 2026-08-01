@@ -105,7 +105,7 @@ const HeroSection = memo(
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-              className="relative flex items-center justify-center pb-28 sm:pb-24 lg:pb-20 min-w-0"
+              className="relative flex items-center justify-center min-w-0"
             >
               <div className="absolute top-0 w-[88%] aspect-square rounded-full border-[14px] border-[#dbeafe] pointer-events-none" />
               <div className="absolute top-[2%] w-[82%] aspect-square rounded-full bg-gradient-to-br from-[#eaf4ff] to-[#d9e9ff] -z-10" />
