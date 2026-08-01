@@ -100,7 +100,6 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
         <div className="hidden lg:block relative">
           <div ref={stepsRef} className="grid lg:grid-cols-4 gap-8 relative pt-6">
             {effectiveSteps.map((step, i) => {
-              const isEven = i % 2 === 0;
               return (
                 <motion.div
                   key={i}
