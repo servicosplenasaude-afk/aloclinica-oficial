@@ -228,7 +228,8 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv01";
     -webkit-tap-highlight-color: transparent;
     min-height: 100vh;
     overflow-x: hidden;
@@ -262,7 +263,8 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Sora', 'Manrope', system-ui, sans-serif;
+    letter-spacing: -0.02em;
     overflow-wrap: break-word;
     word-break: break-word;
   }
