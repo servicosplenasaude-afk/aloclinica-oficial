@@ -318,11 +318,13 @@ const PanelCenter = () => {
 
         {/* ─────── HERO HEADER ─────── */}
         <motion.section variants={fadeUp}>
-          <Card className="relative overflow-hidden border-border/40 bg-gradient-to-br from-primary/[0.08] via-card to-card shadow-sm">
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,hsl(var(--primary)/0.10)_0%,transparent_38%,hsl(var(--secondary)/0.08)_100%)]" />
-            <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{ backgroundImage: "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+          <Card className="relative overflow-hidden rounded-2xl border-border/50 bg-card shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.25)]">
+            {/* Soft ambient light — no grid/checker pattern */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(90%_120%_at_0%_0%,hsl(var(--primary)/0.10),transparent_60%)]" />
+            <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-secondary/15 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
             {/* Top accent line */}
-            <div className="h-[3px] bg-gradient-to-r from-emerald-500 via-primary to-purple-500" />
+            <div className="h-[3px] bg-gradient-to-r from-primary via-secondary to-primary/40" />
 
             <div className="relative grid lg:grid-cols-[1fr_auto] gap-0 min-w-0">
               <div className="p-4 sm:p-6 md:p-8 flex flex-col justify-center min-w-0">
@@ -368,11 +370,12 @@ const PanelCenter = () => {
                 </div>
               </div>
 
-              <div className="hidden lg:flex items-end justify-center pr-8 pl-4">
+              <div className="relative hidden lg:flex items-end justify-center pr-10 pl-4">
+                <div className="pointer-events-none absolute bottom-4 h-24 w-56 rounded-full bg-primary/15 blur-2xl" />
                 <motion.img
                   src={pingoAdmin}
                   alt="Pingo Admin"
-                  className="h-40 w-auto object-contain drop-shadow-2xl"
+                  className="relative h-44 w-auto object-contain drop-shadow-2xl"
                   loading="lazy"
                   initial={{ opacity: 0, scale: 0.9, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
