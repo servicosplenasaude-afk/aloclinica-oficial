@@ -14,6 +14,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    console.info("pingo-chat build: gateway-v2");
     const { messages, context, ticket_id, user_id } = await req.json();
 
     // SECURITY: rate limit — prefer the authenticated user id (x-forwarded-for is spoofable),
