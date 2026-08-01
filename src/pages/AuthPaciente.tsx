@@ -148,7 +148,7 @@ const LeftPanel = () => (
             />
           ))}
           <div className="w-7 h-7 rounded-full bg-white/15 backdrop-blur-sm border-2 border-primary/40 flex items-center justify-center text-[9px] font-bold text-white">
-            +12k
+            CFM
           </div>
         </div>
       </div>
