@@ -14,9 +14,9 @@ const highlights = [
 ];
 
 const trustStats = [
-  { icon: ShieldCheck, value: "100%", label: "Médicos verificados no CFM" },
-  { icon: Lock, value: "Segurança", label: "Seus dados protegidos com criptografia" },
-  { icon: CheckCircle, value: "+500 mil", label: "Consultas realizadas com sucesso" },
+  { icon: ShieldCheck, value: "CFM", label: "Médicos verificados" },
+  { icon: Lock, value: "Seguro", label: "Dados protegidos com criptografia" },
+  { icon: CheckCircle, value: "24h", label: "Atendimento disponível todos os dias" },
 ];
 
 const HeroSection = memo(
