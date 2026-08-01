@@ -125,13 +125,13 @@ const LeftPanel = () => (
     {/* Bottom — rating card with avatars */}
     <div className="relative z-10 w-full max-w-sm">
       <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.08] backdrop-blur-md border border-white/[0.12] shadow-xl">
-        <div className="w-10 h-10 rounded-xl bg-yellow-400/20 flex items-center justify-center shrink-0">
-          <Star className="w-5 h-5 text-yellow-300" weight="fill" />
+        <div className="w-10 h-10 rounded-xl bg-emerald-400/20 flex items-center justify-center shrink-0">
+          <ShieldCheck className="w-5 h-5 text-emerald-300" weight="fill" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-extrabold text-white">4.9</span>
-            <span className="text-[11px] text-white/70 truncate">— mais de 12.000 avaliações</span>
+            <span className="text-lg font-extrabold text-white">CFM</span>
+            <span className="text-[11px] text-white/70 truncate">— Médicos verificados no Brasil</span>
           </div>
         </div>
         <div className="flex -space-x-2 shrink-0">
