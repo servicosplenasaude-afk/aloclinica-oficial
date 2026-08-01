@@ -67,6 +67,21 @@ const getSpecialtyImage = (name: string) => {
   return PINGO_SPECIALTIES[alias] ?? PINGO_SPECIALTIES["Clínico Geral"];
 };
 
+/* Paleta Pingo rotativa — cada card recebe uma cor da identidade do mascote */
+const CARD_HUES = [
+  "var(--pingo-sky)",
+  "var(--pingo-mint)",
+  "var(--pingo-grape)",
+  "var(--pingo-sun)",
+  "var(--pingo-coral)",
+  "var(--pingo-blue)",
+];
+
+const _unusedGetSpecialtyImage = (name: string) => {
+  const alias = specialtyImageAliases[name] ?? name;
+  return PINGO_SPECIALTIES[alias] ?? PINGO_SPECIALTIES["Clínico Geral"];
+};
+
 const topSpecialties = [
   { name: "Clínico geral", desc: "Seu primeiro contato para qualquer sintoma. Eu te ajudo a começar!" },
   { name: "Dermatologista", desc: "Cuidando da sua pele, cabelos e unhas com todo carinho." },
