@@ -13,11 +13,6 @@ const highlights = [
   { icon: Users, text: "30+", sub: "especialidades médicas" },
 ];
 
-const trustStats = [
-  { icon: ShieldCheck, value: "CFM", label: "Médicos verificados" },
-  { icon: Lock, value: "Segurança", label: "Seus dados protegidos com criptografia" },
-  { icon: BadgeCheck, value: "LGPD", label: "Privacidade em conformidade" },
-];
 
 const complianceLogos = ["CFM", "ICP-Brasil", "LGPD", "ISO 27001"];
 
