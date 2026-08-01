@@ -271,7 +271,7 @@ const AdminDashboard = () => {
         {/* ── Premium Admin Hero ── */}
         <div className="-mx-4 -mt-5 md:-mx-6 md:-mt-5 lg:-mx-8 lg:-mt-6">
         <HeroBanner
-          gradient="from-[#3B0000] via-[#8B1515] to-[#C41A1A]"
+          gradient="from-[hsl(215_75%_18%)] via-[hsl(215_75%_32%)] to-[hsl(168_50%_36%)]"
           pingoSrc={pingoAdmin}
           pingoAlt="Pingo"
           liveDot={true}
@@ -317,20 +317,21 @@ const AdminDashboard = () => {
           pingImg={pingoAdmin}
           pingAlt="Pingo"
           pingSize={82}
-          bgClass="bg-red-50 dark:bg-red-950/20"
-          borderClass="border-red-100 dark:border-red-900/30"
+          bgClass="bg-primary/5 dark:bg-primary/10"
+          borderClass="border-primary/15"
           label="Controle Total"
-          labelColor="text-red-600 dark:text-red-400"
+          labelColor="text-primary"
           title="Plataforma operando"
           subtitle="Acompanhe métricas em tempo real"
         />
 
         {/* Header actions */}
-        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-          <div>
-            <h2 className="text-lg font-bold text-foreground tracking-tight">Detalhes Operacionais</h2>
+        <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border/40 bg-card/70 backdrop-blur-sm px-4 py-3 shadow-sm">
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-foreground tracking-tight">Detalhes Operacionais</h2>
+            <p className="text-[11px] text-muted-foreground">Métricas consolidadas do período selecionado</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap sm:justify-end">
             <Select value={periodFilter} onValueChange={setPeriodFilter}>
               <SelectTrigger className="w-36 h-9 rounded-xl text-xs bg-background border-border/40">
                 <SelectValue />
