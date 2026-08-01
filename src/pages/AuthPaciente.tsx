@@ -21,7 +21,6 @@ import {
   Clock,
   Lightning,
   Heartbeat,
-  Star,
   CheckCircle,
   Phone,
   IdentificationCard,
