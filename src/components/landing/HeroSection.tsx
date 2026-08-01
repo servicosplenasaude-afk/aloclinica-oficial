@@ -100,15 +100,6 @@ const HeroSection = memo(
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-[#1667e6]" />
-                  </div>
-                  <div className="leading-tight">
-                    <p className="text-[13px] font-bold text-slate-800">Receita digital</p>
-                    <span className="text-[12px] text-slate-500">válida em todo o Brasil</span>
-                  </div>
-                </div>
               </div>
 
               {/* White highlights card */}
