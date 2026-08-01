@@ -107,7 +107,7 @@ const CTABanner = forwardRef<HTMLElement, { config?: any }>(({ config }, ref) =>
               <motion.img
                 src={ctaBannerMascot}
                 alt="Pingo mascote ao lado de um celular mostrando médico em videochamada"
-                className="relative z-10 w-full max-w-[520px] object-contain object-bottom drop-shadow-2xl"
+                className="relative z-10 w-full max-w-[460px] object-contain object-bottom drop-shadow-2xl"
                 width={520}
                 height={390}
                 loading="lazy"
