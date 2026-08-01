@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   VideoCamera,
   Prescription,
-  Star,
   CaretLeft,
 } from "@phosphor-icons/react";
 import Header from "@/components/landing/Header";
