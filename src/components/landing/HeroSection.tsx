@@ -144,6 +144,48 @@ const HeroSection = memo(
             </motion.div>
           </div>
 
+          {/* Unified trust band — highlights + security card aligned */}
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+            className="mt-6 lg:mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5"
+          >
+            {/* White highlights card */}
+            <div className="rounded-3xl bg-white/90 backdrop-blur-sm border border-slate-100 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.25)] p-4 sm:p-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:divide-x sm:divide-slate-100">
+                {highlights.map(({ icon: Icon, text, sub }) => (
+                  <div key={text} className="flex items-center gap-3 sm:px-3 sm:first:pl-0 sm:last:pr-0 min-w-0">
+                    <div className="w-11 h-11 shrink-0 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#1667e6]">
+                      <Icon className="w-5 h-5" strokeWidth={2.2} />
+                    </div>
+                    <div className="leading-tight min-w-0">
+                      <p className="text-sm font-bold text-slate-900">{text}</p>
+                      <p className="text-xs text-slate-500">{sub}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Security card */}
+            <div className="rounded-3xl bg-white/90 backdrop-blur-sm border border-slate-100 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.25)] p-4 sm:p-5 flex items-center gap-4">
+              <div className="w-14 h-14 shrink-0 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                <ShieldCheck className="w-7 h-7 text-emerald-600" strokeWidth={2.2} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-bold text-[#0b1b34] mb-1">Consulta segura</p>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Médicos com CRM ativo, vídeo criptografado e receita digital com assinatura ICP-Brasil.
+                </p>
+              </div>
+              <div className="hidden sm:flex flex-col items-center justify-center shrink-0 px-2 text-emerald-700">
+                <span className="text-[13px] font-extrabold leading-none">ICP</span>
+                <span className="text-[13px] font-extrabold leading-tight">Brasil</span>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Compliance strip */}
           <div className="mt-12 lg:mt-14">
             <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 mb-4">
