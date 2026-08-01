@@ -1,0 +1,4 @@
+# Cloudflare Pages lê _redirects/_headers com fim de linha LF. Trava LF para o
+# autocrlf do Windows não corromper o parser (regra virar "200\r" e ser ignorada).
+public/_redirects text eol=lf
+public/_headers   text eol=lf
