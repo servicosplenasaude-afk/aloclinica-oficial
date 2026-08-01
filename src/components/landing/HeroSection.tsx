@@ -141,29 +141,6 @@ const HeroSection = memo(
                 </div>
               </motion.div>
 
-              {/* Floating security card */}
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="absolute bottom-0 left-0 right-0 sm:left-8 z-20"
-              >
-                <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-100 shadow-[0_24px_50px_-24px_rgba(15,23,42,0.35)] flex items-center gap-4">
-                  <div className="w-14 h-14 shrink-0 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                    <ShieldCheck className="w-7 h-7 text-emerald-600" strokeWidth={2.2} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-base font-bold text-[#0b1b34] mb-1">Consulta segura</p>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Médicos com CRM ativo, vídeo criptografado e receita digital com assinatura ICP-Brasil.
-                    </p>
-                  </div>
-                  <div className="hidden sm:flex flex-col items-center justify-center shrink-0 px-2 text-emerald-700">
-                    <span className="text-[13px] font-extrabold leading-none">ICP</span>
-                    <span className="text-[13px] font-extrabold leading-tight">Brasil</span>
-                  </div>
-                </div>
-              </motion.div>
             </motion.div>
           </div>
 
