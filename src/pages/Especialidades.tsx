@@ -182,9 +182,9 @@ const Especialidades = forwardRef<HTMLDivElement>((_, ref) => {
 
             <div className="flex flex-wrap gap-2.5 justify-center">
               <Button
-                variant={selectedCategory === null ? "default" : "secondary"}
+                variant={selectedCategory === null ? "default" : "outline"}
                 size="sm"
-                className={`rounded-xl px-5 py-5 font-bold transition-all ${selectedCategory === null ? 'shadow-md scale-105' : 'hover:scale-105 opacity-60 hover:opacity-100'}`}
+                className={`rounded-xl px-5 py-5 font-bold transition-all ${selectedCategory === null ? 'shadow-[0_10px_24px_-12px_hsl(var(--pingo-blue)/0.7)] scale-105' : 'bg-card hover:bg-[hsl(var(--pingo-ice)/0.4)] hover:border-[hsl(var(--pingo-sky)/0.45)] hover:scale-105'}`}
                 onClick={() => setSelectedCategory(null)}
               >
                 Todas ({specialties.length})
@@ -194,9 +194,9 @@ const Especialidades = forwardRef<HTMLDivElement>((_, ref) => {
                 .map((letter) => (
                   <Button
                     key={letter}
-                    variant={selectedCategory === letter ? "default" : "secondary"}
+                    variant={selectedCategory === letter ? "default" : "outline"}
                     size="sm"
-                    className={`rounded-xl w-10 h-10 p-0 font-bold transition-all ${selectedCategory === letter ? 'shadow-md scale-110' : 'hover:scale-110 opacity-60 hover:opacity-100'}`}
+                    className={`rounded-xl w-10 h-10 p-0 font-bold transition-all ${selectedCategory === letter ? 'shadow-[0_10px_24px_-12px_hsl(var(--pingo-blue)/0.7)] scale-110' : 'bg-card text-muted-foreground hover:text-primary hover:bg-[hsl(var(--pingo-ice)/0.4)] hover:border-[hsl(var(--pingo-sky)/0.45)] hover:scale-110'}`}
                     onClick={() =>
                       setSelectedCategory(
                         selectedCategory === letter ? null : letter
