@@ -44,7 +44,7 @@ const AnimatedCounter = ({ value, suffix = "" }: { value: string; suffix?: strin
   if (!numMatch) return <span>{value}</span>;
 
   return (
-    <p ref={ref} className="text-lg sm:text-xl font-extrabold tracking-tight text-foreground leading-none tabular-nums">
+    <p ref={ref} className="font-display text-lg sm:text-xl font-extrabold tracking-tight text-foreground leading-none tabular-nums">
       {prefix}{Number.isInteger(num) ? Math.round(display) : display.toFixed(1)}{rest}{suffix}
     </p>
   );
