@@ -1729,3 +1729,110 @@ div[style*="Edit with Lovable"],
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ============================================================
+   PINGO DESIGN LAYER — paleta oficial + animações
+   ============================================================ */
+:root {
+  /* Paleta Pingo (derivada do mascote: azul jaleco, ciano gelo, menta cruz) */
+  --pingo-blue: 215 75% 32%;
+  --pingo-sky: 205 90% 55%;
+  --pingo-ice: 198 90% 88%;
+  --pingo-mint: 168 60% 45%;
+  --pingo-coral: 8 82% 63%;
+  --pingo-sun: 38 95% 58%;
+  --pingo-grape: 262 62% 58%;
+
+  --gradient-pingo: linear-gradient(120deg, hsl(var(--pingo-blue)) 0%, hsl(var(--pingo-sky)) 45%, hsl(var(--pingo-mint)) 100%);
+  --gradient-pingo-soft: linear-gradient(135deg, hsl(var(--pingo-ice) / .6) 0%, hsl(var(--pingo-mint) / .18) 100%);
+  --gradient-pingo-warm: linear-gradient(135deg, hsl(var(--pingo-sun) / .18) 0%, hsl(var(--pingo-coral) / .16) 100%);
+  --shadow-pingo: 0 18px 45px -18px hsl(var(--pingo-blue) / .45);
+  --shadow-pingo-mint: 0 18px 45px -18px hsl(var(--pingo-mint) / .45);
+}
+.dark {
+  --pingo-blue: 215 70% 55%;
+  --pingo-ice: 215 40% 22%;
+}
+
+@layer utilities {
+  .text-gradient-pingo {
+    background-image: var(--gradient-pingo);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-size: 200% 200%;
+    animation: pingo-gradient-pan 8s ease-in-out infinite;
+  }
+  .bg-gradient-pingo { background-image: var(--gradient-pingo); }
+  .bg-gradient-pingo-soft { background-image: var(--gradient-pingo-soft); }
+  .bg-gradient-pingo-warm { background-image: var(--gradient-pingo-warm); }
+  .shadow-pingo { box-shadow: var(--shadow-pingo); }
+  .shadow-pingo-mint { box-shadow: var(--shadow-pingo-mint); }
+
+  /* Borda em degradê Pingo */
+  .ring-pingo {
+    position: relative;
+    isolation: isolate;
+  }
+  .ring-pingo::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: var(--gradient-pingo);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity .35s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .ring-pingo:hover::before { opacity: 1; }
+
+  /* Brilho que atravessa o card no hover */
+  .sheen-pingo { position: relative; overflow: hidden; }
+  .sheen-pingo::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -60%;
+    width: 45%; height: 100%;
+    background: linear-gradient(100deg, transparent, hsl(0 0% 100% / .45), transparent);
+    transform: skewX(-18deg);
+    transition: left .75s cubic-bezier(.16,1,.3,1);
+    pointer-events: none;
+  }
+  .sheen-pingo:hover::after { left: 130%; }
+
+  .animate-pingo-float { animation: pingo-float 6s ease-in-out infinite; }
+  .animate-pingo-pop { animation: pingo-pop .5s cubic-bezier(.34,1.56,.64,1) both; }
+  .animate-pingo-pan { animation: pingo-gradient-pan 8s ease-in-out infinite; background-size: 200% 200%; }
+  .animate-pingo-glow { animation: pingo-glow 3.5s ease-in-out infinite; }
+}
+
+@keyframes pingo-gradient-pan {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes pingo-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(-1.2deg); }
+}
+@keyframes pingo-pop {
+  0% { transform: scale(.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes pingo-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--pingo-mint) / .35); }
+  50% { box-shadow: 0 0 0 14px hsl(var(--pingo-mint) / 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pingo-float,
+  .animate-pingo-pop,
+  .animate-pingo-pan,
+  .animate-pingo-glow,
+  .text-gradient-pingo { animation: none !important; }
+  .sheen-pingo::after { display: none; }
+}

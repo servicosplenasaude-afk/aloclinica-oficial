@@ -67,6 +67,16 @@ const getSpecialtyImage = (name: string) => {
   return PINGO_SPECIALTIES[alias] ?? PINGO_SPECIALTIES["Clínico Geral"];
 };
 
+/* Paleta Pingo rotativa — cada card recebe uma cor da identidade do mascote */
+const CARD_HUES = [
+  "var(--pingo-sky)",
+  "var(--pingo-mint)",
+  "var(--pingo-grape)",
+  "var(--pingo-sun)",
+  "var(--pingo-coral)",
+  "var(--pingo-blue)",
+];
+
 const topSpecialties = [
   { name: "Clínico geral", desc: "Seu primeiro contato para qualquer sintoma. Eu te ajudo a começar!" },
   { name: "Dermatologista", desc: "Cuidando da sua pele, cabelos e unhas com todo carinho." },
@@ -114,6 +124,7 @@ const SpecialtyCard = ({ name, desc, index }: { name: string; desc?: string; ind
   const Icon = specialtyIcons[name] || Stethoscope;
   const imageSrc = getSpecialtyImage(name);
   const [loaded, setLoaded] = useState(false);
+  const hue = CARD_HUES[index % CARD_HUES.length];
 
   return (
     <motion.button
@@ -123,26 +134,27 @@ const SpecialtyCard = ({ name, desc, index }: { name: string; desc?: string; ind
       transition={{ delay: index * 0.03, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       onClick={() => navigate(`/agendar?especialidade=${encodeURIComponent(name)}`)}
       title={desc}
-      className="group relative flex flex-col items-center pt-6 pb-5 px-4 md:pt-7 md:pb-6 md:px-5 rounded-3xl bg-card/90 backdrop-blur-sm border border-border/60 shadow-[0_4px_20px_-8px_hsl(var(--primary)/0.08)] hover:shadow-[0_24px_50px_-18px_hsl(var(--primary)/0.35)] hover:-translate-y-1.5 hover:border-primary/40 transition-all duration-500 cursor-pointer h-full w-full overflow-hidden"
+      style={{ ["--card-hue" as any]: hue }}
+      className="group relative flex flex-col items-center pt-6 pb-5 px-4 md:pt-7 md:pb-6 md:px-5 rounded-3xl bg-card/90 backdrop-blur-sm border border-border/60 shadow-[0_4px_20px_-8px_hsl(var(--card-hue)/0.12)] hover:shadow-[0_24px_50px_-18px_hsl(var(--card-hue)/0.45)] hover:-translate-y-1.5 hover:border-[hsl(var(--card-hue)/0.45)] transition-all duration-500 cursor-pointer h-full w-full overflow-hidden sheen-pingo"
     >
       {/* Top gradient accent bar */}
-      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary via-secondary to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute top-0 inset-x-0 h-1 bg-[linear-gradient(90deg,hsl(var(--card-hue)),hsl(var(--pingo-mint)),hsl(var(--card-hue)))] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       {/* Soft background gradient on hover */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/0 via-primary/0 to-primary/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,hsl(var(--card-hue)/0.09))] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       {/* Decorative blurred blob */}
-      <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-secondary/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+      <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-[hsl(var(--card-hue)/0.22)] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
       {/* Mascot inside orb */}
       <div className="relative mb-4 md:mb-5 w-24 h-24 md:w-28 md:h-28">
-        <div className="absolute -inset-2 rounded-full bg-gradient-to-br from-primary/30 via-secondary/25 to-primary/10 opacity-50 blur-xl group-hover:opacity-90 transition-all duration-500" />
-        <div className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-br from-primary/80 via-secondary/60 to-primary/30 shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.4)]">
-          <div className="w-full h-full rounded-full bg-gradient-to-br from-background via-primary/5 to-secondary/10 shadow-[inset_0_2px_10px_hsl(var(--primary)/0.12)]" />
+        <div className="absolute -inset-2 rounded-full bg-[radial-gradient(circle,hsl(var(--card-hue)/0.35),transparent_70%)] opacity-60 blur-xl group-hover:opacity-100 transition-all duration-500" />
+        <div className="absolute inset-0 rounded-full p-[2px] bg-[linear-gradient(135deg,hsl(var(--card-hue)/0.9),hsl(var(--pingo-mint)/0.6),hsl(var(--card-hue)/0.3))] shadow-[0_8px_24px_-8px_hsl(var(--card-hue)/0.45)]">
+          <div className="w-full h-full rounded-full bg-[linear-gradient(135deg,hsl(var(--background)),hsl(var(--card-hue)/0.08))]" />
         </div>
-        <div className="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+        <div className="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
           {imageSrc ? (
             <>
               {!loaded && (
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 animate-pulse" />
+                <div className="absolute inset-0 rounded-full bg-[hsl(var(--card-hue)/0.12)] animate-pulse" />
               )}
               <img
                 src={imageSrc}
@@ -156,19 +168,19 @@ const SpecialtyCard = ({ name, desc, index }: { name: string; desc?: string; ind
               />
             </>
           ) : (
-            <div className="relative z-10 w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 via-secondary/10 to-primary/10 rounded-full">
-              <Icon className="w-12 h-12 md:w-14 md:h-14 text-primary drop-shadow-[0_2px_8px_hsl(var(--primary)/0.3)]" weight="duotone" />
+            <div className="relative z-10 w-full h-full flex items-center justify-center bg-[linear-gradient(135deg,hsl(var(--card-hue)/0.22),hsl(var(--pingo-mint)/0.12))] rounded-full">
+              <Icon className="w-12 h-12 md:w-14 md:h-14 text-[hsl(var(--card-hue))]" weight="duotone" />
             </div>
           )}
         </div>
       </div>
 
-      <span className="relative text-xs md:text-sm font-bold text-foreground text-center leading-tight group-hover:text-primary transition-colors min-h-[2.5rem] flex items-center">
+      <span className="relative text-xs md:text-sm font-bold text-foreground text-center leading-tight group-hover:text-[hsl(var(--card-hue))] transition-colors min-h-[2.5rem] flex items-center">
         {name}
       </span>
 
-      <div className="relative mt-3 flex items-center gap-1.5 text-[10px] font-extrabold text-primary uppercase tracking-wider">
-        <span className="px-2.5 py-1 rounded-full bg-primary/10 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 flex items-center gap-1">
+      <div className="relative mt-3 flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-[hsl(var(--card-hue))]">
+        <span className="px-2.5 py-1 rounded-full bg-[hsl(var(--card-hue)/0.12)] group-hover:bg-[hsl(var(--card-hue))] group-hover:text-white transition-all duration-300 flex items-center gap-1">
           Agendar
           <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" weight="bold" />
         </span>
@@ -187,8 +199,10 @@ function SpecialtiesSection({ config }: { config?: any }) {
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/30 to-background" />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-primary/60 mb-3 block">Especialidades</span>
-          <h2 className="text-2xl md:text-4xl font-extrabold text-foreground mb-3 tracking-tight">{title}</h2>
+          <span className="inline-block px-3 py-1 mb-3 rounded-full bg-gradient-pingo-soft text-[11px] font-extrabold uppercase tracking-[0.25em] text-primary border border-[hsl(var(--pingo-sky)/0.25)]">
+            Especialidades
+          </span>
+          <h2 className="text-2xl md:text-4xl font-extrabold mb-3 tracking-tight text-gradient-pingo">{title}</h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">{subtitle}</p>
         </motion.div>
 

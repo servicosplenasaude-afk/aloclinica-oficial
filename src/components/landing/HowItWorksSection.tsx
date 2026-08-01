@@ -26,6 +26,14 @@ const DEFAULT_ACCENTS = [
   "from-success/20 to-emerald-400/10",
 ];
 
+/* Paleta Pingo por passo — cada etapa ganha sua própria cor */
+const STEP_HUES = [
+  { hue: "var(--pingo-sky)",   label: "azul-gelo" },
+  { hue: "var(--pingo-mint)",  label: "menta" },
+  { hue: "var(--pingo-grape)", label: "uva" },
+  { hue: "var(--pingo-sun)",   label: "sol" },
+];
+
 const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
   const stepsRef = useRef<HTMLDivElement>(null);
   const { get } = useSiteConfig();
@@ -80,7 +88,7 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
             <Clock className="w-3.5 h-3.5" weight="fill" />
             Em poucos minutos
           </span>
-          <h2 className="text-2xl md:text-4xl font-extrabold text-foreground mb-3 tracking-tight">
+          <h2 className="text-2xl md:text-4xl font-extrabold mb-3 tracking-tight text-gradient-pingo">
             {title}
           </h2>
           <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
@@ -92,7 +100,6 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
         <div className="hidden lg:block relative">
           <div ref={stepsRef} className="grid lg:grid-cols-4 gap-8 relative pt-6">
             {effectiveSteps.map((step, i) => {
-              const isEven = i % 2 === 0;
               return (
                 <motion.div
                   key={i}
@@ -102,21 +109,34 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
                   transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className="step-card group relative"
                 >
-                  <div className="relative flex flex-col bg-card rounded-[2rem] p-6 shadow-xl shadow-primary/5 border border-border/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl h-full">
+                  <div
+                    className="relative flex flex-col bg-card rounded-[2rem] p-6 shadow-xl border border-border/50 transition-all duration-500 hover:-translate-y-2 h-full ring-pingo sheen-pingo"
+                    style={{ boxShadow: `0 18px 45px -24px hsl(${STEP_HUES[i % 4].hue} / 0.55)` }}
+                  >
                     {/* Floating step number badge */}
-                    <div className="absolute -top-4 -left-4 w-12 h-12 flex items-center justify-center bg-primary text-primary-foreground rounded-2xl font-extrabold text-base shadow-lg shadow-primary/20 z-20">
+                    <div
+                      className="absolute -top-4 -left-4 w-12 h-12 flex items-center justify-center text-white rounded-2xl font-extrabold text-base shadow-lg z-20 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6"
+                      style={{
+                        background: `linear-gradient(135deg, hsl(${STEP_HUES[i % 4].hue}), hsl(var(--pingo-blue)))`,
+                        boxShadow: `0 10px 24px -10px hsl(${STEP_HUES[i % 4].hue} / 0.8)`,
+                      }}
+                    >
                       {String(i + 1).padStart(2, "0")}
                     </div>
 
                     {/* Mascot image area */}
                     <div className="relative aspect-square mb-6">
-                      <div className={`absolute inset-0 rounded-2xl scale-95 opacity-60 group-hover:scale-100 transition-transform duration-500 ${isEven ? "bg-primary/5" : "bg-secondary/10"}`} />
+                      <div
+                        className="absolute inset-0 rounded-2xl scale-95 opacity-70 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500"
+                        style={{ background: `radial-gradient(circle at 50% 65%, hsl(${STEP_HUES[i % 4].hue} / 0.20), transparent 70%)` }}
+                      />
                       <img
                         src={step.image}
                         alt={step.title}
                         loading="lazy"
                         decoding="async"
-                        className="relative z-10 w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500"
+                        className="relative z-10 w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500 animate-pingo-float"
+                        style={{ animationDelay: `${i * 0.6}s` }}
                       />
                       {/* Time badge */}
                       <span className="absolute top-2 right-2 flex items-center gap-1 px-3 py-1 bg-card/80 backdrop-blur-md rounded-lg text-[10px] font-bold text-muted-foreground shadow-sm border border-border/40 z-20">
@@ -127,7 +147,10 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
 
                     {/* Content */}
                     <div className="flex flex-col gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110"
+                        style={{ background: `hsl(${STEP_HUES[i % 4].hue} / 0.14)`, color: `hsl(${STEP_HUES[i % 4].hue})` }}
+                      >
                         <step.icon className="w-5 h-5" weight="fill" />
                       </div>
                       <h3 className="text-xl font-bold text-primary tracking-tight">{step.title}</h3>
@@ -162,13 +185,19 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
                 className="relative flex gap-4 pl-2"
               >
                 <motion.div
-                  className="relative z-10 w-12 h-12 rounded-xl bg-primary/[0.08] border border-primary/10 flex items-center justify-center shrink-0"
+                  className="relative z-10 w-12 h-12 rounded-xl border flex items-center justify-center shrink-0"
+                  style={{
+                    background: `hsl(${STEP_HUES[i % 4].hue} / 0.12)`,
+                    borderColor: `hsl(${STEP_HUES[i % 4].hue} / 0.28)`,
+                  }}
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 + 0.1, type: "spring", stiffness: 300 }}
                 >
-                  <span className="text-sm font-extrabold text-primary">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="text-sm font-extrabold" style={{ color: `hsl(${STEP_HUES[i % 4].hue})` }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
                 </motion.div>
 
                 <div className="flex-1 bg-card rounded-2xl border border-border/50 overflow-hidden shadow-sm">

@@ -14,22 +14,25 @@ const sideBenefits = [
     icon: Lightning,
     title: "Atendimento em minutos",
     description: "Sem filas ou deslocamento. Consulte médicos especialistas de qualquer lugar do Brasil.",
-    iconBg: "bg-amber-500/10",
-    iconColor: "text-amber-600",
+    iconBg: "bg-[hsl(var(--pingo-sun)/0.16)]",
+    iconColor: "text-[hsl(var(--pingo-sun))]",
+    glow: "hover:shadow-[0_20px_45px_-20px_hsl(var(--pingo-sun)/0.6)]",
   },
   {
     icon: ShieldCheck,
     title: "Segurança total",
     description: "Dados criptografados end-to-end em total conformidade com a LGPD e o CFM.",
-    iconBg: "bg-secondary/10",
-    iconColor: "text-secondary",
+    iconBg: "bg-[hsl(var(--pingo-mint)/0.16)]",
+    iconColor: "text-[hsl(var(--pingo-mint))]",
+    glow: "hover:shadow-pingo-mint",
   },
   {
     icon: Receipt,
     title: "Receita digital válida",
     description: "Receitas e atestados assinados digitalmente, aceitos em farmácias de todo o país.",
-    iconBg: "bg-primary/10",
-    iconColor: "text-primary",
+    iconBg: "bg-[hsl(var(--pingo-sky)/0.16)]",
+    iconColor: "text-[hsl(var(--pingo-sky))]",
+    glow: "hover:shadow-pingo",
   },
 ];
 
@@ -39,18 +42,21 @@ const bottomCards = [
     title: "Multiplataforma",
     description: "Acesse pelo celular, tablet ou computador. Sem instalações complexas.",
     cta: { label: "Baixar app", href: "/agendar" },
+    tint: "bg-gradient-pingo-soft",
   },
   {
     image: familyPlanImg,
     title: "Plano família",
     description: "Adicione dependentes e cuide de toda a família em uma conta única.",
     cta: { label: "Agendar consulta", href: "/agendar" },
+    tint: "bg-gradient-pingo-warm",
   },
   {
     image: medicalRecordsImg,
     title: "Prontuário completo",
     description: "Todo seu histórico de consultas, exames e receitas sempre à mão.",
     cta: { label: "Ver detalhes", href: "/seguranca" },
+    tint: "bg-[hsl(var(--pingo-grape)/0.10)]",
   },
 ];
 
@@ -65,6 +71,7 @@ function BenefitsGrid({ config }: { config?: any }) {
         icon: sideBenefits[i % sideBenefits.length].icon,
         iconBg: sideBenefits[i % sideBenefits.length].iconBg,
         iconColor: sideBenefits[i % sideBenefits.length].iconColor,
+        glow: sideBenefits[i % sideBenefits.length].glow,
         title: b.title, description: b.description,
       }))
     : sideBenefits;
@@ -79,11 +86,11 @@ function BenefitsGrid({ config }: { config?: any }) {
           transition={{ duration: 0.5 }}
           className="flex flex-col items-center text-center space-y-4"
         >
-          <div className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold tracking-widest uppercase border border-primary/10">
+          <div className="px-4 py-1.5 rounded-full bg-gradient-pingo-soft text-primary text-xs font-bold tracking-widest uppercase border border-[hsl(var(--pingo-sky)/0.25)] animate-pingo-glow">
             {badge}
           </div>
           <h2 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight">
-            {title} <span className="text-primary">{titleHighlight}</span>
+            {title} <span className="text-gradient-pingo">{titleHighlight}</span>
           </h2>
         </motion.div>
 
@@ -128,9 +135,9 @@ function BenefitsGrid({ config }: { config?: any }) {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="flex-1 bg-card p-7 rounded-[2rem] border border-border/40 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+                className={`flex-1 bg-card p-7 rounded-[2rem] border border-border/40 shadow-sm hover:-translate-y-1 transition-all duration-300 group ring-pingo sheen-pingo ${(b as any).glow ?? "hover:shadow-xl"}`}
               >
-                <div className={`w-12 h-12 rounded-2xl ${b.iconBg} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
+                <div className={`w-12 h-12 rounded-2xl ${b.iconBg} flex items-center justify-center mb-5 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6`}>
                   <b.icon className={`w-6 h-6 ${b.iconColor}`} weight="fill" />
                 </div>
                 <h4 className="font-bold text-foreground text-lg mb-2">{b.title}</h4>
@@ -149,15 +156,16 @@ function BenefitsGrid({ config }: { config?: any }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="group bg-card p-6 sm:p-7 md:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-border/40 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center h-full"
+              className="group relative bg-card p-6 sm:p-7 md:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-border/40 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 text-center flex flex-col items-center h-full ring-pingo sheen-pingo overflow-hidden"
             >
-              <div className="w-full h-40 sm:h-44 md:h-48 mb-5 sm:mb-6 flex items-end justify-center overflow-hidden">
+              <div className={`absolute inset-x-0 top-0 h-40 ${c.tint} opacity-70 group-hover:opacity-100 transition-opacity duration-500`} aria-hidden />
+              <div className="relative w-full h-40 sm:h-44 md:h-48 mb-5 sm:mb-6 flex items-end justify-center overflow-hidden">
                 <img
                   src={c.image}
                   alt={c.title}
                   loading="lazy"
                   decoding="async"
-                  className="max-h-full max-w-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                  className="max-h-full max-w-full w-auto h-auto object-contain group-hover:scale-105 group-hover:-translate-y-1 transition-transform duration-500"
                 />
               </div>
               <h4 className="font-bold text-foreground text-lg mb-2">{c.title}</h4>
