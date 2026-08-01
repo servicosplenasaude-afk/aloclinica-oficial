@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail, Lock, Stethoscope, KeyRound, Check, MessageCircle, LogIn, Eye, EyeOff,
-  Shield, Star, Sparkles, Award, Video, FileText, Users, ChevronRight, ArrowRight,
+  Shield, Sparkles, Award, Video, FileText, Users, ChevronRight, ArrowRight,
   Calendar, DollarSign, BarChart3, Globe, Zap, HelpCircle, CheckCircle2, Smartphone,
   Camera, Upload, ImagePlus
 } from "lucide-react";
@@ -803,8 +803,8 @@ const AuthMedico = () => {
 
             <div className="mt-4 flex items-center justify-center gap-5 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-secondary" /> CFM Verificado</span>
-              <span className="flex items-center gap-1.5"><Star className="w-3.5 h-3.5 text-warning" /> 4.9/5</span>
-              <span>500+ médicos</span>
+              <span className="flex items-center gap-1.5"><Award className="w-3.5 h-3.5 text-warning" /> Regulamentado</span>
+              <span>Telemedicina nacional</span>
             </div>
           </div>
         </section>
@@ -819,16 +819,16 @@ const AuthMedico = () => {
                 <BarChart3 className="w-3 h-3 mr-1" /> Dados reais
               </Badge>
               <h2 className="text-2xl md:text-3xl font-black text-white mb-3 tracking-tight leading-tight">
-                Médicos que usam a AloClinica<br />aumentam sua base em até <span className="text-white/90">40%</span>
+                Médicos que usam a AloClinica<br />ampliam sua base de pacientes
               </h2>
               <p className="text-sm text-white/70 mb-5 max-w-md">
                 Alcance pacientes de todo o Brasil sem sair de casa. Defina seus horários e preços.
               </p>
               <div className="flex flex-wrap gap-4">
                 {[
-                  { label: "500+", desc: "Médicos ativos" },
+                  { label: "Nacional", desc: "Todo o Brasil" },
                   { label: "30+", desc: "Especialidades" },
-                  { label: "4.9★", desc: "Avaliação média" },
+                  { label: "Flexível", desc: "Horário sob demanda" },
                 ].map((s, i) => (
                   <div key={i} className="text-center">
                     <p className="text-xl font-black text-white">{s.label}</p>
@@ -887,7 +887,7 @@ const AuthMedico = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary mx-auto mb-5 shadow-xl"><Smartphone className="w-8 h-8 text-white" /></div>
               <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-3 tracking-tight">Transforme sua prática médica</h2>
-              <p className="text-muted-foreground max-w-md mx-auto mb-8">Junte-se a mais de 500 médicos que já atendem pela AloClinica.</p>
+              <p className="text-muted-foreground max-w-md mx-auto mb-8">Junte-se à rede de médicos verificados que já atendem pela AloClinica.</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Button variant="rainbow" size="lg" className="rounded-2xl h-14 px-10 text-base font-bold" onClick={scrollToForm}>Criar Minha Conta <ArrowRight className="w-5 h-5 ml-2" /></Button>
                 <Button size="lg" variant="outline" className="rounded-2xl h-14 px-8 text-base font-semibold" asChild>

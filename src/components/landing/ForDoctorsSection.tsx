@@ -35,7 +35,7 @@ const perks = [
   },
   {
     icon: ShieldCheck,
-    title: "100% regulamentado",
+    title: "Regulamentado",
     desc: "Plataforma em conformidade com CFM, CRM e LGPD. Atenda com segurança jurídica.",
   },
   {

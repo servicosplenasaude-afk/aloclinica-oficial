@@ -130,7 +130,7 @@ const Footer = memo(forwardRef<HTMLElement, { config?: any }>(({ config }, ref) 
                 <span className="w-7 h-7 rounded-lg bg-white/[0.04] flex items-center justify-center">
                   <MapPin className="w-3.5 h-3.5" weight="fill" />
                 </span>
-                Brasil — Atendimento 100% online
+                Brasil — Atendimento online nacional
               </li>
             </ul>
 

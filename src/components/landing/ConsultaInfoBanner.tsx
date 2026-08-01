@@ -7,7 +7,7 @@ const INFO_ITEMS = [
   { icon: Clock, label: "Plantão 24h, todos os dias" },
   { icon: FileText, label: "Atestados e receitas digitais" },
   { icon: Pill, label: "Válido em qualquer farmácia" },
-  { icon: ShieldCheck, label: "100% seguro e sigiloso" },
+  { icon: ShieldCheck, label: "Seguro e sigiloso" },
 ];
 
 const ConsultaInfoBanner = () => {

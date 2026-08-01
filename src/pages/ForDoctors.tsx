@@ -111,8 +111,8 @@ const ForDoctors = forwardRef<HTMLDivElement>((_, ref) => {
               <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
                 {[
                   { icon: CheckCircle, label: "Cadastro gratuito" },
-                  { icon: Clock, label: "Aprovação em 24h" },
-                  { icon: ShieldCheck, label: "100% CFM e LGPD" },
+                  { icon: Clock, label: "Aprovação em até 24h" },
+                  { icon: ShieldCheck, label: "Conforme CFM e LGPD" },
                   { icon: Wallet, label: "Saque via PIX" },
                 ].map((t) => (
                   <span key={t.label} className="inline-flex items-center gap-1.5">
@@ -161,7 +161,7 @@ const ForDoctors = forwardRef<HTMLDivElement>((_, ref) => {
               { icon: CurrencyDollar, title: "Renda extra", desc: "Atenda pacientes de todo o Brasil e aumente seu faturamento sem sair de casa. Repasse via PIX em até 48h." },
               { icon: CalendarBlank, title: "Agenda no seu ritmo", desc: "Defina seus horários com total liberdade. Manhã, tarde, noite ou madrugada — você decide quando atender." },
               { icon: Globe, title: "Alcance nacional", desc: "Conecte-se a pacientes de qualquer estado. Sem limites geográficos, com demanda constante." },
-              { icon: ShieldCheck, title: "100% regulamentado", desc: "Plataforma em conformidade com CFM, CRM e LGPD. Atenda com segurança jurídica total." },
+              { icon: ShieldCheck, title: "Regulamentado", desc: "Plataforma em conformidade com CFM, CRM e LGPD. Atenda com segurança jurídica total." },
               { icon: ChartLineUp, title: "Dashboard completo", desc: "Métricas de performance, histórico de consultas, relatórios financeiros e muito mais." },
               { icon: FirstAid, title: "Suporte médico 24/7", desc: "Time médico dedicado para onboarding, dúvidas clínicas e suporte técnico." },
             ].map((p, i) => (

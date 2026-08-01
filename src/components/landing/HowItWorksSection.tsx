@@ -211,7 +211,7 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
             <strong className="text-foreground">Em poucos minutos</strong> do cadastro à receita
           </span>
           <span className="hidden sm:inline text-border">•</span>
-          <span>100% online</span>
+          <span>Totalmente online</span>
           <span className="hidden sm:inline text-border">•</span>
           <span>Sem necessidade de download</span>
         </motion.div>

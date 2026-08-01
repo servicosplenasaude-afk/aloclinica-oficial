@@ -50,7 +50,7 @@ const benefits = [
   {
     icon: CurrencyCircleDollar,
     title: "Reduza custos com saúde",
-    desc: "Economia de até 60% em relação a planos de saúde tradicionais.",
+    desc: "Custo previsível, sem surpresas e sem taxas ocultas de implantação.",
     color: "bg-emerald-500/10 text-emerald-600",
   },
   {
@@ -186,8 +186,8 @@ const ParaEmpresas = () => {
       company: "TechHub Brasil",
       logo: "TH",
       employees: "180 colaboradores",
-      saved: "R$ 420 mil/ano",
-      text: "Reduzimos em 65% nossos custos com saúde e nossos colaboradores adoraram a praticidade do atendimento online.",
+      saved: "Custo previsível",
+      text: "Conseguimos centralizar o atendimento de saúde dos nossos colaboradores com praticidade e segurança.",
       author: "Carla Mendes — Diretora de RH",
       color: "from-emerald-500/15 to-teal-500/10",
     },
@@ -195,8 +195,8 @@ const ParaEmpresas = () => {
       company: "Logística Norte",
       logo: "LN",
       employees: "320 colaboradores",
-      saved: "R$ 780 mil/ano",
-      text: "Nossos motoristas conseguem atendimento médico em qualquer lugar do Brasil. Diminuímos em 40% as faltas por consulta.",
+      saved: "Atendimento em qualquer lugar",
+      text: "Nossos motoristas conseguem atendimento médico em qualquer lugar do Brasil, reduzindo faltas e deslocamentos.",
       author: "Roberto Lima — CEO",
       color: "from-amber-500/15 to-orange-500/10",
     },
@@ -204,8 +204,8 @@ const ParaEmpresas = () => {
       company: "Indústria Sul",
       logo: "IS",
       employees: "560 colaboradores",
-      saved: "R$ 1.2M/ano",
-      text: "O painel de gestão nos dá visibilidade total. O ROI no primeiro ano superou 380% — e a satisfação do time disparou.",
+      saved: "Gestão centralizada",
+      text: "O painel de gestão nos dá visibilidade total do uso do benefício e ajuda a planejar ações de bem-estar.",
       author: "Patrícia Souza — Gerente de Pessoas",
       color: "from-violet-500/15 to-fuchsia-500/10",
     },
@@ -271,9 +271,9 @@ const ParaEmpresas = () => {
 
             <div className="flex flex-wrap gap-x-6 gap-y-3 mb-7">
               {[
-                { value: "60%", label: "menos custo" },
+                { value: "Previsível", label: "custo fixo por colaborador" },
                 { value: "24h", label: "disponível" },
-                { value: "+500", label: "empresas" },
+                { value: "Escalável", label: "para empresas de todo porte" },
               ].map((stat) => (
                 <div key={stat.label} className="flex items-baseline gap-2">
                   <span className="text-2xl md:text-3xl font-extrabold text-primary">{stat.value}</span>
