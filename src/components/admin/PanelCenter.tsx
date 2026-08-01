@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getAdminNav } from "@/components/admin/adminNav";
@@ -67,6 +67,11 @@ const PanelCenter = () => {
   const [kpiPendingDoctors, setKpiPendingDoctors] = useState<number | null>(null);
   const [whatsappState, setWhatsappState] = useState<"loading" | "connected" | "offline" | "unconfigured">("loading");
   const [revenueData, setRevenueData] = useState<{ day: string; revenue: number }[]>([]);
+
+  const revenueTotal = useMemo(() => revenueData.reduce((acc, d) => acc + d.revenue, 0), [revenueData]);
+  const isRevenueEmpty = revenueTotal === 0;
+  const formatBrl = (n: number) =>
+    `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const fetchPresence = async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true);
@@ -426,44 +431,83 @@ const PanelCenter = () => {
           </div>
         </motion.section>
 
-        {/* ─────── FATURAMENTO 7d (real-data placeholder) ─────── */}
+        {/* ─────── FATURAMENTO 7d ─────── */}
         <motion.section variants={fadeUp}>
-          <Card className="border-border/40 bg-card/50 overflow-hidden">
-            <div className="px-5 py-3 border-b border-border/40 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                <h3 className="text-sm font-bold text-foreground">Faturamento · últimos 7 dias</h3>
+          <Card className="border-border/40 bg-gradient-to-b from-card/95 to-card/70 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="px-5 py-3 border-b border-border/40 flex flex-row items-center justify-between gap-3 space-y-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="p-2 rounded-lg bg-emerald-500/10 shrink-0">
+                  <TrendingUp className="w-4 h-4 text-emerald-500" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <CardTitle className="text-sm font-bold text-foreground leading-tight truncate">Faturamento · últimos 7 dias</CardTitle>
+                  <span className="text-xs text-muted-foreground truncate">
+                    {isRevenueEmpty ? "Nenhum pagamento confirmado" : formatBrl(revenueTotal)}
+                  </span>
+                </div>
               </div>
-              <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground border-border/60 bg-muted/30">
+              <Badge variant="outline" className="font-mono text-[10px] text-muted-foreground border-border/60 bg-muted/30 shrink-0">
                 pagamentos confirmados
               </Badge>
-            </div>
-            <div className="h-[200px] p-3">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueData} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
-                  <defs>
-                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.35}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fontSize: 10, fill: "hsl(var(--muted-foreground))"}} />
-                  <YAxis hide />
-                  <RechartTooltip
-                    cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
-                    contentStyle={{
-                      background: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 12,
-                      fontSize: 12,
-                      boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
-                    }}
-                    formatter={(value: number) => [`R$ ${value.toLocaleString("pt-BR")}`, "Faturamento"]}
-                  />
-                  <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRev)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="h-[220px] relative">
+                {isRevenueEmpty ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
+                    <div className="relative w-16 h-16 mb-3 flex items-center justify-center">
+                      <div className="absolute inset-0 rounded-full bg-primary/10 blur-md" />
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-secondary/10" />
+                      <TrendingUp className="relative w-7 h-7 text-primary/60" />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground mb-1">Sem faturamento confirmado</p>
+                    <p className="text-xs text-muted-foreground max-w-[220px]">
+                      Os pagamentos aprovados nos últimos 7 dias aparecerão neste gráfico.
+                    </p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={revenueData} margin={{ top: 16, right: 12, bottom: 4, left: 0 }}>
+                      <defs>
+                        <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.35}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis
+                        dataKey="day"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                        dy={8}
+                      />
+                      <YAxis hide domain={[0, "auto"]} />
+                      <RechartTooltip
+                        cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
+                        contentStyle={{
+                          background: "hsl(var(--card))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: 12,
+                          fontSize: 12,
+                          boxShadow: "0 8px 20px rgba(0,0,0,0.08)",
+                        }}
+                        formatter={(value: number) => [formatBrl(value), "Faturamento"]}
+                        labelFormatter={(label: string) => label}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#colorRev)"
+                        activeDot={{ r: 5, strokeWidth: 2, stroke: "hsl(var(--background))", fill: "hsl(var(--primary))" }}
+                        dot={{ r: 3, strokeWidth: 0, fill: "hsl(var(--primary) / 0.5)" }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </CardContent>
           </Card>
         </motion.section>
 
