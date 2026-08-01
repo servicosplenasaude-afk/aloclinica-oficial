@@ -887,7 +887,7 @@ const AuthMedico = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary mx-auto mb-5 shadow-xl"><Smartphone className="w-8 h-8 text-white" /></div>
               <h2 className="text-2xl sm:text-3xl font-black text-foreground mb-3 tracking-tight">Transforme sua prática médica</h2>
-              <p className="text-muted-foreground max-w-md mx-auto mb-8">Junte-se a mais de 500 médicos que já atendem pela AloClinica.</p>
+              <p className="text-muted-foreground max-w-md mx-auto mb-8">Junte-se à rede de médicos verificados que já atendem pela AloClinica.</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Button variant="rainbow" size="lg" className="rounded-2xl h-14 px-10 text-base font-bold" onClick={scrollToForm}>Criar Minha Conta <ArrowRight className="w-5 h-5 ml-2" /></Button>
                 <Button size="lg" variant="outline" className="rounded-2xl h-14 px-8 text-base font-semibold" asChild>
