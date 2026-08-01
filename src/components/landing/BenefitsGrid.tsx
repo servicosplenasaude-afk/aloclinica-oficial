@@ -14,22 +14,25 @@ const sideBenefits = [
     icon: Lightning,
     title: "Atendimento em minutos",
     description: "Sem filas ou deslocamento. Consulte médicos especialistas de qualquer lugar do Brasil.",
-    iconBg: "bg-amber-500/10",
-    iconColor: "text-amber-600",
+    iconBg: "bg-[hsl(var(--pingo-sun)/0.16)]",
+    iconColor: "text-[hsl(var(--pingo-sun))]",
+    glow: "hover:shadow-[0_20px_45px_-20px_hsl(var(--pingo-sun)/0.6)]",
   },
   {
     icon: ShieldCheck,
     title: "Segurança total",
     description: "Dados criptografados end-to-end em total conformidade com a LGPD e o CFM.",
-    iconBg: "bg-secondary/10",
-    iconColor: "text-secondary",
+    iconBg: "bg-[hsl(var(--pingo-mint)/0.16)]",
+    iconColor: "text-[hsl(var(--pingo-mint))]",
+    glow: "hover:shadow-pingo-mint",
   },
   {
     icon: Receipt,
     title: "Receita digital válida",
     description: "Receitas e atestados assinados digitalmente, aceitos em farmácias de todo o país.",
-    iconBg: "bg-primary/10",
-    iconColor: "text-primary",
+    iconBg: "bg-[hsl(var(--pingo-sky)/0.16)]",
+    iconColor: "text-[hsl(var(--pingo-sky))]",
+    glow: "hover:shadow-pingo",
   },
 ];
 
@@ -39,18 +42,21 @@ const bottomCards = [
     title: "Multiplataforma",
     description: "Acesse pelo celular, tablet ou computador. Sem instalações complexas.",
     cta: { label: "Baixar app", href: "/agendar" },
+    tint: "bg-gradient-pingo-soft",
   },
   {
     image: familyPlanImg,
     title: "Plano família",
     description: "Adicione dependentes e cuide de toda a família em uma conta única.",
     cta: { label: "Agendar consulta", href: "/agendar" },
+    tint: "bg-gradient-pingo-warm",
   },
   {
     image: medicalRecordsImg,
     title: "Prontuário completo",
     description: "Todo seu histórico de consultas, exames e receitas sempre à mão.",
     cta: { label: "Ver detalhes", href: "/seguranca" },
+    tint: "bg-[hsl(var(--pingo-grape)/0.10)]",
   },
 ];
 
@@ -65,6 +71,7 @@ function BenefitsGrid({ config }: { config?: any }) {
         icon: sideBenefits[i % sideBenefits.length].icon,
         iconBg: sideBenefits[i % sideBenefits.length].iconBg,
         iconColor: sideBenefits[i % sideBenefits.length].iconColor,
+        glow: sideBenefits[i % sideBenefits.length].glow,
         title: b.title, description: b.description,
       }))
     : sideBenefits;
@@ -79,11 +86,11 @@ function BenefitsGrid({ config }: { config?: any }) {
           transition={{ duration: 0.5 }}
           className="flex flex-col items-center text-center space-y-4"
         >
-          <div className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-bold tracking-widest uppercase border border-primary/10">
+          <div className="px-4 py-1.5 rounded-full bg-gradient-pingo-soft text-primary text-xs font-bold tracking-widest uppercase border border-[hsl(var(--pingo-sky)/0.25)] animate-pingo-glow">
             {badge}
           </div>
           <h2 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight">
-            {title} <span className="text-primary">{titleHighlight}</span>
+            {title} <span className="text-gradient-pingo">{titleHighlight}</span>
           </h2>
         </motion.div>
 
