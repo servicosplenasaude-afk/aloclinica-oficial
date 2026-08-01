@@ -19,7 +19,7 @@ const PatientDashboard = lazy(() => import("@/components/dashboards/PatientDashb
 const DoctorDashboard = lazy(() => import("@/components/dashboards/DoctorDashboard"));
 const DoctorAnalyticsCharts = lazy(() => import("@/components/dashboards/DoctorAnalyticsCharts"));
 const ClinicDashboard = lazy(() => import("@/components/dashboards/ClinicDashboard")); // kept for admin view-as
-const AdminDashboard = lazy(() => import("@/components/dashboards/AdminDashboard"));
+
 const ReceptionDashboard = lazy(() => import("@/components/dashboards/ReceptionDashboard")); // kept for admin view-as
 const SupportDashboard = lazy(() => import("@/components/dashboards/SupportDashboard"));
 const PartnerDashboard = lazy(() => import("@/components/dashboards/PartnerDashboard")); // kept for admin view-as
@@ -248,9 +248,8 @@ const Dashboard = () => {
   })();
 
   const IndexDashboard = () => {
-    if (isAdmin && !forceRole) return <Navigate to="/dashboard/admin/panel-center" replace />;
+    if (isAdmin) return <Navigate to="/dashboard/admin/panel-center" replace />;
     switch (primaryRole) {
-      case "admin": return <AdminDashboard />;
       case "doctor": return <DoctorDashboard />;
       case "receptionist": return <ReceptionDashboard />;
       case "support": return <SupportDashboard />;
@@ -272,7 +271,7 @@ const Dashboard = () => {
       <Route path="patient" element={<RoleGuard allowed={["patient"]} roles={roles}><ContextGuard panel="patient" forceRole={forceRole} roles={roles}><PatientDashboard /></ContextGuard></RoleGuard>} />
       <Route path="doctor" element={<RoleGuard allowed={["doctor"]} roles={roles}><ContextGuard panel="doctor" forceRole={forceRole} roles={roles}><DoctorDashboard /></ContextGuard></RoleGuard>} />
       <Route path="clinic" element={<RoleGuard allowed={["clinic"]} roles={roles}><ContextGuard panel="clinic" forceRole={forceRole} roles={roles}><ClinicDashboard /></ContextGuard></RoleGuard>} />
-      <Route path="admin" element={<RoleGuard allowed={[]} roles={roles}><AdminDashboard /></RoleGuard>} />
+      <Route path="admin" element={<Navigate to="/dashboard/admin/panel-center" replace />} />
       <Route path="receptionist" element={<RoleGuard allowed={["receptionist"]} roles={roles}><ContextGuard panel="receptionist" forceRole={forceRole} roles={roles}><ReceptionDashboard /></ContextGuard></RoleGuard>} />
       <Route path="support" element={<RoleGuard allowed={["support"]} roles={roles}><ContextGuard panel="support" forceRole={forceRole} roles={roles}><SupportDashboard /></ContextGuard></RoleGuard>} />
       <Route path="partner" element={<RoleGuard allowed={["partner"]} roles={roles}><ContextGuard panel="partner" forceRole={forceRole} roles={roles}><PartnerDashboard /></ContextGuard></RoleGuard>} />
