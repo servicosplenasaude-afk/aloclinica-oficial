@@ -169,79 +169,11 @@ const SystemHealth = () => {
       results.push({ name: "Storage (S3)", status: "error", message: e instanceof Error ? e.message : "Erro desconhecido", icon: <HardDrive className="w-5 h-5" />, group: "core" });
     }
 
-    // 6–10. VPS Services
-    // SECURITY: use HTTPS endpoints (via domínio) — chamar http://IP a partir de
-    // uma página HTTPS é bloqueado pelo navegador (mixed content) e falha no app
-    // mobile (Capacitor android allowMixedContent:false). URLs configuráveis por env.
-    // Obs.: vídeo (MiroTalk), KYC (CompreFace) e demais serviços externos são
-    // verificados de verdade na seção "Serviços externos (verificação real)".
-    const vpsServices = [
-      { name: "DocuSeal (Assinaturas)", url: import.meta.env.VITE_DOCUSEAL_URL ?? "https://sign.aloclinica.com.br", icon: <FileText className="w-5 h-5" /> },
-    ];
-
-    for (const svc of vpsServices) {
-      const start = performance.now();
-      try {
-        const res = await fetch(svc.url, { mode: "no-cors", signal: AbortSignal.timeout(5000) });
-        const latency = Math.round(performance.now() - start);
-        results.push({ name: svc.name, status: "ok", latency, message: `Acessível • ${latency}ms`, icon: svc.icon, group: "vps" });
-      } catch (e: unknown) {
-        const latency = Math.round(performance.now() - start);
-        results.push({ name: svc.name, status: "error", latency, message: e instanceof Error ? e.message : "Inacessível", icon: svc.icon, group: "vps" });
-      }
-    }
-
-    // 11+. Integrações Externas (Edge Functions)
-    const integrations = [
-      { name: "WhatsApp (Evolution API)", fn: "whatsapp-notify", icon: <MessageCircle className="w-5 h-5" /> },
-      { name: "Mercado Pago (Pagamentos)", fn: "mercadopago-create-payment", icon: <CreditCard className="w-5 h-5" /> },
-      { name: "Lovable AI Gateway", fn: "ai-assistant", icon: <Brain className="w-5 h-5" /> },
-      { name: "Memed (Prescrições)", fn: "memed-prescriber", icon: <Stethoscope className="w-5 h-5" /> },
-      { name: "DocuSeal (Assinatura digital)", fn: "docuseal-proxy", icon: <FileSignature className="w-5 h-5" /> },
-      { name: "VidaaS (Assinatura ICP)", fn: "vidaas-sign", icon: <FileSignature className="w-5 h-5" /> },
-      { name: "CompreFace Proxy (KYC)", fn: "compreface-proxy", icon: <Eye className="w-5 h-5" /> },
-      { name: "Didit KYC", fn: "didit-kyc", icon: <Shield className="w-5 h-5" /> },
-      { name: "Push Notifications", fn: "send-push-notification", icon: <Bell className="w-5 h-5" /> },
-      { name: "Verify CRM (CFM)", fn: "verify-crm", icon: <Shield className="w-5 h-5" /> },
-      { name: "Triagem por Sintomas (IA)", fn: "symptom-triage", icon: <Brain className="w-5 h-5" /> },
-      { name: "Lembretes WhatsApp", fn: "appointment-reminders", icon: <MessageCircle className="w-5 h-5" /> },
-    ];
-
-    await Promise.all(integrations.map(async (svc) => {
-      const start = performance.now();
-      try {
-        // OPTIONS preflight: confirma deploy + CORS sem efeitos colaterais
-        const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/${svc.fn}`, {
-          method: "OPTIONS",
-          headers: {
-            "Access-Control-Request-Method": "POST",
-            "Access-Control-Request-Headers": "authorization, content-type",
-            Origin: window.location.origin,
-          },
-          signal: AbortSignal.timeout(8000),
-        });
-        const latency = Math.round(performance.now() - start);
-        const ok = res.status >= 200 && res.status < 500 && res.status !== 404;
-        results.push({
-          name: svc.name,
-          status: ok ? "ok" : "error",
-          latency,
-          message: ok ? `Deployada • ${latency}ms` : `HTTP ${res.status}`,
-          icon: svc.icon,
-          group: "integration",
-        });
-      } catch (e: unknown) {
-        const latency = Math.round(performance.now() - start);
-        results.push({
-          name: svc.name,
-          status: "error",
-          latency,
-          message: e instanceof Error ? e.message : "Sem resposta",
-          icon: svc.icon,
-          group: "integration",
-        });
-      }
-    }));
+    // Serviços externos (WhatsApp, e-mail, vídeo, KYC, pagamentos, NFS-e) NÃO são
+    // checados aqui: a verificação por OPTIONS do navegador não é confiável (dava
+    // "Failed to fetch" em massa mesmo com o serviço no ar). A verificação correta
+    // é feita na seção "Serviços externos" (edge function service-health, com
+    // fallback básico no navegador via useServiceHealth).
 
     setChecks(results);
     setLastCheck(new Date());
