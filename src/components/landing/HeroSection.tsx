@@ -26,8 +26,13 @@ const HeroSection = memo(
     const navigate = useNavigate();
     const prefetchPaciente = usePrefetchRoute(() => import("@/pages/AuthPaciente"));
 
-    const titleMain = config?.title || "Cuidado médico";
-    const titleAccent = config?.title_highlight || "de excelência";
+    const rawTitle: string = config?.title || "Cuidado médico de excelência";
+    const words = rawTitle.trim().split(/\s+/);
+    const fallbackAccent = words.length > 2 ? words.slice(-2).join(" ") : "";
+    const titleAccent = config?.title_highlight || fallbackAccent;
+    const titleMain = config?.title_highlight
+      ? rawTitle
+      : words.slice(0, Math.max(1, words.length - 2)).join(" ");
     const subtitle =
       config?.subtitle ||
       "Conecte-se a médicos especialistas verificados pelo CFM. Consultas por vídeo em HD, receitas digitais válidas e prontuário eletrônico completo.";
@@ -61,16 +66,20 @@ const HeroSection = memo(
                 {badgeText}
               </div>
 
-              <h1 className="text-[40px] sm:text-5xl lg:text-[64px] font-extrabold leading-[1.02] mb-6 tracking-[-0.035em]">
+              <h1 className="text-[40px] sm:text-5xl lg:text-[62px] font-extrabold leading-[1.05] mb-6 tracking-[-0.035em]">
                 <span className="text-[#0b1b34]">{titleMain}</span>
-                <br />
-                <span className="text-[#1667e6]">{titleAccent}</span>
+                {titleAccent && (
+                  <>
+                    <br />
+                    <span className="text-[#1667e6]">{titleAccent}</span>
+                  </>
+                )}
               </h1>
 
               <p className="text-base sm:text-lg text-slate-500 max-w-[520px] mb-8 leading-relaxed">{subtitle}</p>
 
               {/* CTA + inline signals */}
-              <div className="flex flex-wrap items-center gap-5 sm:gap-7 mb-7">
+              <div className="flex flex-wrap items-center gap-x-7 gap-y-4 mb-7">
                 <Button
                   size="lg"
                   onClick={() => navigate(ctaUrl)}
@@ -149,7 +158,7 @@ const HeroSection = memo(
               transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
               className="relative flex items-center justify-center pb-28 sm:pb-24 lg:pb-20 min-w-0"
             >
-              <div className="absolute top-0 w-[88%] aspect-square rounded-full border-[14px] border-white/80 pointer-events-none" />
+              <div className="absolute top-0 w-[88%] aspect-square rounded-full border-[14px] border-[#dbeafe] pointer-events-none" />
               <div className="absolute top-[2%] w-[82%] aspect-square rounded-full bg-gradient-to-br from-[#eaf4ff] to-[#d9e9ff] -z-10" />
 
               <motion.div
@@ -214,13 +223,13 @@ const HeroSection = memo(
             <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 mb-4">
               Confiança de quem cuida
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-8 sm:gap-x-14 gap-y-4">
+            <ul className="flex flex-wrap items-center justify-center gap-y-4" style={{ columnGap: "3.5rem" }}>
               {complianceLogos.map((logo) => (
-                <span key={logo} className="text-base sm:text-lg font-bold tracking-wide text-slate-400">
+                <li key={logo} className="text-base sm:text-lg font-bold tracking-wide text-slate-400">
                   {logo}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       </section>
