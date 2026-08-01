@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getAdminNav } from "@/components/admin/adminNav";
+import { KpiCard } from "@/components/admin/KpiCard";
 import {
   Users, Stethoscope, Building2, Headphones,
   Handshake, Bot, ShieldCheck, ArrowRight,
@@ -23,6 +24,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import pingoAdmin from "@/assets/pingo-admin.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartTooltip, Cell, AreaChart, Area } from "recharts";
+
 
 interface RecentUser { name: string; page: string; lastSeen: string }
 interface PanelInfo {
