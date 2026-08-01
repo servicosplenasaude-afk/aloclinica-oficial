@@ -356,9 +356,9 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
       {!collapsed && (
         <div className="px-3 pb-3 pr-12 shrink-0">
           <div className="relative overflow-hidden rounded-[22px] border border-border/45 bg-card/82 p-3.5 shadow-[0_18px_42px_-32px_rgba(15,23,42,.55)] backdrop-blur-xl">
-            <div className={`absolute -right-10 -top-12 h-28 w-28 rounded-full bg-gradient-to-br ${grad} opacity-15 blur-2xl`} />
+            <div className="absolute -right-10 -top-12 h-28 w-28 rounded-full bg-gradient-to-br from-primary/30 to-secondary/20 opacity-40 blur-2xl" />
             <div className="relative flex items-center gap-3">
-              <span className={`flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${grad} shadow-lg shadow-primary/10`}>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-background/80 border border-border/50">
                 <img src={mascotImg} alt="" className="h-10 w-10 object-contain" />
               </span>
               <div className="flex-1 min-w-0">
