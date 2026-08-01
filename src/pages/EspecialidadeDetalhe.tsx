@@ -134,7 +134,6 @@ const SPECIALTIES_DATA: SpecialtyContent[] = [
       "Mudanças bruscas de humor",
       "Pensamentos negativos recorrentes",
     ],
-    doctors: 33,
     fromPrice: 119,
   },
   {
@@ -158,7 +157,6 @@ const SPECIALTIES_DATA: SpecialtyContent[] = [
       "Renovação de medicação contínua",
       "Avaliação inicial antes de especialista",
     ],
-    doctors: 89,
     fromPrice: 59,
   },
   {
@@ -183,7 +181,6 @@ const SPECIALTIES_DATA: SpecialtyContent[] = [
       "Dúvidas sobre contracepção",
       "Sintomas da menopausa",
     ],
-    doctors: 44,
     fromPrice: 89,
   },
   {
@@ -208,7 +205,6 @@ const SPECIALTIES_DATA: SpecialtyContent[] = [
       "Queda de cabelo e pele seca",
       "Acompanhamento de diabetes",
     ],
-    doctors: 26,
     fromPrice: 99,
   },
   {
@@ -233,7 +229,6 @@ const SPECIALTIES_DATA: SpecialtyContent[] = [
       "Necessidade de plano para treinos",
       "Acompanhamento de doenças crônicas",
     ],
-    doctors: 36,
     fromPrice: 69,
   },
 ];
@@ -340,13 +335,8 @@ const EspecialidadeDetalhe = () => {
 
               <div className="flex flex-wrap gap-4 mb-6">
                 <div className="flex items-center gap-2 text-sm">
-                  <Star className="w-5 h-5 text-amber-500" weight="fill" />
-                  <span className="font-semibold text-foreground">4.9</span>
-                  <span className="text-muted-foreground">(2.4k avaliações)</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
                   <Stethoscope className="w-5 h-5 text-primary" weight="fill" />
-                  <span className="text-foreground">{specialty.doctors}+ médicos</span>
+                  <span className="text-foreground">Médicos verificados disponíveis</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Clock className="w-5 h-5 text-emerald-600" weight="fill" />
