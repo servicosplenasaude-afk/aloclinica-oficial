@@ -1,0 +1,5 @@
+# Cloudflare Pages — fallback de SPA.
+# Serve arquivos estáticos existentes primeiro; qualquer outra rota cai no
+# index.html (o React Router assume). Sem isto, links diretos (ex.: /agendar,
+# /dashboard/...) dariam 404 ao recarregar a página.
+/*    /index.html   200
