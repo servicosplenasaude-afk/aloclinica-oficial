@@ -143,7 +143,7 @@ const Ajuda = () => {
       </section>
 
       {/* Categorias */}
-      <section className="py-10 md:py-14 px-4">
+      <section className="section-band band-plain !py-12">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6 text-center">
             Explore por categoria
@@ -173,7 +173,7 @@ const Ajuda = () => {
       </section>
 
       {/* FAQ */}
-      <section className="py-10 md:py-16 px-4">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-extrabold text-foreground mb-2 text-center">
             Perguntas frequentes
@@ -214,7 +214,7 @@ const Ajuda = () => {
       </section>
 
       {/* Suporte humano */}
-      <section className="py-12 md:py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-6xl mx-auto">
           <div className="relative bg-gradient-to-br from-primary/8 via-card to-secondary/8 rounded-3xl border border-primary/15 overflow-hidden">
             <div className="grid md:grid-cols-2 gap-8 items-center p-6 md:p-12">

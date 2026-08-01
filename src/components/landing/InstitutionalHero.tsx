@@ -12,33 +12,49 @@ interface InstitutionalHeroProps {
 }
 
 const InstitutionalHero = ({ title, subtitle, icon: Icon, lastUpdate }: InstitutionalHeroProps) => (
-  <section className="relative overflow-hidden pb-12" style={{ minHeight: "260px" }}>
-    <img src={bannerLegal} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" decoding="async" />
-    <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/75 to-primary/50" />
-    <div className="container mx-auto px-4 relative z-10 flex items-end pb-8 pt-12 max-w-3xl">
+  <section className="section-band band-deep">
+    <img
+      src={bannerLegal}
+      alt=""
+      aria-hidden="true"
+      className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-luminosity"
+      loading="eager"
+      decoding="async"
+    />
+    <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-[hsl(var(--pingo-mint)/0.28)] blur-3xl pointer-events-none" />
+    <div className="absolute -bottom-28 -left-10 w-80 h-80 rounded-full bg-[hsl(var(--pingo-sky)/0.25)] blur-3xl pointer-events-none" />
+
+    <div className="section-inner">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="max-w-3xl"
       >
-        <Link to="/" className="inline-flex items-center gap-2 text-white/80 hover:text-white transition text-sm mb-4">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-white/75 hover:text-white transition-colors text-sm font-semibold mb-6"
+        >
           <ArrowLeft className="w-4 h-4" /> Voltar ao início
         </Link>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/10">
-            <Icon className="w-6 h-6 text-white" />
+
+        <div className="flex items-start gap-4">
+          <div className="shrink-0 w-14 h-14 rounded-2xl bg-white/12 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-[0_12px_30px_-14px_rgba(0,0,0,0.6)]">
+            <Icon className="w-7 h-7 text-white" />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white">{title}</h1>
-            {subtitle && <p className="text-sm text-white/70">{subtitle}</p>}
+          <div className="min-w-0">
+            <h1 className="section-title text-white">{title}</h1>
+            {subtitle && <p className="section-lead mt-3">{subtitle}</p>}
           </div>
         </div>
+
         {lastUpdate && (
-          <p className="text-xs text-white/60 mt-2">Última atualização: {lastUpdate}</p>
+          <p className="mt-6 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-white/65 border border-white/15 bg-white/8 rounded-full px-3 py-1.5">
+            Atualizado em {lastUpdate}
+          </p>
         )}
       </motion.div>
     </div>
-    
   </section>
 );
 

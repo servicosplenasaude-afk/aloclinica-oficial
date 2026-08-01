@@ -87,7 +87,7 @@ const Contato = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Contact Methods */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {contactMethods.map((method, i) => (
@@ -112,7 +112,7 @@ const Contato = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Form Section */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -247,7 +247,7 @@ const Contato = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* FAQ Quick Links */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground text-center mb-12">
             Perguntas Frequentes

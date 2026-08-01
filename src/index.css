@@ -228,7 +228,8 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Manrope', 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv01";
     -webkit-tap-highlight-color: transparent;
     min-height: 100vh;
     overflow-x: hidden;
@@ -262,7 +263,8 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Sora', 'Manrope', system-ui, sans-serif;
+    letter-spacing: -0.02em;
     overflow-wrap: break-word;
     word-break: break-word;
   }
@@ -1835,4 +1837,115 @@ div[style*="Edit with Lovable"],
   .animate-pingo-glow,
   .text-gradient-pingo { animation: none !important; }
   .sheen-pingo::after { display: none; }
+}
+
+/* =====================================================================
+   REDESIGN 2026 — Sistema de seções full-width (páginas públicas)
+   Tipografia: Sora (títulos) + Manrope (corpo)
+   ===================================================================== */
+
+.font-display { font-family: 'Sora', 'Manrope', system-ui, sans-serif; }
+
+/* Banda de seção: ritmo vertical consistente em todo o site público */
+.section-band {
+  position: relative;
+  width: 100%;
+  padding-block: clamp(3.5rem, 7vw, 7rem);
+  padding-inline: clamp(1rem, 3vw, 1.75rem);
+  overflow: hidden;
+}
+.section-band > .section-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+
+/* Variações de fundo alternadas para as faixas */
+.band-plain { background: hsl(var(--background)); }
+.band-tint {
+  background:
+    radial-gradient(120% 80% at 10% 0%, hsl(var(--pingo-ice) / .35), transparent 60%),
+    radial-gradient(100% 70% at 90% 100%, hsl(var(--pingo-mint) / .12), transparent 65%),
+    hsl(var(--muted) / .35);
+}
+.band-deep {
+  background:
+    radial-gradient(90% 70% at 15% 10%, hsl(var(--pingo-sky) / .28), transparent 60%),
+    radial-gradient(80% 70% at 90% 90%, hsl(var(--pingo-mint) / .22), transparent 60%),
+    linear-gradient(135deg, hsl(var(--pingo-blue)) 0%, hsl(215 78% 22%) 100%);
+  color: hsl(0 0% 100%);
+}
+.band-deep h1, .band-deep h2, .band-deep h3 { color: hsl(0 0% 100%); }
+
+/* Divisor suave entre faixas */
+.band-divider::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--border)), transparent);
+}
+
+/* Cabeçalho padrão de seção */
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .35rem .85rem;
+  border-radius: 999px;
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  background: var(--gradient-pingo-soft);
+  border: 1px solid hsl(var(--pingo-sky) / .25);
+}
+.band-deep .section-eyebrow {
+  color: hsl(0 0% 100%);
+  background: hsl(0 0% 100% / .12);
+  border-color: hsl(0 0% 100% / .22);
+}
+.section-title {
+  font-family: 'Sora', system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  font-size: clamp(1.6rem, 3.4vw + .4rem, 2.9rem);
+}
+.section-lead {
+  font-size: clamp(.98rem, .5vw + .85rem, 1.12rem);
+  line-height: 1.65;
+  color: hsl(var(--muted-foreground));
+  max-width: 46rem;
+}
+.band-deep .section-lead { color: hsl(0 0% 100% / .78); }
+
+/* Cartão padrão do novo design */
+.surface-card {
+  position: relative;
+  border-radius: 1.5rem;
+  background: hsl(var(--card) / .92);
+  border: 1px solid hsl(var(--border) / .7);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 2px hsl(var(--pingo-blue) / .04), 0 12px 32px -20px hsl(var(--pingo-blue) / .3);
+  transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .45s, border-color .45s;
+}
+.surface-card:hover {
+  transform: translateY(-4px);
+  border-color: hsl(var(--pingo-sky) / .4);
+  box-shadow: 0 24px 55px -24px hsl(var(--pingo-blue) / .45);
+}
+.band-deep .surface-card {
+  background: hsl(0 0% 100% / .08);
+  border-color: hsl(0 0% 100% / .16);
+  color: hsl(0 0% 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surface-card { transition: none; }
+  .surface-card:hover { transform: none; }
 }

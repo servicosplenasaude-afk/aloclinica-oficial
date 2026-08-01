@@ -142,7 +142,7 @@ const ForDoctors = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ POR QUE ATENDER ONLINE ═══════════════ */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-7xl mx-auto">
           <motion.div className="text-center mb-14" {...fadeUp}>
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-4 py-1.5 rounded-full mb-4">
@@ -239,7 +239,7 @@ const ForDoctors = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ COMO FUNCIONA ═══════════════ */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-7xl mx-auto">
           <motion.div className="text-center mb-14" {...fadeUp}>
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-4 py-1.5 rounded-full mb-4">
@@ -386,7 +386,7 @@ const ForDoctors = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ FAQ ACCORDION ═══════════════ */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-3xl mx-auto">
           <motion.div className="text-center mb-14" {...fadeUp}>
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-4 py-1.5 rounded-full mb-4">
@@ -442,7 +442,7 @@ const ForDoctors = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ CTA FINAL ═══════════════ */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-5xl mx-auto mb-20">
           <motion.div className="text-center mb-10" {...fadeUp}>
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-4 py-1.5 rounded-full mb-4">

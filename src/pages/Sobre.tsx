@@ -120,7 +120,7 @@ const Sobre = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ MISSÃO, VISÃO, COMPROMISSO ═══════════════ */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-7xl mx-auto">
           <motion.div {...stagger} variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -144,7 +144,7 @@ const Sobre = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ NOSSA TECNOLOGIA ═══════════════ */}
-      <section className="py-20 md:py-28 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <motion.div className="relative flex justify-center order-2 lg:order-1" {...fadeUp} transition={{ duration: 0.6 }}>
@@ -201,7 +201,7 @@ const Sobre = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ NOSSOS VALORES ═══════════════ */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-7xl mx-auto">
           <motion.div className="text-center mb-14" {...fadeUp}>
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-4 py-1.5 rounded-full mb-4">
@@ -239,7 +239,7 @@ const Sobre = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ SEGURANÇA & CONFORMIDADE ═══════════════ */}
-      <section className="py-20 md:py-28 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <motion.div className="relative flex justify-center order-2 lg:order-1" {...fadeUp} transition={{ duration: 0.6 }}>
@@ -296,7 +296,7 @@ const Sobre = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ DIFERENCIAIS ═══════════════ */}
-      <section id="porque-nos" className="py-20 px-4 bg-muted/30">
+      <section id="porque-nos" className="section-band band-tint band-divider">
         <div className="max-w-7xl mx-auto">
           <motion.div className="text-center mb-14" {...fadeUp}>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
@@ -333,7 +333,7 @@ const Sobre = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* ═══════════════ CTA FINAL ═══════════════ */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-7xl mx-auto">
           <motion.div
             {...fadeUp}

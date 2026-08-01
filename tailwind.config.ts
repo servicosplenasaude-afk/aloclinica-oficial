@@ -17,7 +17,8 @@ export default {
         'xs': '375px',
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
+        sans: ['"Manrope"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Sora"', '"Manrope"', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

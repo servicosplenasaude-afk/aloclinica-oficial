@@ -314,7 +314,7 @@ const ParaEmpresas = () => {
       </section>
 
       {/* Benefícios gerais */}
-      <section className="py-12 md:py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10 md:mb-14">
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full mb-4">
@@ -352,7 +352,7 @@ const ParaEmpresas = () => {
       </section>
 
       {/* PLANOS CORPORATIVOS */}
-      <section className="py-12 md:py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10 md:mb-14">
             <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary bg-primary/10 px-3 py-1 rounded-full mb-4">
@@ -480,7 +480,7 @@ const ParaEmpresas = () => {
       </section>
 
       {/* O que está incluso */}
-      <section className="py-12 md:py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-6xl mx-auto bg-card rounded-3xl border border-border/40 p-6 md:p-12">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
             <div>

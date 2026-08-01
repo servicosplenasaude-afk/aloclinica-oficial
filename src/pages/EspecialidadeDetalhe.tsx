@@ -457,7 +457,7 @@ const EspecialidadeDetalhe = () => {
       </section>
 
       {/* CTA Final */}
-      <section className="py-12 md:py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-5xl mx-auto bg-gradient-to-br from-primary to-primary/80 rounded-3xl p-8 md:p-14 text-center overflow-hidden relative">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,white_0%,transparent_60%)] opacity-10" />
           <div className="relative">

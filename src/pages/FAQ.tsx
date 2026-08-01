@@ -224,7 +224,7 @@ const FAQ = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* FAQ Sections */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           {searchTerm === "" ? (
             // Show by category
@@ -335,7 +335,7 @@ const FAQ = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

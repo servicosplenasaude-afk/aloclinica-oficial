@@ -155,7 +155,7 @@ const ComoFunciona = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Tabs */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Button
@@ -327,7 +327,7 @@ const ComoFunciona = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* Features */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="section-band band-tint band-divider">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground text-center mb-12">
             O Que Torna Simples
@@ -358,7 +358,7 @@ const ComoFunciona = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground text-center mb-12">
             Dúvidas Comuns
@@ -388,7 +388,7 @@ const ComoFunciona = forwardRef<HTMLDivElement>((_, ref) => {
       </section>
 
       {/* CTA Final */}
-      <section className="py-20 px-4">
+      <section className="section-band band-plain">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
