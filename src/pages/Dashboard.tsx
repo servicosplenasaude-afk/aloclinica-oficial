@@ -19,7 +19,7 @@ const PatientDashboard = lazy(() => import("@/components/dashboards/PatientDashb
 const DoctorDashboard = lazy(() => import("@/components/dashboards/DoctorDashboard"));
 const DoctorAnalyticsCharts = lazy(() => import("@/components/dashboards/DoctorAnalyticsCharts"));
 const ClinicDashboard = lazy(() => import("@/components/dashboards/ClinicDashboard")); // kept for admin view-as
-const AdminDashboard = lazy(() => import("@/components/dashboards/AdminDashboard"));
+
 const ReceptionDashboard = lazy(() => import("@/components/dashboards/ReceptionDashboard")); // kept for admin view-as
 const SupportDashboard = lazy(() => import("@/components/dashboards/SupportDashboard"));
 const PartnerDashboard = lazy(() => import("@/components/dashboards/PartnerDashboard")); // kept for admin view-as
