@@ -97,22 +97,6 @@ const HeroSection = memo(
 
               </div>
 
-              {/* White highlights card */}
-              <div className="rounded-3xl bg-white/90 backdrop-blur-sm border border-slate-100 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.25)] p-4 sm:p-5 mb-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:divide-x sm:divide-slate-100">
-                  {highlights.map(({ icon: Icon, text, sub }) => (
-                    <div key={text} className="flex items-center gap-3 sm:px-3 sm:first:pl-0 sm:last:pr-0 min-w-0">
-                      <div className="w-11 h-11 shrink-0 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#1667e6]">
-                        <Icon className="w-5 h-5" strokeWidth={2.2} />
-                      </div>
-                      <div className="leading-tight min-w-0">
-                        <p className="text-sm font-bold text-slate-900">{text}</p>
-                        <p className="text-xs text-slate-500">{sub}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
             </motion.div>
 
