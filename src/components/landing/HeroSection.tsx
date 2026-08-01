@@ -197,11 +197,10 @@ const HeroSection = memo(
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
                   Criptografia de ponta
                 </span>
-                <img
-                  src={icpBrasilLogo}
-                  alt="ICP-Brasil"
-                  className="h-8 w-auto object-contain"
-                />
+                <div className="flex items-center gap-1.5 text-emerald-700">
+                  <Award className="w-5 h-5" />
+                  <span className="text-xs font-bold">ICP-Brasil</span>
+                </div>
               </div>
             </motion.div>
           </div>
