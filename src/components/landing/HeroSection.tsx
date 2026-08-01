@@ -119,27 +119,6 @@ const HeroSection = memo(
                 </div>
               </div>
 
-              {/* Light blue trust card */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.25 }}
-                className="rounded-3xl bg-[#eaf3ff] border border-[#d6e6ff] p-4 sm:p-5"
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:divide-x sm:divide-[#d6e6ff]">
-                  {trustStats.map(({ icon: Icon, value, label }) => (
-                    <div key={value} className="flex items-center gap-3 sm:px-3 sm:first:pl-0 sm:last:pr-0 min-w-0">
-                      <div className="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br from-[#1667e6] to-[#0b4fc4] flex items-center justify-center text-white shadow-md shadow-blue-600/20">
-                        <Icon className="w-5 h-5" strokeWidth={2.2} />
-                      </div>
-                      <div className="leading-tight min-w-0">
-                        <p className="text-sm font-extrabold text-[#0b1b34]">{value}</p>
-                        <p className="text-[11px] text-slate-500 leading-snug">{label}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
             </motion.div>
 
             {/* Right image area */}
