@@ -61,7 +61,7 @@ const HeroSection = memo(
                 {badgeText}
               </div>
 
-              <h1 className="text-[40px] sm:text-5xl lg:text-[62px] font-extrabold leading-[1.05] mb-6 tracking-[-0.035em]">
+              <h1 className="font-display text-[clamp(2.1rem,4.4vw,3.4rem)] font-extrabold leading-[1.06] mb-6 tracking-[-0.04em] text-balance">
                 <span className="text-[#0b1b34]">{titleMain}</span>
                 {titleAccent && (
                   <>
@@ -160,7 +160,7 @@ const HeroSection = memo(
                       <Icon className="w-5 h-5" strokeWidth={2.2} />
                     </div>
                     <div className="leading-tight min-w-0">
-                      <p className="text-sm font-bold text-slate-900">{text}</p>
+                    <p className="text-sm font-bold text-slate-900 whitespace-nowrap">{text}</p>
                       <p className="text-xs text-slate-500">{sub}</p>
                     </div>
                   </div>
