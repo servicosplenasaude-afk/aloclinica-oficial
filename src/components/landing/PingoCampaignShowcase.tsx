@@ -2,9 +2,13 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, FlaskConical, Headphones, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import telemedicineImage from "@/assets/banner-teleconsulta-patient.jpg";
-import examsImage from "@/assets/pingo-generated/generated-exams.jpg";
-import supportImage from "@/assets/clinic-patient-chat.png";
+import telemedicineAsset from "@/assets/card-teleconsulta.png.asset.json";
+import examsAsset from "@/assets/card-agendar.png.asset.json";
+import supportAsset from "@/assets/card-suporte.png.asset.json";
+
+const telemedicineImage = telemedicineAsset.url;
+const examsImage = examsAsset.url;
+const supportImage = supportAsset.url;
 
 const campaignCards = [
   {
