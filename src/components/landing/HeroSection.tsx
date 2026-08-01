@@ -4,20 +4,22 @@ import { memo, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { usePrefetchRoute } from "@/hooks/use-prefetch-route";
 import OptimizedImage from "@/components/ui/optimized-image";
-import { ArrowRight, ShieldCheck, Clock, Sparkles, Lock, CheckCircle, Video, Award } from "lucide-react";
+import { ArrowRight, ShieldCheck, Clock, Users, Lock, BadgeCheck, Video, FileText, MapPin } from "lucide-react";
 import heroPingoFamily from "@/assets/hero-pingo-family.png";
 
 const highlights = [
-  { icon: ShieldCheck, text: "Receita digital", sub: "válida em todo o Brasil" },
-  { icon: Clock, text: "Atendimento 24h", sub: "Inclusive feriados" },
-  { icon: Sparkles, text: "30+", sub: "especialidades médicas" },
+  { icon: FileText, text: "Receita digital", sub: "válida em todo o Brasil" },
+  { icon: Clock, text: "Atendimento 24h", sub: "— inclusive feriados" },
+  { icon: Users, text: "30+", sub: "especialidades médicas" },
 ];
 
 const trustStats = [
   { icon: ShieldCheck, value: "CFM", label: "Médicos verificados" },
-  { icon: Lock, value: "Seguro", label: "Dados protegidos com criptografia" },
-  { icon: CheckCircle, value: "24h", label: "Atendimento disponível todos os dias" },
+  { icon: Lock, value: "Segurança", label: "Seus dados protegidos com criptografia" },
+  { icon: BadgeCheck, value: "LGPD", label: "Privacidade em conformidade" },
 ];
+
+const complianceLogos = ["CFM", "ICP-Brasil", "LGPD", "ISO 27001"];
 
 const HeroSection = memo(
   forwardRef<HTMLElement, { config?: any }>(({ config }, ref) => {
