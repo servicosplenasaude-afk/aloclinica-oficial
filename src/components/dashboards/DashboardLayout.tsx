@@ -544,7 +544,7 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
        </div>
 
         {/* Desktop: standard header */}
-        <div className="relative hidden md:flex w-full items-center px-4 h-16 gap-3">
+        <div className="relative hidden md:flex w-full max-w-[1400px] mx-auto items-center px-4 lg:px-6 xl:px-8 h-16 gap-3">
           {/* ambient mesh */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className={`absolute -top-24 left-1/4 h-40 w-[40rem] rounded-full opacity-[0.08] blur-3xl bg-gradient-to-r ${grad}`} />
@@ -562,13 +562,13 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
             </div>
           </Link>
 
-          <div className="relative flex flex-1 max-w-md mx-auto lg:mx-4">
+          <div className="relative flex flex-1 justify-center px-2 lg:px-6">
             <button
               onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }))}
-              className="relative flex w-full items-center gap-2.5 h-10 px-3.5 rounded-2xl bg-background/60 hover:bg-background/90 border border-border/40 hover:border-primary/30 backdrop-blur-xl text-[12.5px] text-muted-foreground transition-all group shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_4px_18px_-8px_hsl(var(--primary)/0.25)]"
+              className="relative flex w-full max-w-xl items-center gap-2.5 h-10 px-3.5 rounded-2xl bg-background/60 hover:bg-background/90 border border-border/40 hover:border-primary/30 backdrop-blur-xl text-[12.5px] text-muted-foreground transition-all group shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] hover:shadow-[0_4px_18px_-8px_hsl(var(--primary)/0.25)]"
               aria-label="Buscar">
               <MagnifyingGlass className="w-4 h-4 group-hover:text-primary transition-colors shrink-0" aria-hidden="true" />
-              <span className="flex-1 text-left font-medium">Buscar pacientes, consultas, receitas...</span>
+              <span className="flex-1 text-left font-medium truncate">Buscar pacientes, consultas, receitas...</span>
               <kbd className="font-mono text-[10px] bg-muted/60 border border-border/40 rounded-md px-1.5 py-0.5 leading-none font-bold">⌘K</kbd>
             </button>
           </div>
@@ -581,7 +581,7 @@ const DashboardLayout = ({ children, title, nav, role: propsRole }: DashboardLay
             </Button>
           )}
 
-          <div className="relative flex items-center gap-2">
+          <div className="relative flex shrink-0 items-center gap-2">
             {/* Cluster de utilidades — agrupadas em uma cápsula coesa */}
             <div className="hidden sm:flex items-center h-9 px-1 rounded-full bg-muted/40 border border-border/40 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
               <LanguageSwitcher />
