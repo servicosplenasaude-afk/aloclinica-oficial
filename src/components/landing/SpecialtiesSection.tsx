@@ -199,8 +199,10 @@ function SpecialtiesSection({ config }: { config?: any }) {
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/30 to-background" />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <span className="text-xs font-bold uppercase tracking-[0.25em] text-primary/60 mb-3 block">Especialidades</span>
-          <h2 className="text-2xl md:text-4xl font-extrabold text-foreground mb-3 tracking-tight">{title}</h2>
+          <span className="inline-block px-3 py-1 mb-3 rounded-full bg-gradient-pingo-soft text-[11px] font-extrabold uppercase tracking-[0.25em] text-primary border border-[hsl(var(--pingo-sky)/0.25)]">
+            Especialidades
+          </span>
+          <h2 className="text-2xl md:text-4xl font-extrabold mb-3 tracking-tight text-gradient-pingo">{title}</h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">{subtitle}</p>
         </motion.div>
 
