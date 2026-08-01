@@ -28,7 +28,6 @@ interface SpecialtyContent {
   longDesc: string;
   treats: string[];
   whenToSeek: string[];
-  doctors: number;
   fromPrice: number;
 }
 
@@ -63,7 +62,6 @@ const SPECIALTIES_DATA: SpecialtyContent[] = [
       "Histórico familiar de doenças cardíacas",
       "Pressão alta sem controle",
     ],
-    doctors: 45,
     fromPrice: 89,
   },
   {
@@ -88,7 +86,6 @@ const SPECIALTIES_DATA: SpecialtyContent[] = [
       "Queda de cabelo acentuada",
       "Lesões que não cicatrizam",
     ],
-    doctors: 38,
     fromPrice: 79,
   },
   {
@@ -113,7 +110,6 @@ const SPECIALTIES_DATA: SpecialtyContent[] = [
       "Atrasos no desenvolvimento",
       "Acompanhamento de rotina (puericultura)",
     ],
-    doctors: 41,
     fromPrice: 75,
   },
   {
