@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { getAdminNav } from "@/components/admin/adminNav";
 import {
   Users, Stethoscope, Building2, Headphones,
-  Handshake, Bot, ShieldCheck, ArrowRight,
+  Handshake, Bot, ArrowRight,
   Activity, RefreshCw, Monitor, Sparkles, LayoutGrid,
   UserPlus, Layers, TrendingUp, Zap, Settings2,
   FileText, PieChart, ShieldAlert, Database, 
