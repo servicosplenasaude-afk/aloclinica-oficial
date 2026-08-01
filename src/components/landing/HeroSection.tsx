@@ -6,7 +6,6 @@ import { usePrefetchRoute } from "@/hooks/use-prefetch-route";
 import OptimizedImage from "@/components/ui/optimized-image";
 import { ArrowRight, ShieldCheck, Clock, Sparkles, Lock, CheckCircle, Video } from "lucide-react";
 import heroPingoFamily from "@/assets/hero-pingo-family.png";
-import icpBrasilLogo from "@/assets/logo-icp-brasil.png";
 
 const highlights = [
   { icon: ShieldCheck, text: "Receita digital", sub: "válida em todo o Brasil" },
