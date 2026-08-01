@@ -4,7 +4,7 @@ import { memo, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { usePrefetchRoute } from "@/hooks/use-prefetch-route";
 import OptimizedImage from "@/components/ui/optimized-image";
-import { ArrowRight, ShieldCheck, Clock, Users, Lock, BadgeCheck, Video, FileText, MapPin } from "lucide-react";
+import { ArrowRight, ShieldCheck, Clock, Users, Lock, BadgeCheck, Video, FileText } from "lucide-react";
 import heroPingoFamily from "@/assets/hero-pingo-family.png";
 
 const highlights = [
