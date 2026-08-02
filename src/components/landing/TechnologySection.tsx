@@ -82,7 +82,7 @@ const TechnologySection = ({ config }: { config?: any }) => {
               </div>
 
               {/* Mascot */}
-              <div className="relative z-10 w-full max-w-[460px] drop-shadow-[0_20px_60px_rgba(20,66,114,0.2)]">
+              <div className="relative z-10 w-full max-w-[540px] drop-shadow-[0_20px_60px_rgba(20,66,114,0.2)]">
                 <img
                   src={technologyAsset.url}
                   alt="Pingo — tecnologia de ponta"
