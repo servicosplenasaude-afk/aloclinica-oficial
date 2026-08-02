@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { encode as base64Encode } from "https://deno.land/std@0.208.0/encoding/base64.ts";
+import { getCaller } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,8 +37,41 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const body = await req.json();
-    const { action } = body;
+    // O redirect de navegador do VIDaaS chega como GET (sem corpo/JWT) e só repassa
+    // o code — permitido. Todo o resto é POST com JSON.
+    const isBrowserCallback = req.method === "GET";
+    const body = isBrowserCallback ? {} : await req.json();
+    const { action } = body as { action?: string };
+
+    // SEGURANÇA (C3): antes esta função NÃO tinha autenticação nenhuma — qualquer
+    // um podia registrar app e ASSINAR documentos ICP-Brasil (usa service_role).
+    // Agora: toda ação POST exige um MÉDICO autenticado; register_app exige admin.
+    if (!isBrowserCallback) {
+      const caller = await getCaller(req);
+      if (!caller.user) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Não autenticado." }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (action === "register_app" && !caller.isAdmin) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Apenas administradores podem registrar o app." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (!caller.isAdmin) {
+        const { data: roles } = await supabase
+          .from("user_roles").select("role").eq("user_id", caller.user.id);
+        const isDoctor = (roles ?? []).some((r: { role: string }) => r.role === "doctor");
+        if (!isDoctor) {
+          return new Response(
+            JSON.stringify({ success: false, error: "Acesso restrito a médicos." }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+    }
 
     // ─── ACTION: register_app ───
     // Cadastra a aplicação no VIDaaS (feito uma única vez)

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,6 +28,16 @@ serve(async (req) => {
       });
     }
 
+    // SEGURANÇA (C6): rate-limit por IP para impedir adivinhação de token em massa.
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const allowed = await checkRateLimit(`ip:${ip}`, "guest-consultation", 30, 10);
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: "Muitas tentativas. Aguarde alguns minutos." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+      });
+    }
+
     // Find appointment by access_token
     const { data: appointment, error: aptError } = await supabase
       .from("appointments")
@@ -50,6 +61,9 @@ serve(async (req) => {
         .eq("id", appointment.guest_patient_id)
         .single();
       guestPatient = data;
+      // Minimização de dados (C6/LGPD): não devolver CPF na resposta — a tela de
+      // entrar na consulta não precisa dele.
+      if (guestPatient && "cpf" in guestPatient) delete (guestPatient as Record<string, unknown>).cpf;
     }
 
     // Get doctor name

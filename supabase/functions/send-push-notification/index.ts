@@ -20,8 +20,10 @@ serve(async (req) => {
   try {
     // Internal/service calls bypass limits; otherwise require an authenticated
     // user and rate-limit to curb push spam to arbitrary user_ids.
-    if (!isInternalOrService(req)) {
-      const caller = await getCaller(req);
+    const internal = isInternalOrService(req);
+    let caller: Awaited<ReturnType<typeof getCaller>> | null = null;
+    if (!internal) {
+      caller = await getCaller(req);
       if (!caller.user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -57,6 +59,16 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "user_id, title, and message are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // SEGURANÇA (C5): um usuário comum só pode notificar a si mesmo. Enviar push
+    // para terceiros é restrito a chamadas internas/serviço e a administradores
+    // (broadcast). Sem isto, qualquer usuário logado notificava qualquer user_id.
+    if (!internal && caller && !caller.isAdmin && user_id !== caller.user!.id) {
+      return new Response(
+        JSON.stringify({ error: "Sem permissão para notificar este usuário." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
