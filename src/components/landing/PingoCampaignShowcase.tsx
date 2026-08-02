@@ -79,16 +79,16 @@ const PingoCampaignShowcase = () => {
                 transition={{ duration: 0.45, delay: index * 0.08 }}
                 className="public-card group overflow-hidden rounded-2xl border border-blue-100 bg-white shadow-[0_18px_60px_-32px_rgba(11,47,115,0.45)]"
               >
-                <div className="relative aspect-[16/9] overflow-hidden bg-[#eaf5ff]">
-                  <div className={`absolute inset-x-0 top-0 z-10 h-1 bg-gradient-to-r ${card.tone}`} />
+                <div className="relative aspect-[4/3] overflow-hidden bg-[#eaf5ff]">
+                  <div className={`absolute inset-x-0 top-0 z-10 h-1.5 bg-gradient-to-r ${card.tone}`} />
                   <img
                     src={card.image}
                     alt={card.title}
                     loading={index === 0 ? "eager" : "lazy"}
                     decoding="async"
-                    className="public-image-depth h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.05]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b2f73]/20 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b2f73]/25 via-transparent to-transparent opacity-0 transition group-hover:opacity-100" />
                 </div>
                 <div className="flex min-h-[168px] flex-col justify-between p-5">
                   <div>

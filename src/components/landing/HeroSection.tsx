@@ -111,9 +111,9 @@ const HeroSection = memo(
               <div className="absolute top-[2%] w-[82%] aspect-square rounded-full bg-gradient-to-br from-[#eaf4ff] to-[#d9e9ff] -z-10" />
 
               <motion.div
-                animate={{ y: [0, -8, 0] }}
+                animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative z-10 w-full max-w-[520px]"
+                className="relative z-10 w-full max-w-[580px]"
               >
                 <OptimizedImage
                   src={heroPingoFamily}
