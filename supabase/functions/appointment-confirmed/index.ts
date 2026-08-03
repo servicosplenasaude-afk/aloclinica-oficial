@@ -17,7 +17,9 @@ serve(async (req) => {
 
   // SECURITY: called internally (cron/webhooks) OR by the app on confirmation, so accept
   // trusted server-to-server calls OR any authenticated user. Reject anonymous callers.
-  if (!isInternalOrService(req) && !(await getCaller(req)).user) {
+  const internal = isInternalOrService(req);
+  const caller = internal ? null : await getCaller(req);
+  if (!internal && !caller?.user) {
     return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
@@ -46,6 +48,41 @@ serve(async (req) => {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // SECURITY (A5): se não for chamada interna/serviço, só o paciente, o médico da
+    // consulta ou um admin podem disparar a confirmação (antes qualquer logado podia).
+    if (!internal && caller) {
+      let allowed = caller.isAdmin || caller.user!.id === appt.patient_id;
+      if (!allowed) {
+        const { data: dp } = await supabase.from("doctor_profiles").select("user_id").eq("id", appt.doctor_id).single();
+        allowed = dp?.user_id === caller.user!.id;
+      }
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // IDEMPOTÊNCIA (A5): o webhook do MP reenvia e o trigger também chama esta função
+    // → sem isto o paciente recebia e-mail/WhatsApp duplicados (spam + custo). Claim
+    // atômico em confirmation_sent_at: só a 1ª chamada "ganha" e envia. `resend_only`
+    // ignora o claim (reenvio manual). Tolerante se a coluna ainda não existir.
+    if (!resend_only) {
+      try {
+        const { data: claim } = await supabase
+          .from("appointments")
+          .update({ confirmation_sent_at: new Date().toISOString() } as Record<string, unknown>)
+          .eq("id", appointment_id)
+          .is("confirmation_sent_at", null)
+          .select("id");
+        if (claim && claim.length === 0) {
+          return new Response(JSON.stringify({ success: true, skipped: "already_confirmed" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } catch (e) {
+        console.warn("[appointment-confirmed] claim idempotente falhou (coluna ausente?):", e);
+      }
     }
 
     // Get patient profile

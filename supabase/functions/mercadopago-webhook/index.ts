@@ -319,6 +319,14 @@ async function validateSignature(req: Request, _rawBody: string, body: any, secr
   const v1 = parts.v1;
   if (!ts || !v1) return false;
 
+  // SECURITY (A6): rejeita mensagens antigas (proteção contra replay). O MP pode
+  // enviar `ts` em segundos ou milissegundos — normaliza e rejeita > 10 min.
+  const tsNum = Number(ts);
+  if (Number.isFinite(tsNum) && tsNum > 0) {
+    const tsMs = tsNum > 1e12 ? tsNum : tsNum * 1000;
+    if (Math.abs(Date.now() - tsMs) > 10 * 60 * 1000) return false;
+  }
+
   const dataId = body?.data?.id;
   if (!dataId) return false; // sem data.id não dá pra validar → rejeita (fail closed)
 

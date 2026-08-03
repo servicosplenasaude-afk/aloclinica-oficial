@@ -94,8 +94,8 @@ serve(async (req) => {
       title,
       body: message,
       url: link || "/",
-      icon: "https://cvbgrjauqjawrsyknhyj.supabase.co/storage/v1/object/public/files/uploads/0XILPRqqUbSOh99ow53X5OBDOCC3/1776902434741-yu841-1776788772275-bngbf-hero-doctor__4_-removebg-preview.png",
-      badge: "https://cvbgrjauqjawrsyknhyj.supabase.co/storage/v1/object/public/files/uploads/0XILPRqqUbSOh99ow53X5OBDOCC3/1776902434741-yu841-1776788772275-bngbf-hero-doctor__4_-removebg-preview.png",
+      icon: "/favicon.png",
+      badge: "/favicon.png",
     });
 
     let sent = 0;
