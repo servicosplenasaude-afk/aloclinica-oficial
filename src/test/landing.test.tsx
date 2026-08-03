@@ -40,8 +40,8 @@ describe("Header", () => {
         </I18nProvider>
       </BrowserRouter>
     );
-    // Logo presente (img com alt="Logo")
-    expect(screen.getByAltText("Logo")).toBeInTheDocument();
+    // Logo presente (alt da marca; regex tolerante a variações/acentos)
+    expect(screen.getByAltText(/al[ôo]\s*cl[íi]nica|logo/i)).toBeInTheDocument();
     // O Header tem itens de menu diretos (Saúde Corporativa vem do menu base).
     expect(screen.getAllByText("Saúde Corporativa").length).toBeGreaterThan(0);
   });

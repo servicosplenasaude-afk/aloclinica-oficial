@@ -23,7 +23,9 @@ jobs:
         run: npm install --no-audit --no-fund --prefer-offline
 
       - name: TypeScript — verificar tipos
-        run: npx tsc --noEmit
+        # C7: antes rodava contra o tsconfig raiz (files:[]), checando ZERO arquivos
+        # (sempre passava). Aponta para o projeto do app, que realmente checa src/.
+        run: npx tsc --noEmit -p tsconfig.app.json
 
       - name: ESLint — verificar código
         run: npm run lint
