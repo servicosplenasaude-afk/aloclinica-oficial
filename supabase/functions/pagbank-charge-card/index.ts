@@ -7,7 +7,7 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCaller } from "../_shared/auth.ts";
-import { pagbankConfigured, pagbankCreateOrder } from "../_shared/pagbank.ts";
+import { pagbankConfigured, pagbankCreateOrder, pagbankSplit } from "../_shared/pagbank.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -33,7 +33,7 @@ serve(async (req) => {
     const svc = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     const { data: appt } = await svc
-      .from("appointments").select("id, patient_id, price_at_booking").eq("id", appointment_id).single();
+      .from("appointments").select("id, patient_id, doctor_id, price_at_booking").eq("id", appointment_id).single();
     if (!appt) return json({ error: "consulta não encontrada" }, 404);
     if (appt.patient_id !== caller.user.id) return json({ error: "acesso negado" }, 403);
 
@@ -44,6 +44,11 @@ serve(async (req) => {
       .from("profiles").select("first_name, last_name, cpf").eq("user_id", appt.patient_id).single();
     const { data: authUser } = await svc.auth.admin.getUserById(appt.patient_id);
     const email = authUser?.user?.email ?? "";
+
+    // Split (repasse ao médico) — só com conta PagBank do médico + da plataforma.
+    const { data: doc } = await svc
+      .from("doctor_profiles").select("pagbank_account_id").eq("id", appt.doctor_id).single();
+    const split = pagbankSplit(valueCents, (doc as { pagbank_account_id?: string } | null)?.pagbank_account_id);
 
     const order = {
       reference_id: appt.id,
@@ -65,6 +70,7 @@ serve(async (req) => {
         },
       }],
       notification_urls: [`${supabaseUrl}/functions/v1/pagbank-webhook`],
+      ...(split ? { splits: split } : {}),
     };
 
     const { ok, status, data } = await pagbankCreateOrder(order);

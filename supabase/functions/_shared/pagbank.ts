@@ -49,6 +49,30 @@ export async function pagbankCreateOrder(
 }
 
 /**
+ * Monta o objeto `splits` (raiz do pedido) para repassar ao médico.
+ * A plataforma (dona do token) fica com a comissão (PLATFORM_FEE_PERCENT) e o
+ * médico recebe o resto. Precisa do Account ID da plataforma (PAGBANK_ACCOUNT_ID)
+ * e do Account ID do médico (doctor_profiles.pagbank_account_id). Sem qualquer um
+ * deles, retorna undefined → sem split (o valor fica com o dono do token).
+ * Estrutura validada no sandbox: { method:"FIXED", receivers:[{account:{id},amount:{value}}] }.
+ * A soma dos receivers = total.
+ */
+export function pagbankSplit(
+  totalCents: number,
+  doctorAccountId?: string | null,
+): Record<string, unknown> | undefined {
+  const platformAccount = Deno.env.get("PAGBANK_ACCOUNT_ID");
+  if (!doctorAccountId || !platformAccount) return undefined;
+  const feePct = Number(Deno.env.get("PLATFORM_FEE_PERCENT") ?? "0");
+  const platformCents = Math.max(0, Math.min(totalCents, Math.round((totalCents * feePct) / 100)));
+  const doctorCents = totalCents - platformCents;
+  const receivers: Array<Record<string, unknown>> = [];
+  if (platformCents > 0) receivers.push({ account: { id: platformAccount }, amount: { value: platformCents } });
+  receivers.push({ account: { id: doctorAccountId }, amount: { value: doctorCents } });
+  return { method: "FIXED", receivers };
+}
+
+/**
  * Valida a autenticidade do webhook do PagBank.
  * O header `x-authenticity-token` = SHA-256(hex) de `<token>-<corpo bruto>`.
  * IMPORTANTE: usar o corpo EXATAMENTE como recebido (não reserializar o JSON).

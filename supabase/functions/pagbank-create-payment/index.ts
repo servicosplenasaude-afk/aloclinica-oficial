@@ -10,7 +10,7 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCaller } from "../_shared/auth.ts";
-import { pagbankConfigured, pagbankCreateOrder } from "../_shared/pagbank.ts";
+import { pagbankConfigured, pagbankCreateOrder, pagbankSplit } from "../_shared/pagbank.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -36,7 +36,7 @@ serve(async (req) => {
 
     const { data: appt } = await svc
       .from("appointments")
-      .select("id, patient_id, price_at_booking, payment_status")
+      .select("id, patient_id, doctor_id, price_at_booking, payment_status")
       .eq("id", appointment_id)
       .single();
     if (!appt) return json({ error: "consulta não encontrada" }, 404);
@@ -56,6 +56,12 @@ serve(async (req) => {
 
     const notifyUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/pagbank-webhook`;
 
+    // Split (repasse ao médico) — só se o médico tiver conta PagBank vinculada
+    // e a conta da plataforma estiver configurada. Senão, sem split.
+    const { data: doc } = await svc
+      .from("doctor_profiles").select("pagbank_account_id").eq("id", appt.doctor_id).single();
+    const split = pagbankSplit(valueCents, (doc as { pagbank_account_id?: string } | null)?.pagbank_account_id);
+
     const order = {
       reference_id: appt.id,
       customer: {
@@ -66,6 +72,7 @@ serve(async (req) => {
       items: [{ name: "Teleconsulta", quantity: 1, unit_amount: valueCents }],
       qr_codes: [{ amount: { value: valueCents } }],
       notification_urls: [notifyUrl],
+      ...(split ? { splits: split } : {}),
     };
 
     const { ok, status, data } = await pagbankCreateOrder(order);
