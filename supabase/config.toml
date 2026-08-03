@@ -23,6 +23,10 @@ project_id = "pwxvvimdtmvziynbspgx"
 [functions.mercadopago-webhook]
 verify_jwt = false
 
+# PagBank server-to-server webhook — authenticated by x-authenticity-token (SHA-256).
+[functions.pagbank-webhook]
+verify_jwt = false
+
 # Registro de login falho — chamado por usuário anônimo (o login acabou de falhar).
 [functions.log-failed-login]
 verify_jwt = false
