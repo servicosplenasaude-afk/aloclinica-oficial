@@ -52,7 +52,9 @@ class ErrorBoundary extends Component<Props, State> {
               <p className="text-[13px] text-muted-foreground mb-4 leading-relaxed">
                 A Pingo encontrou um erro inesperado. Tente recarregar a página ou voltar ao início.
               </p>
-              {this.state.error && (
+              {/* Detalhes técnicos (stack) só em desenvolvimento — em produção o
+                  usuário final não deve ver stack trace. O erro vai pro Sentry. */}
+              {import.meta.env.DEV && this.state.error && (
                 <pre className="text-left text-[10px] bg-red-50 rounded-xl p-3 mb-4 overflow-auto max-h-28 text-red-600 border border-red-100">
                   {this.state.error.message}
                   {"\n"}

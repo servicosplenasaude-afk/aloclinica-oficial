@@ -246,24 +246,39 @@ const EspecialidadeDetalhe = () => {
   }, [slug]);
 
   if (!specialty) {
+    // A7: em vez de um beco "não encontrada" (28 slugs sem página de detalhe),
+    // renderiza uma landing útil da especialidade — nome derivado do slug + CTA
+    // para agendar aquela especialidade (fluxo real; se não houver médico, o
+    // /agendar mostra o estado vazio honesto). Melhora conversão e SEO.
+    const derivedName = (slug ?? "")
+      .split("-")
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ") || "Especialidade";
     return (
       <div className="relative min-h-screen bg-background">
         <SEOHead
-          title="Especialidade não encontrada - AloClínica"
-          description="A especialidade que você procura não foi encontrada. Veja todas as especialidades disponíveis."
+          title={`${derivedName} Online | AloClínica`}
+          description={`Agende uma teleconsulta online em ${derivedName} com médicos verificados pelo CFM.`}
+          canonical={`https://aloclinica.com.br/especialidades/${slug}`}
         />
         <Header />
         <section className="pt-40 pb-20 px-4 text-center max-w-2xl mx-auto">
-          <Stethoscope className="w-16 h-16 text-muted-foreground/40 mx-auto mb-4" weight="light" />
+          <Stethoscope className="w-16 h-16 text-primary/50 mx-auto mb-4" weight="light" />
           <h1 className="text-2xl md:text-3xl font-extrabold text-foreground mb-3">
-            Especialidade não encontrada
+            Teleconsulta em {derivedName}
           </h1>
           <p className="text-muted-foreground mb-6">
-            Não localizamos essa especialidade. Veja todas as opções disponíveis.
+            Agende uma consulta online com um especialista em {derivedName.toLowerCase()}, com receita digital válida em todo o Brasil.
           </p>
-          <Button onClick={() => navigate("/especialidades")} size="lg">
-            Ver todas as especialidades
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={() => navigate(`/agendar?especialidade=${encodeURIComponent(derivedName)}`)} size="lg">
+              Agendar {derivedName}
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/especialidades")} size="lg">
+              Ver todas as especialidades
+            </Button>
+          </div>
         </section>
       </div>
     );

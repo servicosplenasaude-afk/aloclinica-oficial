@@ -122,8 +122,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // 2. Listen for subsequent auth changes (sign in/out/token refresh)
     const { data: { subscription } } = db.auth.onAuthStateChange(
-      (_event, s) => {
+      (event, s) => {
         if (!mounted) return;
+
+        // M18: TOKEN_REFRESHED dispara a cada ~1h e USER_UPDATED em edições de
+        // perfil. Antes, cada um fazia setLoading(true) + refetch de perfil/papéis
+        // → piscava loaders e podia desmontar telas no meio de uma consulta.
+        // Nesses casos só atualizamos a sessão/usuário; perfil e papéis não mudam.
+        if (event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          setSession(s);
+          setUser(s?.user ?? null);
+          return;
+        }
 
         setLoading(true);
         window.setTimeout(() => {
