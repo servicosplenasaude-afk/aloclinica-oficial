@@ -150,7 +150,7 @@ const SpecialtyCard = ({ name, desc, index }: { name: string; desc?: string; ind
         <div className="absolute inset-0 rounded-full p-[2px] bg-[linear-gradient(135deg,hsl(var(--card-hue)/0.9),hsl(var(--pingo-mint)/0.6),hsl(var(--card-hue)/0.3))] shadow-[0_8px_24px_-8px_hsl(var(--card-hue)/0.45)]">
           <div className="w-full h-full rounded-full bg-[linear-gradient(135deg,hsl(var(--background)),hsl(var(--card-hue)/0.08))]" />
         </div>
-        <div className="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
+        <div className="absolute inset-0 rounded-full overflow-hidden flex items-center justify-center pingo-hover-bounce">
           {imageSrc ? (
             <>
               {!loaded && (
@@ -162,6 +162,7 @@ const SpecialtyCard = ({ name, desc, index }: { name: string; desc?: string; ind
                 width={112}
                 height={112}
                 className={`w-full h-full object-contain object-bottom md:w-[128%] md:h-[128%] md:object-cover md:object-center pingo-float transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+                style={{ animationDelay: `${(index % 6) * 0.35}s` }}
                 loading="lazy"
                 decoding="async"
                 onLoad={() => setLoaded(true)}

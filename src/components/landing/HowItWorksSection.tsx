@@ -130,7 +130,7 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
                     </div>
 
                     {/* Mascot image area */}
-                    <div className="relative aspect-square mb-6">
+                    <div className="relative aspect-square mb-6 pingo-hover-bounce">
                       <div
                         className="absolute inset-0 rounded-2xl scale-95 opacity-70 group-hover:scale-100 group-hover:opacity-100 transition-all duration-500"
                         style={{ background: `radial-gradient(circle at 50% 65%, hsl(${STEP_HUES[i % 4].hue} / 0.20), transparent 70%)` }}
@@ -140,7 +140,7 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
                         alt={step.title}
                         loading="lazy"
                         decoding="async"
-                        className="relative z-10 w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500 animate-pingo-float"
+                        className="relative z-10 w-full h-full object-contain animate-pingo-float"
                         style={{ animationDelay: `${i * 0.6}s` }}
                       />
                       {/* Time badge */}

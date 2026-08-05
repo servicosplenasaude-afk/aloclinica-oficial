@@ -1872,12 +1872,27 @@ div[style*="Edit with Lovable"],
   50% { box-shadow: 0 0 0 14px hsl(var(--pingo-mint) / 0); }
 }
 
+/* Micro-vida: o Pingo dá um "pulinho" elástico quando o card é hoverado.
+   Fica num elemento SEPARADO do float ocioso da imagem para não brigar de
+   transform. */
+@keyframes pingo-bounce {
+  0%   { transform: scale(1) rotate(0deg); }
+  35%  { transform: scale(1.13) rotate(-5deg); }
+  62%  { transform: scale(1.03) rotate(3deg); }
+  100% { transform: scale(1.09) rotate(-2deg); }
+}
+.pingo-hover-bounce { transition: transform .5s cubic-bezier(.22, 1, .36, 1); }
+.group:hover .pingo-hover-bounce { animation: pingo-bounce .55s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-pingo-float,
   .animate-pingo-pop,
   .animate-pingo-pan,
   .animate-pingo-glow,
+  .pingo-float,
+  .pingo-float-slow,
   .text-gradient-pingo { animation: none !important; }
+  .group:hover .pingo-hover-bounce { animation: none !important; }
   .sheen-pingo::after { display: none; }
 }
 
