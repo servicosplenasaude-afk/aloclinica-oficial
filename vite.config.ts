@@ -27,7 +27,10 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/\/functions\//, /supabase\.co/, /\.(?:png|jpg|jpeg|svg|webp|webm|mp4|pdf)$/],
-        globPatterns: ["**/*.{ico,png,svg,woff2}"],
+        // Não pré-cachear PNGs de conteúdo (algumas imagens têm 2 MB+). Os ícones
+        // do PWA já entram via includeAssets, e as imagens são cacheadas em runtime
+        // (runtimeCaching "images-cache"). Evita um service worker de ~30 MB.
+        globPatterns: ["**/*.{ico,svg,woff2}"],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,

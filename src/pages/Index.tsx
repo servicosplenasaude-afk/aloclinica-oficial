@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Building2, CalendarCheck, Stethoscope, Video } from "lucide-react";
 import { useHomeBlocks } from "@/lib/site-blocks";
 import { motion } from "framer-motion";
-import doctorTeleconsultaAsset from "@/assets/medica-pingo-teleconsulta.png.asset.json";
+import doctorTeleconsultaAsset from "@/assets/medica-pingo-teleconsulta.png";
 import pingoCalendar from "@/assets/pingo-calendar.jpg";
 import pingoVideocall from "@/assets/pingo-videocall.png";
 import pingoPrescription from "@/assets/pingo-prescription.jpg";
@@ -113,7 +113,7 @@ const Index = forwardRef<HTMLDivElement>((_, ref) => {
               transition={{ duration: 0.5 }}
             >
               <div className="absolute inset-0 bg-primary/10 rounded-full blur-[80px] scale-75 animate-pulse" />
-              <img src={doctorTeleconsultaAsset.url} alt="Médica e o mascote Pingo mostrando uma teleconsulta no celular" className="public-image-depth relative z-10 w-[460px] sm:w-[520px] lg:w-[720px] xl:w-[820px] h-auto drop-shadow-2xl" loading="lazy" />
+              <img src={doctorTeleconsultaAsset} alt="Médica e o mascote Pingo mostrando uma teleconsulta no celular" className="public-image-depth relative z-10 w-[460px] sm:w-[520px] lg:w-[720px] xl:w-[820px] h-auto drop-shadow-2xl" loading="lazy" />
             </motion.div>
 
             <motion.div

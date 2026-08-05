@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Video, ShieldCheck, Cpu, Lock, Zap } from "lucide-react";
-import technologyAsset from "@/assets/pingo-tecnologia-seguranca.png.asset.json";
+import technologyAsset from "@/assets/pingo-tecnologia-seguranca.png";
 
 const TechnologySection = ({ config }: { config?: any }) => {
   const title = config?.title || "Inovação a serviço da sua saúde";
@@ -84,7 +84,7 @@ const TechnologySection = ({ config }: { config?: any }) => {
               {/* Mascot */}
               <div className="relative z-10 w-full max-w-[540px] drop-shadow-[0_20px_60px_rgba(20,66,114,0.2)]">
                 <img
-                  src={technologyAsset.url}
+                  src={technologyAsset}
                   alt="Pingo — tecnologia de ponta"
                   className="w-full h-auto select-none"
                   draggable={false}

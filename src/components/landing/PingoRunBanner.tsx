@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import bannerAsset from "@/assets/banner-consulta-online-pingo.png.asset.json";
+import bannerAsset from "@/assets/banner-consulta-online-pingo.png";
 
 /** Faixa clara com a arte oficial do Pingo em consulta online. */
 const PingoRunBanner = () => {
@@ -20,7 +20,7 @@ const PingoRunBanner = () => {
         className="relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-[hsl(var(--pingo-sky)/0.25)] bg-white shadow-[0_30px_70px_-40px_rgba(15,23,42,0.45)]"
       >
         <img
-          src={bannerAsset.url}
+          src={bannerAsset}
           alt="Pingo ao lado de um celular com médico em videochamada: consulta online com mais agilidade e cuidado"
           className="w-full h-auto object-cover"
           width={1920}

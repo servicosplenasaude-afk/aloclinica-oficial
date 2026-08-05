@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import ctaBannerAsset from "@/assets/cta-banner-consulta-online.png.asset.json";
+import ctaBannerAsset from "@/assets/cta-banner-consulta-online.png";
 
 const CTABanner = forwardRef<HTMLElement, { config?: any }>(({ config }, ref) => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const CTABanner = forwardRef<HTMLElement, { config?: any }>(({ config }, ref) =>
           className="relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-[hsl(var(--pingo-sky)/0.25)] bg-white shadow-[0_30px_70px_-40px_rgba(15,23,42,0.45)]"
         >
           <img
-            src={ctaBannerAsset.url}
+            src={ctaBannerAsset}
             alt="Pingo ao lado de um celular com médico em videochamada: consulta online com mais agilidade e cuidado"
             className="w-full h-auto object-cover"
             width={1920}
