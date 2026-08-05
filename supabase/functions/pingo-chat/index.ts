@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 // SECURITY: createClient is now imported dynamically only inside the triage block below.
 import { streamClaudeAsOpenAI, DEFAULT_CLAUDE_MODEL } from "../_shared/anthropic.ts";
 
-const DEFAULT_AI_MODEL = "google/gemini-3.6-flash";
+const DEFAULT_AI_MODEL = "google/gemini-2.5-flash";
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
 /** Streams an OpenAI-shaped SSE response from the Lovable AI Gateway. */
@@ -66,12 +66,36 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+/**
+ * Normaliza a conversa recebida do front:
+ *  - descarta mensagens vazias;
+ *  - descarta a(s) saudação(ões) inicial(is) do assistente (o front injeta um
+ *    "Olá, sou o Pingo") — um histórico que começa com 'assistant' confunde o
+ *    modelo e QUEBRA o fallback da Anthropic, que exige o 1º turno como 'user'.
+ * Assim ambos os provedores recebem sempre uma conversa limpa começando no user.
+ */
+function normalizeConversation(raw: unknown): Array<{ role: string; content: string }> {
+  const out: Array<{ role: string; content: string }> = [];
+  let seenUser = false;
+  for (const m of Array.isArray(raw) ? raw : []) {
+    const content = (m as any)?.content ? String((m as any).content) : "";
+    if (!content.trim()) continue;
+    const role = (m as any)?.role === "assistant" ? "assistant" : "user";
+    if (!seenUser && role === "assistant") continue; // pula saudação inicial
+    if (role === "user") seenUser = true;
+    out.push({ role, content });
+  }
+  return out;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     console.info("pingo-chat build: gateway-v2");
     const { messages, context, ticket_id, user_id } = await req.json();
+    // Conversa limpa (user-first) para os dois provedores de IA.
+    const convo = normalizeConversation(messages);
 
     // SECURITY: rate limit — prefer the authenticated user id (x-forwarded-for is spoofable),
     // fall back to the client IP for anonymous callers. 20 messages / 5 minutes.
@@ -110,6 +134,8 @@ E encerre sua resposta.
 
 7. FORMATAÇÃO: Use **negrito** para destaque, listas com "•" para múltiplos itens e emojis com moderação. Seja conciso (máximo 4-5 frases).
 
+8. VALORES E COBRANÇA (MUITO IMPORTANTE): NUNCA invente, estime ou "chute" preços, taxas, descontos ou valores. NÃO existe preço único — o valor da consulta é definido por CADA profissional e só aparece no perfil do médico e na tela de agendamento. Se perguntarem "quanto custa" / "qual o valor", responda que o preço varia conforme o profissional escolhido e é mostrado ao selecionar o médico em **Agendar consulta**, e ofereça abrir o agendamento. Só cite um número se ele estiver EXPLÍCITO no contexto fornecido. Nunca prometa reembolsos, cobranças ou descontos específicos — para questões financeiras concretas, direcione ao suporte humano (regra 4).
+
 PERSONALIDADE:
 - Amigável, acolhedor e profissional
 - Usa emojis com moderação para ser simpático
@@ -117,27 +143,25 @@ PERSONALIDADE:
 - Faz analogias fofas com pinguins quando apropriado
 - Seja breve e objetivo
 
-CONHECIMENTO DA PLATAFORMA:
-- AloClinica é uma plataforma de telemedicina com consultas por vídeo
-- Oferece consultas agendadas (com cadastro) e consultas avulsas (sem cadastro, via checkout de convidado)
-- Especialidades: Cardiologia, Neurologia, Ortopedia, Pediatria, Clínico Geral, Dermatologia, Endocrinologia
-- Plano mensal disponível para consultas ilimitadas
-- Pronto-atendimento 24h com fila inteligente (médico de plantão)
-- Renovação de receitas online (sem nova consulta)
-- Cartão de desconto AloClínica (30% off em farmácias e exames)
-- Receitas e laudos digitais com assinatura eletrônica
-- Dados protegidos com criptografia (LGPD compliant)
-- Atendimento com vídeo em HD
-- Contato: contato@aloclinica.com.br
-- Telelaudo: serviço de laudos à distância para clínicas
+CONHECIMENTO DA PLATAFORMA (use apenas o que está aqui; não invente recursos):
+- AloClínica é uma plataforma de telemedicina com consultas por vídeo em HD, com profissionais verificados no CFM.
+- Mais de 30 especialidades — entre elas: Clínico Geral, Cardiologia, Dermatologia, Pediatria, Psicologia, Ginecologia, Ortopedia, Endocrinologia, Neurologia, Gastroenterologia, Urologia, Nutrição, Pneumologia, Otorrinolaringologia, Reumatologia, Infectologia, Alergologia e Fonoaudiologia. Se não tiver certeza de que uma especialidade existe, oriente a conferir a lista na página Especialidades.
+- Pronto-atendimento 24h com fila inteligente (médico de plantão).
+- Renovação de receitas online (sem nova consulta).
+- Receitas e atestados digitais com assinatura eletrônica.
+- Dados protegidos com criptografia (LGPD).
+- VALOR: definido por cada profissional; aparece no perfil do médico e ao agendar (ver regra 8). Não há preço único.
+- Suporte humano: contato@aloclinica.com.br
 
-FLUXOS DE NAVEGAÇÃO:
-- Para agendar: /teleconsulta ou botão "Agendar Consulta"
-- Para pronto-atendimento: /teleconsulta (aba "Pronto-atendimento")
-- Para renovar receita: Dashboard do paciente > "Renovar Receita"
-- Para ver receitas: Dashboard do paciente > "Prescrições"
-- Para cartão desconto: /cartao-desconto
-- Para empresas: /empresas
+FLUXOS DE NAVEGAÇÃO (use SOMENTE estes caminhos reais — não invente URLs):
+- Agendar consulta: página "Agendar" (/agendar) — escolha a especialidade e depois o profissional
+- Pronto-atendimento 24h: /teleconsulta
+- Ver especialidades: /especialidades
+- Renovar receita: Painel do paciente > "Renovar Receita"
+- Ver receitas: Painel do paciente > "Prescrições"
+- Empresas / saúde corporativa: /para-empresas
+- Falar com humano: use a regra 4 (transferência)
+Se não souber o caminho exato, oriente a usar o menu do painel ou a página inicial — nunca invente um link.
 
 OBJETIVO: Ajude o paciente a agendar consultas, tirar dúvidas sobre a plataforma, testar câmera/microfone e entender como acessar receitas médicas. Se o paciente tiver dúvidas sobre sintomas, conduza uma mini-triagem e sugira a especialidade ideal.
 ${context ? `\n--- CONTEXTO DO PACIENTE LOGADO ---\n${context}\n---\nUse essas informações para personalizar suas respostas. Se o paciente perguntar sobre suas consultas, use os dados acima.` : ""}`;
@@ -148,7 +172,7 @@ ${context ? `\n--- CONTEXTO DO PACIENTE LOGADO ---\n${context}\n---\nUse essas i
       sseResponse = await streamLovableAI({
         model: DEFAULT_AI_MODEL,
         system: systemContent,
-        messages,
+        messages: convo,
         temperature: 0.3,
         max_tokens: 800,
       });
@@ -159,7 +183,7 @@ ${context ? `\n--- CONTEXTO DO PACIENTE LOGADO ---\n${context}\n---\nUse essas i
           sseResponse = await streamClaudeAsOpenAI({
             model: DEFAULT_CLAUDE_MODEL,
             system: systemContent,
-            messages,
+            messages: convo,
             temperature: 0.3,
             max_tokens: 800,
           });
@@ -186,7 +210,7 @@ ${context ? `\n--- CONTEXTO DO PACIENTE LOGADO ---\n${context}\n---\nUse essas i
 
     // AI Triage: analyze the last user message for urgency keywords
     if (ticket_id && user_id) {
-      const lastUserMsg = messages.filter((m: { role: string; content?: string }) => m.role === "user").pop()?.content?.toLowerCase() ?? "";
+      const lastUserMsg = convo.filter((m) => m.role === "user").pop()?.content?.toLowerCase() ?? "";
       const highPriorityKeywords = [
         "urgente", "emergência", "emergencia", "dor forte", "dor intensa", "sangramento",
         "desmaio", "desmaiou", "falta de ar", "peito", "avc", "convulsão", "convulsao",
