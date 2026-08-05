@@ -463,6 +463,48 @@
     filter: drop-shadow(0 0 20px hsl(210 90% 45% / 0.3));
   }
 
+  /* Refined headline accent — clean blue→sky gradient (mantém a identidade
+     azul-saúde, só com mais acabamento que a cor chapada). */
+  .text-hero-accent {
+    background-image: linear-gradient(103deg, #1a6fe8 0%, #0f8fdc 62%, #12a6c9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Depth sutil pro hero: micro dot-grid azulado que some nas bordas.
+     Dá textura de "app premium" sem virar ruído. */
+  .hero-texture {
+    background-image: radial-gradient(circle at 1px 1px, hsl(214 60% 46% / 0.055) 1px, transparent 0);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(ellipse 78% 62% at 50% 6%, #000 42%, transparent 100%);
+    mask-image: radial-gradient(ellipse 78% 62% at 50% 6%, #000 42%, transparent 100%);
+  }
+
+  /* Chip de compliance refinado (CFM, ICP-Brasil, LGPD…) */
+  .compliance-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.42rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: hsl(215 22% 42%);
+    background: hsl(210 40% 99%);
+    border: 1px solid hsl(214 32% 91%);
+    box-shadow: 0 1px 2px hsl(215 40% 30% / 0.04);
+    transition: color .25s ease, border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+  }
+  .compliance-chip:hover {
+    color: hsl(215 75% 34%);
+    border-color: hsl(214 60% 82%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px -12px hsl(215 60% 40% / 0.35);
+  }
+
   .cta-shimmer {
     position: relative;
     overflow: hidden;

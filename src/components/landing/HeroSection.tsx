@@ -4,7 +4,7 @@ import { memo, forwardRef } from "react";
 import { motion } from "framer-motion";
 import { usePrefetchRoute } from "@/hooks/use-prefetch-route";
 import OptimizedImage from "@/components/ui/optimized-image";
-import { ArrowRight, ShieldCheck, Clock, Users, Video, FileText } from "lucide-react";
+import { ArrowRight, ShieldCheck, Clock, Users, Video, FileText, BadgeCheck } from "lucide-react";
 import heroPingoFamily from "@/assets/hero-pingo-family.png";
 
 const highlights = [
@@ -41,10 +41,11 @@ const HeroSection = memo(
         aria-label="Início"
         className="relative pt-24 sm:pt-28 lg:pt-32 pb-10 sm:pb-14 lg:pb-16 overflow-hidden bg-gradient-to-br from-[#f6fbff] via-white to-[#eef6ff]"
       >
-        {/* Ambient glows */}
+        {/* Ambient depth: micro dot-grid texture + soft color glows */}
         <div aria-hidden className="absolute inset-0 -z-10 pointer-events-none">
-          <div className="absolute top-[-10%] right-[5%] w-[520px] h-[520px] rounded-full bg-[#0ea5e9]/[0.10] blur-[120px]" />
-          <div className="absolute bottom-[-5%] left-[-5%] w-[420px] h-[420px] rounded-full bg-[#0284c7]/[0.08] blur-[120px]" />
+          <div className="absolute inset-0 hero-texture" />
+          <div className="absolute top-[-10%] right-[5%] w-[540px] h-[540px] rounded-full bg-[#0ea5e9]/[0.10] blur-[130px]" />
+          <div className="absolute bottom-[-8%] left-[-6%] w-[440px] h-[440px] rounded-full bg-[#1667e6]/[0.07] blur-[130px]" />
         </div>
 
         <div className="w-full max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,17 +62,17 @@ const HeroSection = memo(
                 {badgeText}
               </div>
 
-              <h1 className="font-display text-[clamp(2.1rem,4.4vw,3.4rem)] font-extrabold leading-[1.06] mb-6 tracking-[-0.04em] text-balance">
+              <h1 className="font-display text-[clamp(2.15rem,4.6vw,3.6rem)] font-extrabold leading-[1.04] mb-6 tracking-[-0.042em] text-balance">
                 <span className="text-[#0b1b34]">{titleMain}</span>
                 {titleAccent && (
                   <>
                     <br />
-                    <span className="text-[#1667e6]">{titleAccent}</span>
+                    <span className="text-hero-accent">{titleAccent}</span>
                   </>
                 )}
               </h1>
 
-              <p className="text-base sm:text-lg text-slate-500 max-w-[520px] mb-8 leading-relaxed">{subtitle}</p>
+              <p className="text-base sm:text-lg text-[#54627a] max-w-[520px] mb-8 leading-relaxed">{subtitle}</p>
 
               {/* CTA + inline signals */}
               <div className="flex flex-wrap items-center gap-x-7 gap-y-4 mb-7">
@@ -186,14 +187,15 @@ const HeroSection = memo(
             </div>
           </motion.div>
 
-          {/* Compliance strip */}
+          {/* Compliance strip — chips estruturados (antes: texto cinza chapado) */}
           <div className="mt-12 lg:mt-14">
-            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 mb-4">
+            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400 mb-5">
               Confiança de quem cuida
             </p>
-            <ul className="flex flex-wrap items-center justify-center gap-y-4" style={{ columnGap: "3.5rem" }}>
+            <ul className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
               {complianceLogos.map((logo) => (
-                <li key={logo} className="text-base sm:text-lg font-bold tracking-wide text-slate-400">
+                <li key={logo} className="compliance-chip">
+                  <BadgeCheck className="w-3.5 h-3.5 text-emerald-500" strokeWidth={2.4} aria-hidden />
                   {logo}
                 </li>
               ))}

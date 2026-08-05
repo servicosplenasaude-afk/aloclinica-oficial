@@ -67,7 +67,7 @@ const Index = forwardRef<HTMLDivElement>((_, ref) => {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15 }}
-            className="public-card grid gap-3 overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/86 p-3 shadow-[0_24px_80px_-36px_rgba(11,47,115,0.42)] backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-4"
+            className="public-card grid gap-3 overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/86 p-3 shadow-[0_24px_80px_-36px_rgba(11,47,115,0.42)] backdrop-blur-xl sm:grid-cols-2 lg:grid-cols-3"
           >
             {[
               { icon: CalendarCheck, title: "Agendar consulta", desc: "Escolha horario e especialidade", href: "/agendar", tone: "from-blue-500 to-cyan-500" },
@@ -80,7 +80,7 @@ const Index = forwardRef<HTMLDivElement>((_, ref) => {
                   key={item.title}
                   type="button"
                   onClick={() => navigate(item.href)}
-                  className="group flex items-center gap-4 rounded-2xl p-4 text-left transition hover:bg-slate-50"
+                  className="group flex items-center gap-4 rounded-2xl border border-transparent p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-100 hover:bg-slate-50 hover:shadow-[0_16px_36px_-24px_rgba(11,47,115,0.5)]"
                 >
                   <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${item.tone} text-white shadow-lg shadow-slate-900/10 transition group-hover:scale-105`}>
                     <Icon className="h-5 w-5" />
