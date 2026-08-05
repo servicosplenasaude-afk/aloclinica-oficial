@@ -30,9 +30,9 @@ const AdminCoupons = () => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [form, setForm] = useState({
     code: "",
-    discount_percentage: "10",
+    discount_value: "10",
     max_uses: "",
-    expires_at: "",
+    valid_until: "",
   });
 
   useEffect(() => { fetchCoupons(); }, []);
@@ -51,9 +51,10 @@ const AdminCoupons = () => {
 
     const { error } = await db.from("coupons").insert({
       code: form.code.toUpperCase().trim(),
-      discount_percentage: Number(form.discount_percentage),
+      discount_value: Number(form.discount_value),
+      discount_type: "percent",
       max_uses: form.max_uses ? Number(form.max_uses) : null,
-      expires_at: form.expires_at || null,
+      valid_until: form.valid_until || null,
       is_active: true,
     });
 
@@ -62,7 +63,7 @@ const AdminCoupons = () => {
     } else {
       toast.success("Cupom criado com sucesso!");
       setShowForm(false);
-      setForm({ code: "", discount_percentage: "10", max_uses: "", expires_at: "" });
+      setForm({ code: "", discount_value: "10", max_uses: "", valid_until: "" });
       fetchCoupons();
     }
   };
@@ -146,9 +147,9 @@ const AdminCoupons = () => {
                         </button>
                       </div>
                     </TableCell>
-                    <TableCell data-label="Desconto"><Badge variant="secondary">{c.discount_percentage}%</Badge></TableCell>
-                    <TableCell data-label="Usos">{c.times_used}{c.max_uses ? ` / ${c.max_uses}` : " / ∞"}</TableCell>
-                    <TableCell data-label="Expira">{c.expires_at ? format(new Date(c.expires_at), "dd/MM/yyyy", { locale: ptBR }) : "Sem expiração"}</TableCell>
+                    <TableCell data-label="Desconto"><Badge variant="secondary">{c.discount_type === "fixed" ? `R$ ${c.discount_value}` : `${c.discount_value}%`}</Badge></TableCell>
+                    <TableCell data-label="Usos">{c.current_uses ?? 0}{c.max_uses ? ` / ${c.max_uses}` : " / ∞"}</TableCell>
+                    <TableCell data-label="Expira">{c.valid_until ? format(new Date(c.valid_until), "dd/MM/yyyy", { locale: ptBR }) : "Sem expiração"}</TableCell>
                     <TableCell data-label="Ativo">
                       <Switch checked={c.is_active} onCheckedChange={() => toggleActive(c.id, c.is_active)} />
                     </TableCell>
@@ -180,7 +181,7 @@ const AdminCoupons = () => {
               </div>
               <div>
                 <Label>Desconto (%)</Label>
-                <Input type="number" value={form.discount_percentage} onChange={e => setForm(f => ({ ...f, discount_percentage: e.target.value }))} min={1} max={100} className="mt-1" />
+                <Input type="number" value={form.discount_value} onChange={e => setForm(f => ({ ...f, discount_value: e.target.value }))} min={1} max={100} className="mt-1" />
               </div>
               <div>
                 <Label>Limite de usos (vazio = ilimitado)</Label>
@@ -188,7 +189,7 @@ const AdminCoupons = () => {
               </div>
               <div>
                 <Label>Data de expiração (opcional)</Label>
-                <Input type="date" value={form.expires_at} onChange={e => setForm(f => ({ ...f, expires_at: e.target.value }))} className="mt-1" />
+                <Input type="date" value={form.valid_until} onChange={e => setForm(f => ({ ...f, valid_until: e.target.value }))} className="mt-1" />
               </div>
             </div>
             <DialogFooter>

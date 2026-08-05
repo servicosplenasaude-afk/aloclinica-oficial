@@ -35,8 +35,11 @@ interface Review {
   patient_name: string;
 }
 
-const DoctorPublicProfile = () => {
-  const { doctorId } = useParams();
+const DoctorPublicProfile = ({ doctorId: doctorIdProp }: { doctorId?: string } = {}) => {
+  const params = useParams();
+  // The /dr/:slug wrapper resolves the slug to an id and passes it as a prop.
+  // Fallback to a :doctorId route param if this is ever routed directly.
+  const doctorId = doctorIdProp ?? params.doctorId;
   const navigate = useNavigate();
   const { user } = useAuth();
   const [doctor, setDoctor] = useState<DoctorPublicData | null>(null);
@@ -57,12 +60,15 @@ const DoctorPublicProfile = () => {
   }, [user, doctorId]);
 
   const fetchDoctor = async () => {
-    // Use secure RPC instead of direct table access
+    // Use secure RPC instead of direct table access.
+    // get_public_doctor_profile returns a SINGLE jsonb object (or null) — not a
+    // set — so `data` IS the doctor object. (Guard for array too, in case the
+    // RPC is ever changed to SETOF.) It only returns approved+active doctors.
     const { data: rows } = await db.rpc("get_public_doctor_profile", {
       p_doctor_id: doctorId!,
     });
 
-    const doc = rows?.[0] as any;
+    const doc = (Array.isArray(rows) ? rows[0] : rows) as any;
     if (!doc) { setLoading(false); return; }
 
     // Fetch care areas
@@ -89,20 +95,22 @@ const DoctorPublicProfile = () => {
     setDoctor({
       id: doc.id,
       bio: doc.bio,
-      consultation_price: doc.consultation_price,
+      // RPC keys: price / rating_avg / rating_count / professional_photo_url.
+      consultation_price: doc.price ?? doc.consultation_price ?? null,
       crm: doc.crm,
       crm_state: doc.crm_state,
-      rating: doc.rating,
-      total_reviews: doc.total_reviews,
-      education: doc.education,
-      experience_years: doc.experience_years,
-      name: `${doc.first_name} ${doc.last_name}`,
+      rating: doc.rating_avg ?? doc.rating ?? null,
+      total_reviews: doc.rating_count ?? doc.total_reviews ?? null,
+      education: doc.education ?? null,
+      experience_years: doc.experience_years ?? null,
+      name: `${doc.first_name ?? ""} ${doc.last_name ?? ""}`.trim(),
       display_name: doc.display_name ?? null,
-      avatar_url: doc.avatar_url ?? null,
-      specialties: doc.specialties ?? [],
+      avatar_url: doc.professional_photo_url ?? doc.avatar_url ?? null,
+      specialties: doc.specialties ?? doc.areas_of_expertise ?? [],
       careAreas: (careAreasData as any[])?.map((c: any) => c.area_name) ?? [],
       crm_verified: doc.crm_verified ?? false,
-      is_approved: doc.is_approved ?? false,
+      // The RPC only returns approved+active doctors, so a returned row is approved.
+      is_approved: doc.is_approved ?? true,
     });
 
     setReviews(

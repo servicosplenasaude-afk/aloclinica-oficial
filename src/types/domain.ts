@@ -18,12 +18,17 @@ export interface DoctorProfileRow {
   crm_verified_at?: string | null;
   bio: string | null;
   price: number | null;
-  experience_years: number | null;
-  education: string | null;
-  rating?: number | null;
-  total_reviews?: number | null;
+  // Live base-table rating columns (doctor_profiles).
+  rating_avg?: number | null;
+  rating_count?: number | null;
   created_at: string;
   available_now?: boolean;
+  // View-only fields (doctor_profiles_public) — not on the base table. Kept
+  // optional for the few screens that read from the public view.
+  experience_years?: number | null;
+  education?: string | null;
+  rating?: number | null;
+  total_reviews?: number | null;
 }
 
 export interface DoctorWithProfile extends DoctorProfileRow {
@@ -244,25 +249,32 @@ export interface CouponRow {
   times_used?: number;
   expires_at?: string | null;
 
-  // Legacy/alternative model fields (kept for compatibility)
-  discount_type?: "percent" | "fixed" | null;
+  // Live coupons columns
+  discount_type?: "percent" | "fixed" | string | null;
   discount_value?: number | null;
-  uses_count?: number | null;
+  current_uses?: number | null;
   valid_from?: string | null;
   valid_until?: string | null;
+  // Legacy/alternative model field
+  uses_count?: number | null;
 }
 
 export interface InviteCode {
   id: string;
   code: string;
-  created_by: string;
   created_at: string;
-  expires_at: string | null;
+  // Live doctor_invite_codes columns
+  current_uses?: number | null;
+  max_uses?: number | null;
+  is_active?: boolean | null;
+  doctor_id?: string | null;
+
+  // Legacy/compat (older shape — may be absent in live rows)
+  created_by?: string;
+  expires_at?: string | null;
   is_used?: boolean;
   used_at?: string | null;
   used_by?: string | null;
-
-  // Compatibility with old shape
   role?: string;
   uses_left?: number | null;
 }

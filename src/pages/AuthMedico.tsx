@@ -329,6 +329,7 @@ const AuthMedico = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validatedCodeId) { toast.error("Valide seu código de convite antes de continuar."); setStep("code"); return; }
     if (!termsAccepted) { toast.error("Aceite os termos"); return; }
     if (!photoFile) { toast.error("Foto obrigatória", { description: "Adicione uma foto profissional para seu perfil público." }); return; }
     setLoading(true);
@@ -352,7 +353,9 @@ const AuthMedico = () => {
         await db.from("profiles").update({ avatar_url: publicUrl }).eq("user_id", data.user.id);
       }
 
-      await db.functions.invoke("assign-role", { body: { user_id: data.user.id, role: "doctor", profile_data: { crm, crm_state: crmState, invite_code_id: validatedCodeId } } });
+      // assign-role consumes the code by its SECRET STRING (atomic CAS on current_uses),
+      // never by a client-supplied id — so we must send the code the doctor typed.
+      await db.functions.invoke("assign-role", { body: { user_id: data.user.id, role: "doctor", profile_data: { crm, crm_state: crmState, invite_code: inviteCode.trim().toUpperCase() } } });
       await registerConsent(data.user.id, "terms_and_privacy_doctor");
       db.functions.invoke("send-email", { body: { type: "welcome_doctor", to: email, data: { name: `${firstName} ${lastName}`, crm: `${crm}/${crmState}` } } }).catch(() => {});
 

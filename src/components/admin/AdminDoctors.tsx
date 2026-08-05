@@ -32,7 +32,7 @@ const AdminDoctors = () => {
 
   const fetchDoctors = async () => {
     const { data } = await db.from("doctor_profiles")
-      .select("id, user_id, crm, crm_state, is_approved, bio, price, experience_years, education, rating, total_reviews, created_at")
+      .select("id, user_id, crm, crm_state, is_approved, bio, price, rating_avg, rating_count, created_at")
       .order("created_at", { ascending: false });
     if (!data) { setLoading(false); return; }
     const userIds = data.map(d => d.user_id);
@@ -99,10 +99,8 @@ const AdminDoctors = () => {
         crm: `${d.crm ?? ""}/${d.crm_state ?? ""}`,
         telefone: d.phone ?? "",
         preco: d.price ?? "",
-        experiencia_anos: d.experience_years ?? 0,
-        avaliacao: d.rating ?? "",
-        avaliacoes_total: d.total_reviews ?? 0,
-        formacao: d.education ?? "",
+        avaliacao: d.rating_avg ?? "",
+        avaliacoes_total: d.rating_count ?? 0,
         status: d.is_approved ? "Aprovado" : "Pendente",
         cadastrado_em: new Date(d.created_at).toLocaleDateString("pt-BR"),
       })),
@@ -111,10 +109,8 @@ const AdminDoctors = () => {
         { key: "crm", label: "CRM" },
         { key: "telefone", label: "Telefone" },
         { key: "preco", label: "Preço" },
-        { key: "experiencia_anos", label: "Experiência (anos)" },
         { key: "avaliacao", label: "Avaliação" },
         { key: "avaliacoes_total", label: "Total Avaliações" },
-        { key: "formacao", label: "Formação" },
         { key: "status", label: "Status" },
         { key: "cadastrado_em", label: "Cadastrado em" },
       ],
@@ -240,9 +236,7 @@ const AdminDoctors = () => {
                 <div><span className="text-muted-foreground">Nome:</span><p className="font-medium text-foreground">Dr(a). {selected.first_name} {selected.last_name}</p></div>
                 <div><span className="text-muted-foreground">CRM:</span><p className="font-medium text-foreground">{selected.crm}/{selected.crm_state}</p></div>
                 <div><span className="text-muted-foreground">Preço:</span><p className="font-medium text-foreground">R$ {selected.price || "—"}</p></div>
-                <div><span className="text-muted-foreground">Experiência:</span><p className="font-medium text-foreground">{selected.experience_years || 0} anos</p></div>
-                <div><span className="text-muted-foreground">Avaliação:</span><p className="font-medium text-foreground">{selected.rating ?? "—"} ({selected.total_reviews} avaliações)</p></div>
-                <div><span className="text-muted-foreground">Formação:</span><p className="font-medium text-foreground">{selected.education || "—"}</p></div>
+                <div><span className="text-muted-foreground">Avaliação:</span><p className="font-medium text-foreground">{selected.rating_avg ?? "—"} ({selected.rating_count ?? 0} avaliações)</p></div>
               </div>
               {selected.bio && <div><span className="text-muted-foreground">Bio:</span><p className="text-foreground">{selected.bio}</p></div>}
               <Button size="sm" variant="outline" onClick={() => setEditing(true)}><Edit className="w-4 h-4 mr-1" /> Editar</Button>

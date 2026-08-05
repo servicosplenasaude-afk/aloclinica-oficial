@@ -63,17 +63,17 @@ const AdminDoctorApplications = () => {
     setProcessing(true);
 
     try {
-      // Generate invite code
+      // Generate invite code. Live schema: single-use, active on creation;
+      // doctor_id is nullable (the code lets a not-yet-existing doctor sign up).
       const code = `MED-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
       const { data: session } = await db.auth.getSession();
       const adminId = session?.session?.user?.id;
 
       const { data: codeData, error: codeError } = await db.from("doctor_invite_codes").insert({
         code,
-        created_by: adminId!,
-        expires_at: expiresAt,
+        max_uses: 1,
+        is_active: true,
       }).select().single();
 
       if (codeError) throw codeError;

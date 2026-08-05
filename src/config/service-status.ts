@@ -16,7 +16,7 @@ export const SERVICE_MAINTENANCE: {
   /** Frase de complemento. */
   note: string;
 } = {
-  enabled: true,
+  enabled: false,
   services: ["criação de conta", "envio de e-mail", "WhatsApp"],
   note: "Estamos trabalhando para normalizar o quanto antes. Obrigado pela compreensão.",
 };

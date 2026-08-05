@@ -1,0 +1,16 @@
+-- Invite codes are created by admins BEFORE the doctor exists — the code is the
+-- credential that lets a brand-new doctor sign up (validated by
+-- validate-invite-code, consumed atomically by assign-role via a current_uses
+-- compare-and-swap). Neither of those paths uses doctor_id.
+--
+-- The live doctor_invite_codes.doctor_id was NOT NULL with a FK to
+-- doctor_profiles(id). Because there is no doctor yet at generation time, BOTH
+-- admin generators (AdminInviteCodes and the AdminDoctorApplications "approve"
+-- path) failed their INSERT (null doctor_id) — meaning no new doctor could be
+-- onboarded at all.
+--
+-- Relax the column to nullable. The FK stays (a code MAY be linked to a doctor
+-- later, e.g. for reissued/personal codes) but is no longer required for the
+-- pre-signup generation flow. This is an additive/loosening change: existing
+-- rows already satisfy a nullable column, so it is safe and reversible.
+ALTER TABLE public.doctor_invite_codes ALTER COLUMN doctor_id DROP NOT NULL;

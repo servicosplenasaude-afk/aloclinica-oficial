@@ -111,8 +111,8 @@ const PatientSupportChat = () => {
               <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-success border-2 border-card" />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="font-bold text-foreground text-sm">Dr. Pinguim</h2>
-              <p className="text-xs text-muted-foreground">IA de Suporte Médico • Online agora</p>
+              <h2 className="font-bold text-foreground text-sm">Suporte AloClínica</h2>
+              <p className="text-xs text-muted-foreground">Nossa equipe responde por aqui</p>
             </div>
             <Badge variant="outline" className={`text-[10px] ${statusConf.color}`}>{statusConf.label}</Badge>
           </div>
@@ -122,9 +122,9 @@ const PatientSupportChat = () => {
             <div className="space-y-4 py-3">
               {messages.length === 0 && (
                 <div className="text-center py-8">
-                  <img src={pingoSupport} alt="Dr. Pinguim" className="w-16 h-16 rounded-full mx-auto mb-3 border-2 border-primary/20" loading="lazy" decoding="async" width={64} height={64} />
-                  <p className="text-sm text-foreground font-medium">Olá! Sou o Dr. Pinguim, seu assistente virtual da AloClínica. 🐧</p>
-                  <p className="text-sm text-muted-foreground mt-2">Como posso ajudar você hoje?</p>
+                  <img src={pingoSupport} alt="Suporte AloClínica" className="w-16 h-16 rounded-full mx-auto mb-3 border-2 border-primary/20" loading="lazy" decoding="async" width={64} height={64} />
+                  <p className="text-sm text-foreground font-medium">Olá! Você está no suporte da AloClínica. 🐧</p>
+                  <p className="text-sm text-muted-foreground mt-2">Escreva sua dúvida que nossa equipe responde por aqui.</p>
                 </div>
               )}
               {messages.map((msg) => (

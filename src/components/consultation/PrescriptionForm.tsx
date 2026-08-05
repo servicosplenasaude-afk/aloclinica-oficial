@@ -602,12 +602,12 @@ const PrescriptionForm = () => {
             algorithm: "SHA-256",
             format: "PAdES",
           },
-          certificate_alias: `e-CPF A1 ICP-Brasil`,
+          certificate_alias: `Assinatura eletrônica avançada (SHA-256)`,
           pdf_base64: base64,
         });
 
         setIsSigned(true);
-        toast.success("✅ Prescrição assinada digitalmente com ICP-Brasil!");
+        toast.success("✅ Prescrição assinada eletronicamente e salva!");
         
         setTimeout(() => {
           setSaving(false);
@@ -861,12 +861,12 @@ const PrescriptionForm = () => {
              ) : (signingDigital || isValidating || saving) ? (
                <>
                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                 {isValidating ? "Validando e-CPF..." : signingDigital ? "Assinando digitalmente..." : "Salvando..."}
+                 {isValidating ? "Validando dados..." : signingDigital ? "Assinando eletronicamente..." : "Salvando..."}
                </>
              ) : (
                <>
                  <FileText className="w-4 h-4 mr-2" />
-                 🔐 Assinar com ICP-Brasil e Salvar
+                 🔐 Assinar eletronicamente e Salvar
                </>
              )}
            </Button>
@@ -890,11 +890,11 @@ const PrescriptionForm = () => {
               <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
               <div className="text-sm">
                  <p className="font-semibold text-emerald-900 dark:text-emerald-100">
-                   ✅ Assinatura Digital Validada com e-CPF
+                   ✅ Assinatura eletrônica registrada
                  </p>
                  <p className="text-emerald-700 dark:text-emerald-300 text-xs mt-1">
-                   A identidade do médico foi confirmada: o CPF do certificado digital corresponde ao registro no CRM.
-                   Documento assinado com certificado qualificado ICP-Brasil (Resolução CFM 2.299/2021).
+                   Documento assinado eletronicamente com hash SHA-256 e carimbo de data/hora, vinculado ao CPF e CRM do médico (Lei 14.063/2020).
+                   Para medicamentos controlados que exigem assinatura qualificada ICP-Brasil (e-CPF), ative o VIDaaS no painel.
                  </p>
               </div>
             </div>

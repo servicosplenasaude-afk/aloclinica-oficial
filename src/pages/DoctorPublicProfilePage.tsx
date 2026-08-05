@@ -23,43 +23,35 @@ const DoctorPublicProfilePage = () => {
       if (uuidRegex.test(slug)) {
         doctorProfileId = slug;
       } else {
-        // Parse slug: extract CRM from end (e.g., "dr-joao-silva-123456-sp")
-        const parts = slug.split("-");
-        if (parts.length >= 3) {
-          const state = parts[parts.length - 1]?.toUpperCase();
-          const crm = parts[parts.length - 2];
-          if (crm && state && state.length === 2) {
-            // Use secure RPC instead of direct table query
-            const { data } = await db.rpc("resolve_doctor_slug", {
-              p_crm: crm,
-              p_state: state,
-            });
-            if (data) doctorProfileId = data;
-          }
-        }
+        // The URL slug IS doctor_profiles.slug — resolve it directly.
+        // resolve_doctor_slug(p_slug) returns the doctor id (string) or null.
+        const { data } = await db.rpc("resolve_doctor_slug", { p_slug: slug });
+        if (data) doctorProfileId = data as string;
 
-        // Fallback: try name-based search via secure RPC
+        // Fallback: name-based search. search_doctor_by_name(p_query) returns a
+        // SETOF jsonb — take the first match's id.
         if (!doctorProfileId) {
           const nameParts = slug.replace(/^dr-/, "").split("-").filter(p => p.length > 1);
           if (nameParts.length >= 1) {
-            const { data } = await db.rpc("search_doctor_by_name", {
-              p_name: nameParts[0],
+            const { data: results } = await db.rpc("search_doctor_by_name", {
+              p_query: nameParts.join(" "),
             });
-            if (data) doctorProfileId = data;
+            const first = Array.isArray(results) ? (results[0] as any) : null;
+            if (first?.id) doctorProfileId = first.id as string;
           }
         }
       }
 
       if (doctorProfileId) {
         setDoctorId(doctorProfileId);
-        // Fetch meta for SEO via secure RPC
+        // Fetch meta for SEO via secure RPC. Returns a SINGLE jsonb object.
         const { data: rows } = await db.rpc("get_public_doctor_profile", {
           p_doctor_id: doctorProfileId,
         });
-        const doc = rows?.[0] as any;
+        const doc = (Array.isArray(rows) ? rows[0] : rows) as any;
         if (doc) {
-          const name = doc.display_name || `Dr(a). ${doc.first_name} ${doc.last_name}`;
-          const specialty = doc.specialties?.[0] ?? "Clínica Geral";
+          const name = doc.display_name || `Dr(a). ${doc.first_name ?? ""} ${doc.last_name ?? ""}`.trim();
+          const specialty = doc.specialties?.[0] ?? doc.areas_of_expertise?.[0] ?? "Clínica Geral";
           setDoctorMeta({ name, specialty });
         }
       }
@@ -110,7 +102,7 @@ const DoctorPublicProfilePage = () => {
           }}
         />
       )}
-      <DoctorPublicProfile />
+      <DoctorPublicProfile doctorId={doctorId} />
     </>
   );
 };

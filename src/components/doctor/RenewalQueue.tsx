@@ -17,6 +17,11 @@ import { notifyRenewalApproved, notifyRenewalRejected } from "@/lib/notification
 
 import type { Json } from "@/integrations/supabase/types";
 
+// A renewal is "fresh" (paid, not yet assumed by a doctor) under any of these
+// statuses. "in_review" means a doctor already claimed it.
+const FRESH_RENEWAL_STATUSES = ["pending", "pending_review", "paid"];
+const isFreshRenewal = (status: string) => FRESH_RENEWAL_STATUSES.includes(status);
+
 interface RenewalItem {
   id: string;
   patient_id: string;
@@ -63,7 +68,11 @@ const RenewalQueue = () => {
     const { data } = await db
       .from("prescription_renewals")
       .select("*")
-      .in("status", ["pending", "in_review"])
+      // Paid renewals arrive with different statuses depending on the payment
+      // path: card → "pending_review", PIX/boleto webhook → "paid", free quick
+      // renewal → "pending". ALL of these are paid-and-awaiting-a-doctor and must
+      // show here (previously only "pending"/"in_review" did, orphaning paid ones).
+      .in("status", ["pending", "pending_review", "paid", "in_review"])
       .order("created_at", { ascending: true });
     const rows = (data ?? []) as RenewalItem[];
 
@@ -279,8 +288,8 @@ const RenewalQueue = () => {
                         : <span className="italic text-muted-foreground/60">Não informado</span>}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={r.status === "pending" ? "outline" : "default"}>
-                        {r.status === "pending" ? "Pendente" : "Em análise"}
+                      <Badge variant={isFreshRenewal(r.status) ? "outline" : "default"}>
+                        {isFreshRenewal(r.status) ? "Pendente" : "Em análise"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -296,7 +305,7 @@ const RenewalQueue = () => {
                           <CheckCircle2 className="w-3 h-3 mr-1" /> Renovar 1-clique
                         </Button>
                       )}
-                      {r.status === "pending" && !r.prescription_id ? (
+                      {isFreshRenewal(r.status) && !r.prescription_id ? (
                         <Button size="sm" variant="outline" onClick={() => handleClaim(r)}>
                           <UserCheck className="w-3 h-3 mr-1" /> Assumir
                         </Button>

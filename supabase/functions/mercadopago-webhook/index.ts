@@ -172,7 +172,10 @@ async function handlePayment(admin: any, paymentId: string) {
     const rId = externalRef.replace("renewal_", "");
     await admin
       .from("prescription_renewals")
-      .update({ status: internalStatus === "approved" ? "paid" : internalStatus, paid_at: internalStatus === "approved" ? now : null } as any)
+      // On approval a renewal becomes "pending" = paid & awaiting a doctor (the
+      // status RenewalQueue reads). Previously wrote "paid", which the doctor
+      // queue never matched, orphaning every PIX/boleto-paid renewal.
+      .update({ status: internalStatus === "approved" ? "pending" : internalStatus, paid_at: internalStatus === "approved" ? now : null } as any)
       .eq("id", rId);
   } else if (externalRef.startsWith("sub_")) {
     const sId = externalRef.replace("sub_", "");

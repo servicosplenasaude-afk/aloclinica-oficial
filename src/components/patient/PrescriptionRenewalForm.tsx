@@ -215,7 +215,8 @@ const PrescriptionRenewalForm = () => {
         }
         await db.from("prescription_renewals").update({
           paid_at: new Date().toISOString(),
-          status: "pending_review",
+          // "pending" = paid & awaiting a doctor (what RenewalQueue reads).
+          status: "pending",
           payment_id: data.payment_id,
         } as any).eq("id", renewalId);
         toast.success("Pagamento confirmado", { description: "Um medico analisara sua receita em breve." });
@@ -239,7 +240,8 @@ const PrescriptionRenewalForm = () => {
       if (res.status === "approved") {
         await db.from("prescription_renewals").update({
           paid_at: new Date().toISOString(),
-          status: "pending_review",
+          // "pending" = paid & awaiting a doctor (what RenewalQueue reads).
+          status: "pending",
           payment_id: res.payment_id,
         } as any).eq("id", renewalId);
         toast.success("Pagamento confirmado", { description: "Um medico analisara sua receita em breve." });

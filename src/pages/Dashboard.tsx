@@ -124,9 +124,7 @@ const AdminCoupons = lazy(() => import("@/components/admin/AdminCoupons"));
 const AdminDoctorApplications = lazy(() => import("@/components/admin/AdminDoctorApplications"));
 
 const AdminSiteConfig = lazy(() => import("@/components/admin/AdminSiteConfig"));
-const AdminFullSiteEditor = lazy(() => import("@/components/admin/AdminFullSiteEditor"));
 const AdminMediaLibrary = lazy(() => import("@/components/admin/AdminMediaLibrary"));
-const AdminPageBuilder = lazy(() => import("@/components/admin/AdminPageBuilder"));
 const AdminStudio = lazy(() => import("@/components/admin/AdminStudio"));
 const AdminAppEditor = lazy(() => import("@/components/admin/AdminAppEditor"));
 
@@ -423,8 +421,7 @@ const Dashboard = () => {
       <Route path="admin/studio" element={<RoleGuard allowed={[]} roles={roles}><AdminStudio /></RoleGuard>} />
       <Route path="admin/app-editor" element={<RoleGuard allowed={[]} roles={roles}><AdminAppEditor /></RoleGuard>} />
       <Route path="admin/media" element={<RoleGuard allowed={[]} roles={roles}><AdminMediaLibrary /></RoleGuard>} />
-      <Route path="admin/pages" element={<RoleGuard allowed={[]} roles={roles}><AdminPageBuilder /></RoleGuard>} />
-      
+
       <Route path="admin/payouts" element={<RoleGuard allowed={[]} roles={roles}><AdminPayouts /></RoleGuard>} />
       <Route path="admin/contratos" element={<RoleGuard allowed={[]} roles={roles}><AdminContratos /></RoleGuard>} />
       <Route path="admin/legal" element={<RoleGuard allowed={[]} roles={roles}><AdminLegalDocuments /></RoleGuard>} />

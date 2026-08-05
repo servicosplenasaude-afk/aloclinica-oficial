@@ -76,6 +76,73 @@ const patientGroups: SettingGroup[] = [
   },
 ];
 
+// Role-specific groups. Previously EVERY role fell back to patientGroups, so a
+// doctor/admin/recepção saw patient-only toggles ("compartilhar histórico
+// médico" etc.). Each role now sees only its own preferences.
+const doctorGroups: SettingGroup[] = [
+  {
+    title: "Atendimento", icon: Bell, items: [
+      { key: "accept_urgent", label: "Aceitar urgências", desc: "Receber chamados de plantão/urgência", type: "toggle", icon: Bell },
+      { key: "auto_confirm", label: "Confirmação automática", desc: "Confirmar novas consultas sem revisar", type: "toggle", icon: Bell },
+    ],
+  },
+  {
+    title: "Notificações", icon: Bell, items: [
+      { key: "notify_new_appt", label: "Novas consultas", desc: "Avisar quando um paciente agendar", type: "toggle", icon: Bell },
+      { key: "notify_cancel", label: "Cancelamentos", desc: "Avisar quando um paciente cancelar", type: "toggle", icon: Bell },
+      { key: "notify_message", label: "Mensagens", desc: "Avisar sobre novas mensagens", type: "toggle", icon: Bell },
+      { key: "sound_alert", label: "Alerta sonoro", desc: "Som ao receber notificações", type: "toggle", icon: Bell },
+    ],
+  },
+  { title: "Informações", icon: Info, items: [] },
+];
+
+const adminGroups: SettingGroup[] = [
+  {
+    title: "Notificações", icon: Bell, items: [
+      { key: "notify_new_doctor", label: "Novos médicos", desc: "Avisar sobre novos cadastros de médicos", type: "toggle", icon: Bell },
+      { key: "notify_new_clinic", label: "Novas clínicas", desc: "Avisar sobre novos cadastros de clínicas", type: "toggle", icon: Bell },
+      { key: "notify_payments", label: "Pagamentos", desc: "Avisar sobre eventos de pagamento", type: "toggle", icon: Bell },
+      { key: "weekly_reports", label: "Relatórios semanais", desc: "Receber resumo semanal por e-mail", type: "toggle", icon: Bell },
+    ],
+  },
+  {
+    title: "Segurança", icon: Shield, items: [
+      { key: "detailed_logs", label: "Logs detalhados", desc: "Registrar ações administrativas", type: "toggle", icon: Shield },
+    ],
+  },
+  { title: "Informações", icon: Info, items: [] },
+];
+
+const receptionistGroups: SettingGroup[] = [
+  {
+    title: "Atendimento", icon: Bell, items: [
+      { key: "auto_checkin", label: "Check-in automático", desc: "Confirmar presença ao chegar", type: "toggle", icon: Bell },
+      { key: "notify_doctor_checkin", label: "Avisar médico", desc: "Notificar o médico no check-in", type: "toggle", icon: Bell },
+      { key: "notify_cancel", label: "Cancelamentos", desc: "Avisar sobre cancelamentos", type: "toggle", icon: Bell },
+      { key: "sound_alert", label: "Alerta sonoro", desc: "Som ao receber notificações", type: "toggle", icon: Bell },
+    ],
+  },
+  { title: "Informações", icon: Info, items: [] },
+];
+
+const genericGroups: SettingGroup[] = [
+  {
+    title: "Notificações", icon: Bell, items: [
+      { key: "notify_email", label: "E-mail", desc: "Receber avisos por e-mail", type: "toggle", icon: Bell },
+      { key: "notify_push", label: "Push", desc: "Avisos em tempo real", type: "toggle", icon: Bell },
+    ],
+  },
+  { title: "Informações", icon: Info, items: [] },
+];
+
+const groupsByRole: Record<string, SettingGroup[]> = {
+  patient: patientGroups,
+  doctor: doctorGroups,
+  admin: adminGroups,
+  receptionist: receptionistGroups,
+};
+
 const PanelSettings = () => {
   const { user, profile, roles } = useAuth();
   const navigate = useNavigate();
@@ -133,7 +200,7 @@ const PanelSettings = () => {
   };
 
   const initials = `${profile?.first_name?.[0] ?? ""}${profile?.last_name?.[0] ?? ""}`.toUpperCase();
-  const groups = activeRole === "patient" ? patientGroups : patientGroups;
+  const groups = groupsByRole[activeRole] ?? genericGroups;
   const enabledCount = Object.values(settings).filter(value => value === true).length;
   const accountName = `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim() || "Perfil";
 

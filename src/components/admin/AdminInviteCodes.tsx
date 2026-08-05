@@ -38,9 +38,13 @@ const AdminInviteCodes = () => {
     if (!user) return;
     setGenerating(true);
     const code = `MED-${randomBlock()}-${randomBlock()}`;
+    // Live schema: single-use code, active on creation. doctor_id is nullable
+    // (the code is what lets a NOT-YET-existing doctor sign up). Consumption is
+    // atomic in assign-role via current_uses CAS.
     const { error } = await db.from("doctor_invite_codes").insert({
       code,
-      created_by: user.id,
+      max_uses: 1,
+      is_active: true,
     });
     setGenerating(false);
     if (error) {
@@ -107,11 +111,13 @@ const AdminInviteCodes = () => {
                     </TableRow>
                   ))
 
-                ) : codes.map(c => (
+                ) : codes.map(c => {
+                  const used = isCodeUsed(c);
+                  return (
                   <TableRow key={c.id}>
                     <TableCell data-label="Código" className="font-mono font-bold text-foreground tracking-wider">{c.code}</TableCell>
                     <TableCell data-label="Status">
-                      {c.is_used ? (
+                      {used ? (
                         <Badge variant="outline">Utilizado</Badge>
                       ) : (
                         <Badge variant="default" className="bg-secondary text-secondary-foreground">Disponível</Badge>
@@ -121,14 +127,15 @@ const AdminInviteCodes = () => {
                       {format(new Date(c.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                     </TableCell>
                     <TableCell data-label="">
-                      {!c.is_used && (
+                      {!used && (
                         <Button size="sm" variant="ghost" aria-label={copiedId === c.id ? "Código copiado" : "Copiar código"} onClick={() => copyCode(c.code, c.id)}>
                           {copiedId === c.id ? <Check className="w-4 h-4 text-secondary" /> : <Copy className="w-4 h-4" />}
                         </Button>
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
               </TableBody>
             </Table>
             </div>
@@ -141,6 +148,14 @@ const AdminInviteCodes = () => {
 
 function randomBlock() {
   return Math.random().toString(36).substring(2, 6).toUpperCase();
+}
+
+// Live doctor_invite_codes has no is_used flag — a code is "used" when it's
+// inactive or its uses are exhausted (current_uses >= max_uses).
+function isCodeUsed(c: InviteCode): boolean {
+  if (c.is_active === false) return true;
+  if (c.max_uses != null && (c.current_uses ?? 0) >= c.max_uses) return true;
+  return false;
 }
 
 export default AdminInviteCodes;

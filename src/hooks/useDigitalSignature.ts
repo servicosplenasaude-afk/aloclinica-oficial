@@ -64,32 +64,21 @@ interface SignedDocument {
    * Gera código de verificação único (para URL pública)
    */
    /**
-    * Simula a extração e validação do CPF do Certificado Digital (e-CPF)
-    * Em produção, isso integraria com Soluti, Safeweb, ou similar.
+    * Verificação de pré-requisito da assinatura eletrônica SIMPLIFICADA:
+    * confirma apenas que o CPF do médico está disponível (para vincular ao
+    * documento). NÃO é validação de certificado ICP-Brasil / e-CPF — a
+    * assinatura qualificada é feita pelo fluxo VIDaaS (checkVidaasCertificate /
+    * initVidaasSignature). Mantido honesto para não induzir a erro.
     */
    const validateCertificateCPF = async (expectedCPF: string): Promise<boolean> => {
      setIsValidating(true);
      setError(null);
-     
+
      try {
-       // Simula delay de leitura do certificado/token
-       await new Promise(resolve => setTimeout(resolve, 1500));
-       
-       // O CPF vindo do certificado (e-CPF)
-       // Em um cenário real, o componente de assinatura retornaria o CPF extraído do certificado
-       const extractedCPFFromCertificate = expectedCPF; // Simulando que bate
-       
-       if (!expectedCPF) {
-         throw new Error("CPF do médico não configurado no CRM.");
+       const cleanExpected = (expectedCPF || "").replace(/\D/g, "");
+       if (cleanExpected.length !== 11) {
+         throw new Error("CPF do médico não configurado no cadastro. Preencha o CPF no seu perfil antes de assinar.");
        }
- 
-       const cleanExpected = expectedCPF.replace(/\D/g, "");
-       const cleanExtracted = extractedCPFFromCertificate.replace(/\D/g, "");
- 
-       if (cleanExpected !== cleanExtracted) {
-         throw new Error(`Divergência de Titularidade: O CPF do certificado não corresponde ao CPF do médico no CRM (${cleanExpected}).`);
-       }
- 
        return true;
      } catch (err) {
        const msg = err instanceof Error ? err.message : "Falha na validação do certificado";
