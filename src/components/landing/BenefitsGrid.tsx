@@ -86,10 +86,10 @@ function BenefitsGrid({ config }: { config?: any }) {
           transition={{ duration: 0.5 }}
           className="flex flex-col items-center text-center space-y-4"
         >
-          <div className="px-4 py-1.5 rounded-full bg-gradient-pingo-soft text-primary text-xs font-bold tracking-widest uppercase border border-[hsl(var(--pingo-sky)/0.25)] animate-pingo-glow">
+          <span className="section-eyebrow animate-pingo-glow">
             {badge}
-          </div>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight">
+          </span>
+          <h2 className="section-title text-foreground">
             {title} <span className="text-gradient-pingo">{titleHighlight}</span>
           </h2>
         </motion.div>

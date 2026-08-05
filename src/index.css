@@ -1936,15 +1936,16 @@ div[style*="Edit with Lovable"],
   display: inline-flex;
   align-items: center;
   gap: .5rem;
-  padding: .35rem .85rem;
+  padding: .42rem .95rem;
   border-radius: 999px;
-  font-size: .7rem;
+  font-size: .72rem;
   font-weight: 800;
-  letter-spacing: .22em;
+  letter-spacing: .2em;
   text-transform: uppercase;
   color: hsl(var(--primary));
   background: var(--gradient-pingo-soft);
-  border: 1px solid hsl(var(--pingo-sky) / .25);
+  border: 1px solid hsl(var(--pingo-sky) / .28);
+  box-shadow: 0 1px 2px hsl(var(--pingo-blue) / .05);
 }
 .band-deep .section-eyebrow {
   color: hsl(0 0% 100%);
@@ -1954,9 +1955,10 @@ div[style*="Edit with Lovable"],
 .section-title {
   font-family: 'Sora', system-ui, sans-serif;
   font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-  font-size: clamp(1.6rem, 3.4vw + .4rem, 2.9rem);
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+  font-size: clamp(1.7rem, 3.4vw + .4rem, 2.95rem);
+  text-wrap: balance;
 }
 .section-lead {
   font-size: clamp(.98rem, .5vw + .85rem, 1.12rem);

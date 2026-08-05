@@ -198,12 +198,10 @@ function SpecialtiesSection({ config }: { config?: any }) {
     <section className="relative py-20 md:py-32 overflow-hidden">
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/30 to-background" />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <span className="inline-block px-3 py-1 mb-3 rounded-full bg-gradient-pingo-soft text-[11px] font-extrabold uppercase tracking-[0.25em] text-primary border border-[hsl(var(--pingo-sky)/0.25)]">
-            Especialidades
-          </span>
-          <h2 className="text-2xl md:text-4xl font-extrabold mb-3 tracking-tight text-gradient-pingo">{title}</h2>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">{subtitle}</p>
+        <motion.div className="flex flex-col items-center text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <span className="section-eyebrow mb-4">Especialidades</span>
+          <h2 className="section-title text-gradient-pingo mb-3">{title}</h2>
+          <p className="section-lead mx-auto">{subtitle}</p>
         </motion.div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4 mb-6">

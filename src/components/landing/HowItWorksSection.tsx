@@ -89,14 +89,14 @@ const HowItWorksSection = forwardRef<HTMLElement>((_, ref) => {
           viewport={{ once: true }}
           className="text-center mb-12 md:mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/[0.06] border border-primary/10 text-primary text-sm font-semibold mb-4">
+          <span className="section-eyebrow mb-4">
             <Clock className="w-3.5 h-3.5" weight="fill" />
             Em poucos minutos
           </span>
-          <h2 className="text-2xl md:text-4xl font-extrabold mb-3 tracking-tight text-gradient-pingo">
+          <h2 className="section-title text-gradient-pingo mb-3">
             {title}
           </h2>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+          <p className="section-lead mx-auto">
             {desc}
           </p>
         </motion.div>
