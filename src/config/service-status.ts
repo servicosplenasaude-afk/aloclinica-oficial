@@ -29,4 +29,4 @@ export const SERVICE_MAINTENANCE: {
  *
  * Chaves possíveis: database, whatsapp, email, video, kyc, payments, nfse.
  */
-export const SERVICES_PENDING_SETUP: string[] = ["kyc"];
+export const SERVICES_PENDING_SETUP: string[] = [];
