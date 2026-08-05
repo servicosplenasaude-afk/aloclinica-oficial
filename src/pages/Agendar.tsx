@@ -377,7 +377,7 @@ const Agendar = () => {
                       <HeartPulse className="w-3.5 h-3.5" />
                       Teleconsulta — Atendimento 100% Online
                     </motion.div>
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight mb-3">
+                    <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight mb-3">
                       Qual especialidade{" "}
                       <span className="text-gradient-brand">você precisa?</span>
                     </h1>
@@ -441,7 +441,9 @@ const Agendar = () => {
                           spec.color
                         )}
                       >
-                        <img src={spec.img} alt={spec.name} className="w-12 h-12 sm:w-16 sm:h-16 object-contain" loading="lazy" />
+                        <div className="pingo-float" style={{ animationDelay: `${(i % 6) * 0.3}s` }}>
+                          <img src={spec.img} alt={spec.name} className="w-12 h-12 sm:w-16 sm:h-16 object-contain pingo-hover-bounce" loading="lazy" />
+                        </div>
                         <div className="flex flex-col items-center gap-1">
                           <span className="text-xs sm:text-sm font-bold text-foreground text-center leading-tight">
                             {spec.name}
@@ -513,7 +515,7 @@ const Agendar = () => {
                       <ArrowLeft className="w-5 h-5" />
                     </Button>
                     <div className="min-w-0">
-                      <h1 className="text-xl sm:text-2xl font-black text-foreground truncate">
+                      <h1 className="font-display text-xl sm:text-2xl font-black text-foreground truncate">
                         {selectedSpecialty}
                       </h1>
                       <p className="text-xs text-muted-foreground">
@@ -715,7 +717,7 @@ const Agendar = () => {
                       animate={{ opacity: 1, scale: 1 }}
                       className="rounded-3xl border border-border/60 bg-card shadow-sm px-6 py-12 text-center"
                     >
-                      <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6 overflow-hidden">
+                      <div className="w-28 h-28 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6 overflow-hidden pingo-float">
                         <img
                           src={specialties.find((s) => s.name === selectedSpecialty)?.img ?? pingoClinicoGeral}
                           alt="Pingo, mascote da AloClínica, não encontrou profissionais"
