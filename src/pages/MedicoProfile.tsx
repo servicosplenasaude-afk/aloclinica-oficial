@@ -172,7 +172,7 @@ const MedicoProfile = () => {
                       </div>
                       <div className="flex-1 pt-2 sm:pt-12">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h1 className="text-2xl sm:text-3xl font-black text-foreground">
+                          <h1 className="font-display text-2xl sm:text-3xl font-black text-foreground">
                             {name}
                           </h1>
                           {doctor.crm_verified && (
