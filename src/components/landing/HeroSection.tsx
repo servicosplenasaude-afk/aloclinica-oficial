@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { memo, forwardRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
 import { usePrefetchRoute } from "@/hooks/use-prefetch-route";
 import OptimizedImage from "@/components/ui/optimized-image";
 import { ArrowRight, ShieldCheck, Clock, Users, Video, FileText, BadgeCheck } from "lucide-react";
@@ -16,10 +16,34 @@ const highlights = [
 
 const complianceLogos = ["CFM", "ICP-Brasil", "LGPD", "ISO 27001"];
 
+// Brilhos que flutuam ao redor do Pingo (posição, tamanho e ritmo próprios).
+const SPARKLES = [
+  { top: "10%", left: "18%", size: 8, dur: 4.2, delay: 0 },
+  { top: "22%", left: "84%", size: 6, dur: 5.1, delay: 0.6 },
+  { top: "66%", left: "8%", size: 7, dur: 4.8, delay: 1.1 },
+  { top: "80%", left: "82%", size: 5, dur: 5.6, delay: 0.3 },
+  { top: "44%", left: "92%", size: 5, dur: 6.0, delay: 0.9 },
+];
+
 const HeroSection = memo(
   forwardRef<HTMLElement, { config?: any }>(({ config }, ref) => {
     const navigate = useNavigate();
     const prefetchPaciente = usePrefetchRoute(() => import("@/pages/AuthPaciente"));
+
+    // Parallax suave: o Pingo se inclina de leve seguindo o cursor. Desligado
+    // para quem prefere menos movimento (prefers-reduced-motion) e no toque.
+    const reduce = useReducedMotion();
+    const px = useMotionValue(0);
+    const py = useMotionValue(0);
+    const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [8, -8]), { stiffness: 120, damping: 14 });
+    const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-10, 10]), { stiffness: 120, damping: 14 });
+    const handlePointer = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (reduce) return;
+      const r = e.currentTarget.getBoundingClientRect();
+      px.set((e.clientX - r.left) / r.width - 0.5);
+      py.set((e.clientY - r.top) / r.height - 0.5);
+    };
+    const resetPointer = () => { px.set(0); py.set(0); };
 
     const rawTitle: string = config?.title || "Cuidado médico de excelência";
     const words = rawTitle.trim().split(/\s+/);
@@ -101,37 +125,74 @@ const HeroSection = memo(
 
             </motion.div>
 
-            {/* Right image area */}
+            {/* Right area — cena animada do Pingo */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-              className="relative flex items-center justify-center min-w-0"
+              onMouseMove={handlePointer}
+              onMouseLeave={resetPointer}
+              className="relative flex items-center justify-center min-w-0 [perspective:1100px]"
             >
-              <div className="absolute top-0 w-[88%] aspect-square rounded-full border-[14px] border-[#dbeafe] pointer-events-none" />
-              <div className="absolute top-[2%] w-[82%] aspect-square rounded-full bg-gradient-to-br from-[#eaf4ff] to-[#d9e9ff] -z-10" />
-
+              {/* Halo em degradê que "respira" */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                aria-hidden
+                animate={reduce ? undefined : { scale: [1, 1.055, 1], opacity: [0.82, 1, 0.82] }}
+                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-[2%] w-[82%] aspect-square rounded-full bg-gradient-to-br from-[#eaf4ff] to-[#d9e9ff] -z-10"
+              />
+              {/* Anel suave fixo */}
+              <div aria-hidden className="absolute top-0 w-[88%] aspect-square rounded-full border-[14px] border-[#dbeafe] pointer-events-none" />
+              {/* Anel tracejado girando devagar */}
+              <motion.div
+                aria-hidden
+                animate={reduce ? undefined : { rotate: 360 }}
+                transition={{ duration: 52, repeat: Infinity, ease: "linear" }}
+                className="absolute top-[-2%] w-[94%] aspect-square rounded-full border-2 border-dashed border-[#a9cdff]/60 pointer-events-none"
+              />
+
+              {/* Brilhos flutuantes */}
+              {!reduce && SPARKLES.map((s, i) => (
+                <motion.span
+                  key={i}
+                  aria-hidden
+                  className="absolute rounded-full bg-white z-20 shadow-[0_0_12px_2px_rgba(88,150,255,0.55)]"
+                  style={{ width: s.size, height: s.size, top: s.top, left: s.left }}
+                  animate={{ y: [0, -14, 0], opacity: [0.2, 1, 0.2], scale: [0.8, 1.15, 0.8] }}
+                  transition={{ duration: s.dur, repeat: Infinity, ease: "easeInOut", delay: s.delay }}
+                />
+              ))}
+
+              {/* Pingo — inclina no cursor (parallax) + flutua + respira */}
+              <motion.div
+                style={reduce ? undefined : { rotateX, rotateY, transformStyle: "preserve-3d" }}
                 className="relative z-10 w-full max-w-[580px]"
               >
-                <OptimizedImage
-                  src={heroPingoFamily}
-                  alt="Pingo, mascote da AloClínica, junto a pacientes de todas as idades"
-                  priority
-                  className="w-full h-auto object-contain drop-shadow-2xl"
-                />
+                <motion.div
+                  animate={reduce ? undefined : { y: [0, -12, 0] }}
+                  transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <OptimizedImage
+                    src={heroPingoFamily}
+                    alt="Pingo, mascote da AloClínica, junto a pacientes de todas as idades"
+                    priority
+                    className="w-full h-auto object-contain drop-shadow-2xl"
+                  />
+                </motion.div>
               </motion.div>
 
-              {/* Floating video badge */}
+              {/* Cartão flutuante — Teleconsulta (topo) */}
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, x: 20, y: -6 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
                 transition={{ delay: 0.6, duration: 0.5 }}
                 className="absolute -top-2 right-0 sm:right-2 z-20"
               >
-                <div className="bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-[0_18px_40px_-20px_rgba(15,23,42,0.4)] flex items-center gap-3">
+                <motion.div
+                  animate={reduce ? undefined : { y: [0, -8, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                  className="bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-[0_18px_40px_-20px_rgba(15,23,42,0.4)] flex items-center gap-3"
+                >
                   <div className="w-9 h-9 rounded-xl bg-[#1667e6] flex items-center justify-center">
                     <Video className="w-5 h-5 text-white" />
                   </div>
@@ -139,7 +200,29 @@ const HeroSection = memo(
                     <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.14em]">Teleconsulta</p>
                     <p className="text-sm font-bold text-[#0b1b34]">Vídeo em HD</p>
                   </div>
-                </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Cartão flutuante — Receita digital (base) */}
+              <motion.div
+                initial={{ opacity: 0, x: -20, y: 6 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ delay: 0.85, duration: 0.5 }}
+                className="absolute bottom-3 left-0 sm:-left-2 z-20"
+              >
+                <motion.div
+                  animate={reduce ? undefined : { y: [0, 9, 0] }}
+                  transition={{ duration: 4.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+                  className="bg-white px-4 py-3 rounded-2xl border border-slate-100 shadow-[0_18px_40px_-20px_rgba(15,23,42,0.4)] flex items-center gap-3"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="leading-tight">
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-[0.14em]">Receita</p>
+                    <p className="text-sm font-bold text-[#0b1b34]">Digital válida</p>
+                  </div>
+                </motion.div>
               </motion.div>
 
             </motion.div>
