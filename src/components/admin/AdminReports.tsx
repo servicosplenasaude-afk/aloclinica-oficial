@@ -241,18 +241,18 @@ const AdminReports = () => {
       `MRR (Receita Recorrente Mensal): R$ ${summaryStats.mrr.toFixed(2)}`,
       `Cartões Pingo Ativos: ${summaryStats.activeCards}`,
       `Churn Rate (30d): ${summaryStats.churnRate.toFixed(1)}%`,
-      `Receita Total: R$ ${summaryStats.totalRevenue.toFixed(2)}`,
+      `Assinaturas criadas (valor): R$ ${summaryStats.totalRevenue.toFixed(2)}`,
       `Total de Consultas: ${summaryStats.totalAppts}`,
-      `Ticket Médio: R$ ${summaryStats.avgTicket.toFixed(2)}`,
+      `Preço médio da assinatura: R$ ${summaryStats.avgTicket.toFixed(2)}`,
       `Cancelamentos: ${summaryStats.totalCancelled}`,
       `Ausências (No-Show): ${summaryStats.totalNoShow}`,
-      `NPS Médio: ${summaryStats.avgNps.toFixed(1)}`,
+      `Nota média (0-10): ${summaryStats.avgNps.toFixed(1)}`,
     ];
     kpis.forEach((k, i) => doc.text(`• ${k}`, 25, 55 + i * 7));
 
     // Revenue table
     doc.setFontSize(12);
-    doc.text("Receita Mensal", 20, 105);
+    doc.text("Assinaturas criadas / mês", 20, 105);
     doc.setFontSize(9);
     revenueData.forEach((r, i) => {
       doc.text(`${r.month}: R$ ${Number(r.receita).toFixed(2)}`, 25, 115 + i * 6);
@@ -365,7 +365,7 @@ const AdminReports = () => {
               <div className="text-center p-3 rounded-lg bg-muted/50">
                 <DollarSign className="w-4 h-4 mx-auto text-primary mb-1" />
                 <p className="text-lg font-bold text-foreground">R$ {summaryStats.totalRevenue.toFixed(0)}</p>
-                <p className="text-xs text-muted-foreground">Receita</p>
+                <p className="text-xs text-muted-foreground">Assinaturas criadas</p>
               </div>
               <div className="text-center p-3 rounded-lg bg-muted/50">
                 <Stethoscope className="w-4 h-4 mx-auto text-primary mb-1" />
@@ -375,12 +375,12 @@ const AdminReports = () => {
               <div className="text-center p-3 rounded-lg bg-muted/50">
                 <DollarSign className="w-4 h-4 mx-auto text-primary mb-1" />
                 <p className="text-lg font-bold text-foreground">R$ {summaryStats.avgTicket.toFixed(0)}</p>
-                <p className="text-xs text-muted-foreground">Ticket Médio</p>
+                <p className="text-xs text-muted-foreground">Preço médio assinatura</p>
               </div>
               <div className="text-center p-3 rounded-lg bg-muted/50">
                 <Star className="w-4 h-4 mx-auto text-yellow-500 mb-1" />
                 <p className="text-lg font-bold text-foreground">{summaryStats.avgNps.toFixed(1)}</p>
-                <p className="text-xs text-muted-foreground">NPS Médio</p>
+                <p className="text-xs text-muted-foreground">Nota média (0-10)</p>
               </div>
               <div className="text-center p-3 rounded-lg bg-destructive/5">
                 <XCircle className="w-4 h-4 mx-auto text-destructive mb-1" />
@@ -397,14 +397,14 @@ const AdminReports = () => {
             <div className="grid lg:grid-cols-2 gap-6 mb-6">
               {/* Revenue chart */}
               <Card className="border-border">
-                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> Receita Mensal</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> Assinaturas criadas por mês (R$)</CardTitle></CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={revenueData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={v => `R$${v}`} />
-                      <Tooltip formatter={(v: number) => [`R$ ${v.toFixed(2)}`, "Receita"]} />
+                      <Tooltip formatter={(v: number) => [`R$ ${v.toFixed(2)}`, "Assinaturas criadas"]} />
                       <Bar dataKey="receita" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>

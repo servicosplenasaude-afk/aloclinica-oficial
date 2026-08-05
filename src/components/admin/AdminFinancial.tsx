@@ -127,7 +127,7 @@ const AdminFinancial = () => {
     const FINANCIAL_FETCH_LIMIT = 5000;
     const { data: appts, count: totalAppts } = await db
       .from("appointments")
-      .select("id, status, payment_status, scheduled_at, created_at, payment_confirmed_at, cancel_reason, doctor_id, patient_id, guest_patient_id", { count: "exact" })
+      .select("id, status, payment_status, scheduled_at, created_at, payment_confirmed_at, cancel_reason, doctor_id, patient_id, guest_patient_id, price_at_booking", { count: "exact" })
       .gte("created_at", daysAgo.toISOString())
       .order("created_at", { ascending: false })
       .limit(FINANCIAL_FETCH_LIMIT);
@@ -181,7 +181,9 @@ const AdminFinancial = () => {
 
     const enriched: AppointmentPayment[] = appts.map(a => ({
       ...a,
-      consultation_price: docPriceMap.get(a.doctor_id) ?? 89,
+      // Preço REAL cobrado na reserva (price_at_booking) quando existir; só cai
+      // para o preço atual do médico (fallback 89) em registros antigos sem ele.
+      consultation_price: (a as any).price_at_booking != null ? Number((a as any).price_at_booking) : (docPriceMap.get(a.doctor_id) ?? 89),
       doctor_name: profileMap.get(docUserMap.get(a.doctor_id) ?? "") ?? "—",
       patient_name: a.patient_id
         ? profileMap.get(a.patient_id) ?? "—"

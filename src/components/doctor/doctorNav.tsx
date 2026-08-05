@@ -13,7 +13,7 @@ import {
   VideoCamera,
   Wallet,
 } from "@phosphor-icons/react";
-import { FileText, RefreshCw, FlaskConical, Send } from "lucide-react";
+import { FileText, RefreshCw, FlaskConical, Send, ClipboardList, FolderOpen, BarChart3 } from "lucide-react";
 import { NavIcon } from "@/components/ui/nav-icon";
 
 export const getDoctorNav = (active: string) => [
@@ -30,8 +30,11 @@ export const getDoctorNav = (active: string) => [
   { label: "Renovacoes", href: "/dashboard/doctor/renewal-queue?role=doctor", icon: <NavIcon icon={<RefreshCw className="h-4 w-4" />} color="emerald" />, active: active === "renewal-queue", group: "Documentos" },
   { label: "Pedir Exame", href: "/dashboard/exam-request?role=doctor", icon: <NavIcon icon={<FlaskConical className="h-4 w-4" />} color="cyan" />, active: active === "exam-request", group: "Atendimento" },
   { label: "Encaminhar", href: "/dashboard/doctor/referral?role=doctor", icon: <NavIcon icon={<Send className="h-4 w-4" />} color="blue" />, active: active === "referrals", group: "Documentos" },
+  { label: "Protocolos", href: "/dashboard/doctor/protocols?role=doctor", icon: <NavIcon icon={<ClipboardList className="h-4 w-4" />} color="cyan" />, active: active === "protocols", group: "Atendimento" },
+  { label: "Documentos", href: "/dashboard/doctor/documents?role=doctor", icon: <NavIcon icon={<FolderOpen className="h-4 w-4" />} color="blue" />, active: active === "documents", group: "Documentos" },
   { label: "Ganhos", href: "/dashboard/earnings?role=doctor", icon: <NavIcon icon={<Money size={16} weight="fill" />} color="green" />, active: active === "earnings", group: "Financeiro" },
   { label: "Carteira", href: "/dashboard/doctor/wallet?role=doctor", icon: <NavIcon icon={<Wallet size={16} weight="fill" />} color="emerald" />, active: active === "wallet", group: "Financeiro" },
+  { label: "Analises", href: "/dashboard/doctor/analytics?role=doctor", icon: <NavIcon icon={<BarChart3 className="h-4 w-4" />} color="green" />, active: active === "analytics", group: "Financeiro" },
   { label: "Configuracoes", href: "/dashboard/settings?role=doctor", icon: <NavIcon icon={<Sliders size={16} weight="fill" />} color="slate" />, active: active === "settings", group: "Conta" },
   { label: "Meu Perfil", href: "/dashboard/profile?role=doctor", icon: <NavIcon icon={<UserCircle size={16} weight="fill" />} color="blue" />, active: active === "profile", group: "Conta" },
 ];
