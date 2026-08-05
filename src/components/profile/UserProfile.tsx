@@ -108,6 +108,9 @@ const UserProfile = () => {
   const [priceMin, setPriceMin] = useState<number | null>(null);
   const [priceMax, setPriceMax] = useState<number | null>(null);
   const [doctorCareAreas, setDoctorCareAreas] = useState<string[]>([]);
+  // Especialidades: catálogo completo + as do médico (editáveis no perfil).
+  const [allSpecialties, setAllSpecialties] = useState<{ id: string; name: string }[]>([]);
+  const [doctorSpecialties, setDoctorSpecialties] = useState<{ id: string; name: string }[]>([]);
   const [doctorProfileId, setDoctorProfileId] = useState<string | null>(null);
   // As colunas education/experience_years/short_description/show_in_directory/
   // auto_confirm_bookings foram adicionadas por migration. Este flag indica se
@@ -150,6 +153,14 @@ const UserProfile = () => {
       });
   }, [user]);
 
+  // Catálogo de especialidades (para o médico escolher as dele).
+  useEffect(() => {
+    if (!isDoctor) return;
+    db.from("specialties").select("id, name").order("name").then(({ data }) => {
+      setAllSpecialties(((data as any[]) ?? []).map((s) => ({ id: s.id, name: s.name })));
+    });
+  }, [isDoctor]);
+
   const fetchDoctorProfile = async () => {
     // SELECT * é resiliente: nunca dá 400 por coluna inexistente (o SELECT
     // explícito antigo pedia colunas que só existem no VIEW ou nem existem —
@@ -186,13 +197,16 @@ const UserProfile = () => {
       ]);
       if (specRes.data?.length) {
         const specIds = specRes.data.map((s: any) => s.specialty_id);
-        const { data: specs } = await db.from("specialties").select("price_min, price_max").in("id", specIds);
+        const { data: specs } = await db.from("specialties").select("id, name, price_min, price_max").in("id", specIds);
         if (specs?.length) {
+          setDoctorSpecialties((specs as any[]).map((s) => ({ id: s.id, name: s.name })));
           const mins = (specs as any[]).map(s => s.price_min).filter((v: any) => v != null);
           const maxs = (specs as any[]).map(s => s.price_max).filter((v: any) => v != null);
           setPriceMin(mins.length > 0 ? Math.min(...mins) : null);
           setPriceMax(maxs.length > 0 ? Math.max(...maxs) : null);
         }
+      } else {
+        setDoctorSpecialties([]);
       }
       setDoctorCareAreas((careRes.data as any[])?.map((c: any) => c.area_name) ?? []);
     }
@@ -210,6 +224,24 @@ const UserProfile = () => {
     setAvatarUrl(publicUrl);
     await db.from("profiles").update({ avatar_url: publicUrl }).eq("user_id", user.id);
     toast.success("Foto atualizada!"); setUploading(false);
+  };
+
+  const addDoctorSpecialty = async (specId: string) => {
+    if (!doctorProfileId || !specId || doctorSpecialties.some((s) => s.id === specId)) return;
+    const spec = allSpecialties.find((s) => s.id === specId);
+    if (!spec) return;
+    const { error } = await db.from("doctor_specialties").insert({ doctor_id: doctorProfileId, specialty_id: specId } as any);
+    if (error) { toast.error("Erro ao adicionar especialidade", { description: error.message }); return; }
+    setDoctorSpecialties((prev) => [...prev, spec]);
+    toast.success("Especialidade adicionada");
+  };
+
+  const removeDoctorSpecialty = async (specId: string) => {
+    if (!doctorProfileId) return;
+    const { error } = await db.from("doctor_specialties").delete().eq("doctor_id", doctorProfileId).eq("specialty_id", specId);
+    if (error) { toast.error("Erro ao remover especialidade", { description: error.message }); return; }
+    setDoctorSpecialties((prev) => prev.filter((s) => s.id !== specId));
+    toast.success("Especialidade removida");
   };
 
   const handleSave = async () => {
@@ -626,10 +658,10 @@ const UserProfile = () => {
                </div>
                {isDoctor && (
                  <div className="flex items-center justify-between border-t border-border/10 pt-3 mt-1">
-                   <span className="text-xs text-muted-foreground">Assinatura Digital</span>
+                   <span className="text-xs text-muted-foreground">Assinatura eletrônica</span>
                    <div className="flex items-center gap-1.5">
-                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                     <span className="text-xs font-bold text-emerald-500">e-CPF Ativo</span>
+                     <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                     <span className="text-xs font-bold text-emerald-500">Ativa</span>
                    </div>
                  </div>
                )}
@@ -909,6 +941,30 @@ const UserProfile = () => {
                   </div>
                 ))}
               </div>
+              {/* Especialidades */}
+              <div>
+                <Label>Especialidades</Label>
+                <p className="text-xs text-muted-foreground mb-2">As especialidades em que você atende (aparecem na busca dos pacientes).</p>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {doctorSpecialties.map((s) => (
+                    <Badge key={s.id} className="bg-primary/10 text-primary border-primary/20 gap-1 text-xs py-1 px-2.5 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors" onClick={() => removeDoctorSpecialty(s.id)}>
+                      {s.name} ✕
+                    </Badge>
+                  ))}
+                  {doctorSpecialties.length === 0 && <span className="text-xs text-muted-foreground">Nenhuma especialidade selecionada ainda.</span>}
+                </div>
+                <select
+                  value=""
+                  onChange={(e) => { if (e.target.value) { addDoctorSpecialty(e.target.value); e.target.value = ""; } }}
+                  className="h-10 w-full rounded-xl border border-input bg-muted/30 px-3 text-sm"
+                >
+                  <option value="">Adicionar especialidade…</option>
+                  {allSpecialties.filter((s) => !doctorSpecialties.some((d) => d.id === s.id)).map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+
               {/* Care Areas */}
               <div>
                 <Label>Áreas de Atendimento</Label>
