@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { useServiceHealth } from "@/hooks/use-service-health";
 import pingoAdmin from "@/assets/pingo-admin.png";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartTooltip, Cell, AreaChart, Area } from "recharts";
 
@@ -69,6 +70,21 @@ const PanelCenter = () => {
   const [kpiPendingDoctors, setKpiPendingDoctors] = useState<number | null>(null);
   const [whatsappState, setWhatsappState] = useState<"loading" | "connected" | "offline" | "unconfigured">("loading");
   const [revenueData, setRevenueData] = useState<{ day: string; revenue: number }[]>([]);
+
+  // Saúde REAL dos serviços (não mais bolinhas verdes fixas). Em produção usa a
+  // edge fn service-health; sem ela, cai p/ checagem básica no navegador.
+  const { services: healthServices } = useServiceHealth({ poll: true });
+  const svcStatus = (key: string) => healthServices.find((s) => s.key === key)?.status;
+  const dotColor = (status?: string) =>
+    status === "ok" ? "bg-emerald-500"
+    : status === "down" ? "bg-red-500"
+    : status === "unconfigured" ? "bg-amber-500"
+    : "bg-slate-300"; // desconhecido / carregando — honesto, nunca verde falso
+  const waColor =
+    whatsappState === "connected" ? "bg-emerald-500"
+    : whatsappState === "offline" ? "bg-red-500"
+    : whatsappState === "unconfigured" ? "bg-amber-500"
+    : "bg-slate-300";
 
   const revenueTotal = useMemo(() => revenueData.reduce((acc, d) => acc + d.revenue, 0), [revenueData]);
   const isRevenueEmpty = revenueTotal === 0;
@@ -396,14 +412,16 @@ const PanelCenter = () => {
             <div className="flex items-center gap-x-3 sm:gap-x-4 gap-y-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex-wrap">
               <span className="flex items-center gap-1.5">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                  {whatsappState === "connected" && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
+                  )}
+                  <span className={cn("relative inline-flex rounded-full h-1.5 w-1.5", waColor)} />
                 </span>
                 WhatsApp
               </span>
-              <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Pagamentos</span>
-              <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Vídeo HD</span>
-              <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> <span className="hidden xs:inline">Banco de </span>Dados</span>
+              <span className="flex items-center gap-1.5"><div className={cn("w-1.5 h-1.5 rounded-full", dotColor(svcStatus("payments")))} /> Pagamentos</span>
+              <span className="flex items-center gap-1.5"><div className={cn("w-1.5 h-1.5 rounded-full", dotColor(svcStatus("video")))} /> Vídeo HD</span>
+              <span className="flex items-center gap-1.5"><div className={cn("w-1.5 h-1.5 rounded-full", dotColor(svcStatus("database")))} /> <span className="hidden xs:inline">Banco de </span>Dados</span>
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-2.5">

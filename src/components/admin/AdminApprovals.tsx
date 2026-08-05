@@ -133,7 +133,8 @@ const AdminApprovals = () => {
 
   const approve = async (id: string, type: "doctor" | "clinic" | "partner") => {
     const table = type === "doctor" ? "doctor_profiles" : type === "clinic" ? "clinic_profiles" : "partner_profiles";
-    await db.from(table).update({ is_approved: true }).eq("id", id);
+    const { error: approveErr } = await db.from(table).update({ is_approved: true }).eq("id", id);
+    if (approveErr) { toast.error("Erro ao aprovar", { description: approveErr.message }); return; }
 
     if (type === "doctor") {
       const doc = [...pendingDoctors, ...approvedDoctors].find(d => d.id === id);
@@ -163,7 +164,8 @@ const AdminApprovals = () => {
       crm_verified: !currentValue,
       crm_verified_at: !currentValue ? new Date().toISOString() : null,
     };
-    await db.from("doctor_profiles").update(updateData).eq("id", id);
+    const { error } = await db.from("doctor_profiles").update(updateData).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar CRM", { description: error.message }); return; }
     toast.success(!currentValue ? "CRM verificado ✅" : "Verificação de CRM removida");
     fetchAll();
   };
@@ -194,7 +196,8 @@ const AdminApprovals = () => {
     if (!rejectTarget) return;
     
     const table = rejectTarget.type === "doctor" ? "doctor_profiles" : rejectTarget.type === "clinic" ? "clinic_profiles" : "partner_profiles";
-    await db.from(table).update({ is_approved: false }).eq("id", rejectTarget.id);
+    const { error: rejectErr } = await db.from(table).update({ is_approved: false }).eq("id", rejectTarget.id);
+    if (rejectErr) { toast.error("Erro ao rejeitar", { description: rejectErr.message }); return; }
 
     if (rejectTarget.type === "doctor") {
       const doc = [...pendingDoctors, ...approvedDoctors].find(d => d.id === rejectTarget.id);

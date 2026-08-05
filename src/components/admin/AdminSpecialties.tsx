@@ -65,13 +65,15 @@ const AdminSpecialties = () => {
       destructive: true,
     });
     if (!ok) return;
-    await db.from("specialties").delete().eq("id", id);
+    const { error } = await db.from("specialties").delete().eq("id", id);
+    if (error) { toast.error("Erro ao excluir", { description: error.message }); return; }
     fetchSpecialties();
   };
 
   const updateField = async (id: string, field: string, value: string) => {
     const numValue = value ? Number(value) : null;
-    await db.from("specialties").update({ [field]: numValue } as any).eq("id", id);
+    const { error } = await db.from("specialties").update({ [field]: numValue } as any).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar", { description: error.message }); return; }
     fetchSpecialties();
     toast.success("Atualizado!");
   };

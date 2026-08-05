@@ -109,6 +109,11 @@ const UserProfile = () => {
   const [priceMax, setPriceMax] = useState<number | null>(null);
   const [doctorCareAreas, setDoctorCareAreas] = useState<string[]>([]);
   const [doctorProfileId, setDoctorProfileId] = useState<string | null>(null);
+  // As colunas education/experience_years/short_description/show_in_directory/
+  // auto_confirm_bookings foram adicionadas por migration. Este flag indica se
+  // já existem no banco (lido do próprio SELECT *), pra o UPDATE não quebrar
+  // caso a migration ainda não tenha sido aplicada.
+  const [hasExtCols, setHasExtCols] = useState(false);
   const [mpUserId, setMpUserId] = useState<string | null>(null);
   const [mpConnectedAt, setMpConnectedAt] = useState<string | null>(null);
   const [disconnectingMp, setDisconnectingMp] = useState(false);
@@ -146,27 +151,35 @@ const UserProfile = () => {
   }, [user]);
 
   const fetchDoctorProfile = async () => {
+    // SELECT * é resiliente: nunca dá 400 por coluna inexistente (o SELECT
+    // explícito antigo pedia colunas que só existem no VIEW ou nem existem —
+    // education/experience_years/short_description/show_in_directory/
+    // auto_confirm_bookings — e por isso o perfil do médico não carregava).
     const { data } = await db.from("doctor_profiles")
-      .select("id, bio, education, experience_years, price, display_name, crm, crm_state, crm_verified, doctor_type, short_description, consultation_duration, available_for_telemedicine, available_now, show_in_directory, auto_confirm_bookings, mp_user_id, mp_connected_at")
+      .select("*")
       .eq("user_id", user!.id)
-      .single();
+      .maybeSingle();
     if (data) {
-      setDoctorProfileId(data.id);
-      setMpUserId((data as any).mp_user_id ?? null);
-      setMpConnectedAt((data as any).mp_connected_at ?? null);
-      setBio(data.bio || ""); setEducation(data.education || "");
-      setDisplayName((data as any).display_name || "");
-      setShortDescription((data as any).short_description || "");
-      setCrm((data as any).crm || "");
-      setCrmState((data as any).crm_state || "");
-      setCrmVerified(!!(data as any).crm_verified);
-      setDoctorType((data as any).doctor_type || "telemedicina");
-      setExperienceYears(data.experience_years || 0); setConsultationPrice(Number(data.price) || 89);
-      setConsultationDuration(Number((data as any).consultation_duration) || 30);
-      setAvailableForTelemedicine((data as any).available_for_telemedicine ?? true);
-      setAvailableNow(!!(data as any).available_now);
-      setShowInDirectory((data as any).show_in_directory ?? true);
-      setAutoConfirmBookings((data as any).auto_confirm_bookings ?? true);
+      const d = data as any;
+      setDoctorProfileId(d.id);
+      setMpUserId(d.mp_user_id ?? null);
+      setMpConnectedAt(d.mp_connected_at ?? null);
+      setBio(d.bio || ""); setEducation(d.education || "");
+      setDisplayName(d.display_name || "");
+      setShortDescription(d.short_description || "");
+      setCrm(d.crm || "");
+      setCrmState(d.crm_state || "");
+      setCrmVerified(!!d.crm_verified);
+      setDoctorType(d.doctor_type || "telemedicina");
+      setExperienceYears(d.experience_years || 0); setConsultationPrice(Number(d.price) || 89);
+      setConsultationDuration(Number(d.consultation_duration) || 30);
+      // Disponibilidade mapeada p/ colunas REAIS da base:
+      //  is_active = perfil ativo / aceitando teleconsulta; is_on_duty = atende agora.
+      setAvailableForTelemedicine(d.is_active ?? true);
+      setAvailableNow(!!d.is_on_duty);
+      setShowInDirectory(d.show_in_directory ?? true);
+      setAutoConfirmBookings(d.auto_confirm_bookings ?? true);
+      setHasExtCols("show_in_directory" in d || "education" in d || "auto_confirm_bookings" in d);
       const [specRes, careRes] = await Promise.all([
         db.from("doctor_specialties").select("specialty_id").eq("doctor_id", data.id),
         db.from("doctor_care_areas" as any).select("area_name").eq("doctor_id", data.id),
@@ -213,20 +226,27 @@ const UserProfile = () => {
     if (isDoctor) {
       if (priceMin !== null && consultationPrice < priceMin) { toast.error(`Preço mínimo: R$ ${priceMin.toFixed(0)}`); setSaving(false); return; }
       if (priceMax !== null && consultationPrice > priceMax) { toast.error(`Preço máximo: R$ ${priceMax.toFixed(0)}`); setSaving(false); return; }
-      await db.from("doctor_profiles").update({
+      // Apenas colunas REAIS da base. Disponibilidade → is_active (perfil
+      // ativo/aceita teleconsulta) e is_on_duty (atende agora).
+      const docUpdate: Record<string, any> = {
         bio: bio.trim() || null,
-        education: education.trim() || null,
-        experience_years: experienceYears,
         price: consultationPrice,
         display_name: displayName.trim() || null,
-        short_description: shortDescription.trim() || null,
         doctor_type: doctorType,
         consultation_duration: consultationDuration,
-        available_for_telemedicine: availableForTelemedicine,
-        available_now: availableNow,
-        show_in_directory: showInDirectory,
-        auto_confirm_bookings: autoConfirmBookings,
-      } as any).eq("user_id", user.id);
+        is_active: availableForTelemedicine,
+        is_on_duty: availableNow,
+      };
+      // Colunas adicionadas por migration — inclui só se já existirem no banco.
+      if (hasExtCols) {
+        docUpdate.education = education.trim() || null;
+        docUpdate.experience_years = experienceYears;
+        docUpdate.short_description = shortDescription.trim() || null;
+        docUpdate.show_in_directory = showInDirectory;
+        docUpdate.auto_confirm_bookings = autoConfirmBookings;
+      }
+      const { error: docErr } = await db.from("doctor_profiles").update(docUpdate as any).eq("user_id", user.id);
+      if (docErr) { toast.error("Erro ao salvar dados do médico", { description: docErr.message }); setSaving(false); return; }
     }
     setSaving(false);
     if (error) toast.error("Erro ao salvar", { description: error.message });

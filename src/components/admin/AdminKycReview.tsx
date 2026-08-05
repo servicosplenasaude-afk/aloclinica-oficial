@@ -133,7 +133,7 @@ const AdminKycReview = () => {
     };
   }, [rows]);
 
-  const sendNotification = async (row: KycRow, approved: boolean) => {
+  const sendNotification = async (row: KycRow, approved: boolean, reason?: string) => {
     try {
       // Buscar email do user via edge function server-side (a Admin API não roda no navegador).
       const { data: lookup } = await db.functions.invoke("admin-user-lookup", { body: { user_id: row.user_id } });
@@ -149,6 +149,7 @@ const AdminKycReview = () => {
           data: {
             name: `${row.first_name} ${row.last_name}`.trim(),
             score: Math.round((row.similarity ?? 0) * 100),
+            reason: reason || undefined,
           },
         },
       });
@@ -193,7 +194,8 @@ const AdminKycReview = () => {
     setActionLoading(row.id);
     const { error } = await (db as any)
       .from("kyc_verificacoes")
-      .update({ status: "rejected" })
+      // Persiste o motivo no campo livre existente (error_message) — sem migration.
+      .update({ status: "rejected", error_message: reason || null })
       .eq("id", row.id);
     if (error) {
       toast.error("Erro ao rejeitar", { description: error.message });
@@ -206,7 +208,7 @@ const AdminKycReview = () => {
         .update({ kyc_status: "rejected" } as any)
         .eq("user_id", row.user_id);
     }
-    await sendNotification(row, false);
+    await sendNotification(row, false, reason);
     toast.success("Rejeitado", { description: reason ? `Motivo: ${reason}` : "Usuário notificado por email." });
     setActionLoading(null);
     setRejectDialog({ open: false, row: null, reason: "" });

@@ -60,6 +60,9 @@ const ExamRequestForm = () => {
   const [patientId, setPatientId] = useState<string | null>(null);
   const [patientName, setPatientName] = useState("");
   const [doctorProfileId, setDoctorProfileId] = useState<string | null>(null);
+  // Quando aberto pelo MENU (sem ?appointment=) não há paciente no contexto.
+  // Sem isto, o pedido era gravado com patient_id null (órfão, paciente nunca via).
+  const [patients, setPatients] = useState<{ id: string; name: string }[]>([]);
   const [examType, setExamType] = useState("");
   const [clinicalInfo, setClinicalInfo] = useState("");
   const [priority, setPriority] = useState<"normal" | "alta" | "urgente">("normal");
@@ -92,6 +95,26 @@ const ExamRequestForm = () => {
         }
       });
   }, [appointmentId]);
+
+  // Sem contexto de consulta: carrega os pacientes do médico (com quem já teve
+  // consulta) para ele escolher a quem o exame se destina.
+  useEffect(() => {
+    if (appointmentId || !doctorProfileId) return;
+    (async () => {
+      const { data: appts } = await db
+        .from("appointments")
+        .select("patient_id")
+        .eq("doctor_id", doctorProfileId)
+        .not("patient_id", "is", null);
+      const ids = [...new Set(((appts as any[]) ?? []).map((a) => a.patient_id).filter(Boolean))];
+      if (ids.length === 0) { setPatients([]); return; }
+      const { data: profs } = await db.from("profiles").select("user_id, first_name, last_name").in("user_id", ids);
+      setPatients(((profs as any[]) ?? []).map((p) => ({
+        id: p.user_id,
+        name: `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Paciente",
+      })));
+    })();
+  }, [appointmentId, doctorProfileId]);
 
   const toggleExame = (e: string) => {
     setExamType((prev) => {
@@ -141,6 +164,7 @@ const ExamRequestForm = () => {
 
   const submit = async () => {
     if (!doctorProfileId) { toast.error("Perfil médico não encontrado."); return; }
+    if (!patientId) { toast.error("Selecione o paciente para quem é o exame."); return; }
     if (!examType.trim()) { toast.error("Informe ao menos um exame."); return; }
     setSaving(true);
     try {
@@ -183,6 +207,22 @@ const ExamRequestForm = () => {
               </div>
             ) : (
               <>
+                {!appointmentId && (
+                  <div>
+                    <Label className="mb-2 block">Paciente</Label>
+                    <Select value={patientId ?? ""} onValueChange={(v) => { setPatientId(v); setPatientName(patients.find((p) => p.id === v)?.name ?? ""); }}>
+                      <SelectTrigger><SelectValue placeholder="Selecione o paciente" /></SelectTrigger>
+                      <SelectContent>
+                        {patients.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    {patients.length === 0 && (
+                      <p className="text-xs text-muted-foreground mt-1.5">
+                        Você ainda não tem pacientes com consultas registradas. Abra o pedido pelo prontuário/consulta do paciente.
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div>
                   <Label className="mb-2 block">Exames comuns (clique para adicionar)</Label>
                   <div className="flex flex-wrap gap-2">
