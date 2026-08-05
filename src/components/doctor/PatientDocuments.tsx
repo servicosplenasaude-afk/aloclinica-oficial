@@ -16,6 +16,7 @@ interface PatientDoc {
   id: string;
   patient_id: string;
   file_name: string;
+  file_url: string | null;
   file_type: string | null;
   description: string | null;
   created_at: string;
@@ -75,9 +76,11 @@ const PatientDocuments = () => {
   };
 
   const viewDocument = async (doc: PatientDoc) => {
-    const { data } = await db.storage.from("patient-documents").createSignedUrl(
-      `${doc.patient_id}/${doc.file_name}`, 3600
-    );
+    // Usa o caminho REAL salvo em file_url (ex.: "<uid>/1712-arquivo.pdf").
+    // Antes reconstruía "<patient_id>/<file_name>" — caminho inexistente (o
+    // upload prefixa com Date.now()) → link morto / "Erro ao abrir".
+    const path = doc.file_url || `${doc.patient_id}/${doc.file_name}`;
+    const { data } = await db.storage.from("patient-documents").createSignedUrl(path, 3600);
     if (data?.signedUrl) {
       window.open(data.signedUrl, "_blank");
     } else {

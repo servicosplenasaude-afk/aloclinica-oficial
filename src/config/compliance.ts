@@ -25,6 +25,11 @@ export const COMPLIANCE = {
   emailDpo: "dpo@aloclinica.com.br",
   emailSuporte: "suporte@aloclinica.com.br",
   emailMedicos: "medicos@aloclinica.com.br",
+  // WhatsApp/telefone de suporte — PREENCHER com o número real (só dígitos, com
+  // DDI+DDD, ex.: "5595912345678"). Enquanto vazio, os botões de "falar no
+  // WhatsApp" caem para o e-mail de suporte (real) em vez de um número falso.
+  whatsappSuporte: "",
+  telefoneSuporte: "",
 
   // Fornecedores (subprocessadores)
   provedorPagamento: "Mercado Pago",
@@ -35,3 +40,14 @@ export const COMPLIANCE = {
 } as const;
 
 export type ComplianceInfo = typeof COMPLIANCE;
+
+/**
+ * URL de contato de suporte, honesta: usa o WhatsApp real se configurado
+ * (COMPLIANCE.whatsappSuporte); senão cai para o e-mail de suporte (que existe).
+ * Evita mandar o usuário para um wa.me com número falso (dead-end).
+ */
+export function supportContactUrl(text?: string): string {
+  const wa = (COMPLIANCE.whatsappSuporte || "").replace(/\D/g, "");
+  if (wa) return `https://wa.me/${wa}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
+  return `mailto:${COMPLIANCE.emailSuporte}${text ? `?body=${encodeURIComponent(text)}` : ""}`;
+}

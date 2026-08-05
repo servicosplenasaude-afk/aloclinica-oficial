@@ -53,15 +53,19 @@ const ClinicalProtocols = () => {
   const [note, setNote] = useState("");
 
   const load = async () => {
+    if (!user) return;
     setLoading(true);
     try {
+      // Só os protocolos DO médico + os globais (created_by null, do admin).
+      // Antes trazia os de TODOS os médicos (sem filtro de dono).
       const { data } = await db.from("clinical_protocols")
         .select("id, name, description, conditions, actions, is_active")
+        .or(`created_by.eq.${user.id},created_by.is.null`)
         .order("created_at", { ascending: false });
       setItems((data ?? []) as Protocol[]);
     } finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [user]);
 
   const reset = () => {
     setEditing(null); setName(""); setDescription("");

@@ -11,6 +11,7 @@ import {
 import { db } from "@/integrations/supabase/untyped";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import type { SpecialtyRow } from "@/types/domain";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -76,6 +77,32 @@ const DoctorOnboarding = () => {
   const [data, setData] = useState<any>(null);
   const [dismissed, setDismissed] = useState(false);
   const [showKYC, setShowKYC] = useState(false);
+  const [checkingCamera, setCheckingCamera] = useState(false);
+
+  // Passo "câmera": faz um teste REAL de câmera+microfone e só então grava a
+  // flag. Antes o passo só navegava p/ a sala de espera (que não testa nada nem
+  // grava a flag) → o onboarding travava em 88% (7/8) para sempre.
+  const runCameraCheck = async () => {
+    if (checkingCamera) return;
+    setCheckingCamera(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      stream.getTracks().forEach((t) => t.stop());
+      localStorage.setItem(CAMERA_CHECK_KEY, "true");
+      setData((prev: any) => (prev ? { ...prev, cameraChecked: true } : prev));
+      toast.success("Câmera e microfone OK! ✅");
+    } catch {
+      toast.error("Não consegui acessar câmera/microfone", { description: "Permita o acesso no navegador e tente de novo." });
+    } finally {
+      setCheckingCamera(false);
+    }
+  };
+
+  const handleStep = (step: OnboardingStep) => {
+    if (step.id === "kyc") { setShowKYC(true); return; }
+    if (step.id === "camera") { runCameraCheck(); return; }
+    navigate(step.path);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -186,7 +213,7 @@ const DoctorOnboarding = () => {
           {/* Next step highlight */}
           {nextStep && (
             <button
-              onClick={() => nextStep.id === "kyc" ? setShowKYC(true) : navigate(nextStep.path)}
+              onClick={() => handleStep(nextStep)}
               className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all mb-3 text-left active:scale-[0.98]"
             >
               <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
@@ -210,8 +237,7 @@ const DoctorOnboarding = () => {
                   key={step.id}
                   onClick={() => {
                     if (done) return;
-                    if (step.id === "kyc") { setShowKYC(true); return; }
-                    navigate(step.path);
+                    handleStep(step);
                   }}
                   disabled={done}
                   className={`w-full flex items-center gap-3 p-2 rounded-xl text-left transition-all ${

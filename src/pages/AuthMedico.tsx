@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { securityMonitor } from "@/lib/security-monitor";
 import { db } from "@/integrations/supabase/untyped";
+import { supportContactUrl } from "@/config/compliance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -498,7 +499,7 @@ const AuthMedico = () => {
                       { icon: LogIn, label: "Entrar na minha conta", desc: "Acesse seu painel de atendimento", action: () => setStep("login"), variant: "primary" as const },
                       { icon: KeyRound, label: "Já tenho código de acesso", desc: "Recebi o código por email", action: () => setStep("code"), variant: "outline" as const },
                       { icon: Stethoscope, label: "Quero me cadastrar", desc: "Solicite acesso preenchendo seus dados", action: () => setStep("quiz"), variant: "outline" as const },
-                      { icon: MessageCircle, label: "Dúvidas? Fale pelo WhatsApp", desc: "Fale com nossa equipe", action: () => window.open("https://wa.me/5511999999999?text=Olá! Sou médico e gostaria de me cadastrar na plataforma AloClinica.", "_blank"), variant: "ghost" as const },
+                      { icon: MessageCircle, label: "Dúvidas? Fale pelo WhatsApp", desc: "Fale com nossa equipe", action: () => window.open(supportContactUrl("Olá! Sou médico e gostaria de me cadastrar na plataforma AloClínica."), "_blank"), variant: "ghost" as const },
                     ].map(({ icon: Icon, label, desc, action, variant }) => (
                       <motion.div key={label} variants={fadeUpForm}>
                         <Button className={`w-full h-auto py-4 px-5 justify-start text-left ${variant === "primary" ? "bg-gradient-to-r from-secondary to-primary text-primary-foreground shadow-lg shadow-primary/20" : ""}`} variant={variant === "primary" ? "default" : variant} size="lg" onClick={action}>
@@ -894,7 +895,7 @@ const AuthMedico = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Button variant="rainbow" size="lg" className="rounded-2xl h-14 px-10 text-base font-bold" onClick={scrollToForm}>Criar Minha Conta <ArrowRight className="w-5 h-5 ml-2" /></Button>
                 <Button size="lg" variant="outline" className="rounded-2xl h-14 px-8 text-base font-semibold" asChild>
-                  <a href="https://wa.me/5511999999999?text=Olá! Sou médico e gostaria de saber mais." target="_blank" rel="noopener noreferrer">Falar pelo WhatsApp</a>
+                  <a href={supportContactUrl("Olá! Sou médico e gostaria de saber mais.")} target="_blank" rel="noopener noreferrer">Falar pelo WhatsApp</a>
                 </Button>
               </div>
             </motion.div>

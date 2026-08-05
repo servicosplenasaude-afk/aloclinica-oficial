@@ -14,6 +14,7 @@ import { ptBR } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, AlertCircle, ShieldCheck, FileText, UserCheck, Mail, MessageCircle } from "lucide-react";
+import { supportContactUrl } from "@/config/compliance";
 import { cn } from "@/lib/utils";
 
 type DoctorApproval = {
@@ -195,7 +196,7 @@ export default function CrmApprovalTimeline({ doctor, alwaysShow = false }: Prop
               </Button>
               <Button asChild variant="outline" size="sm">
                 <a
-                  href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Quero%20saber%20o%20status%20da%20minha%20aprova%C3%A7%C3%A3o%20m%C3%A9dica%20na%20AloCl%C3%ADnica"
+                  href={supportContactUrl("Olá! Quero saber o status da minha aprovação médica na AloClínica.")}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

@@ -10,6 +10,9 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { toast } from "sonner";
 import { getDoctorNav } from "./doctorNav";
 import {
   ArrowRight,
@@ -153,6 +156,13 @@ const DoctorPatients = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [doctorProfileId, setDoctorProfileId] = useState<string | null>(null);
+  // Diálogo de "Agendar retorno" (antes o botão só navegava p/ um calendário
+  // read-only que ignorava o paciente — não criava nada).
+  const [returnPatient, setReturnPatient] = useState<Patient | null>(null);
+  const [returnDate, setReturnDate] = useState("");
+  const [returnNote, setReturnNote] = useState("");
+  const [savingReturn, setSavingReturn] = useState(false);
 
   useEffect(() => {
     if (user) fetchPatients();
@@ -170,6 +180,7 @@ const DoctorPatients = () => {
       setLoading(false);
       return;
     }
+    setDoctorProfileId(doc.id);
 
     const { data: appts } = await db
       .from("appointments")
@@ -235,8 +246,39 @@ const DoctorPatients = () => {
     .sort((a, b) => b!.getTime() - a!.getTime())[0];
 
   const openPatient = (patient: Patient) => navigate(`/dashboard/patients/${patient.user_id}/emr?role=doctor`);
-  // Agendar retorno: leva o médico à agenda; passa o paciente como contexto (?patient=)
-  const scheduleReturn = (patient: Patient) => navigate(`/dashboard/doctor/calendar?role=doctor&patient=${patient.user_id}`);
+  // Agendar retorno: abre um diálogo p/ escolher data/hora e cria o retorno de fato.
+  const scheduleReturn = (patient: Patient) => { setReturnPatient(patient); setReturnDate(""); setReturnNote(""); };
+
+  const submitReturn = async () => {
+    if (!doctorProfileId || !returnPatient) return;
+    if (!returnDate) { toast.error("Escolha a data e o horário do retorno."); return; }
+    const scheduledAt = new Date(returnDate);
+    if (isNaN(scheduledAt.getTime()) || scheduledAt.getTime() < Date.now()) {
+      toast.error("Escolha uma data e horário futuros."); return;
+    }
+    setSavingReturn(true);
+    const { error } = await db.from("appointments").insert({
+      doctor_id: doctorProfileId,
+      patient_id: returnPatient.user_id,
+      scheduled_at: scheduledAt.toISOString(),
+      appointment_type: "retorno",
+      status: "scheduled",
+      notes: returnNote.trim() || null,
+    } as any);
+    if (error) { setSavingReturn(false); toast.error("Erro ao agendar retorno", { description: error.message }); return; }
+    // Notifica o paciente (não bloqueia o sucesso).
+    await db.from("notifications").insert({
+      user_id: returnPatient.user_id,
+      type: "appointment",
+      title: "🗓️ Retorno agendado",
+      message: `Seu médico agendou um retorno para ${format(scheduledAt, "dd/MM 'às' HH:mm", { locale: ptBR })}.`,
+      link: "/dashboard/appointments",
+    } as any).catch(() => {});
+    setSavingReturn(false);
+    toast.success("Retorno agendado!", { description: "O paciente foi notificado." });
+    setReturnPatient(null);
+    fetchPatients();
+  };
   // Mensagem: abre o chat do médico (inbox) — mesmo padrão usado no restante do app
   const messagePatient = (_patient: Patient) => navigate(`/dashboard/chat?role=doctor`);
 
@@ -442,6 +484,32 @@ const DoctorPatients = () => {
           </aside>
         </div>
       </div>
+
+      {/* Diálogo: Agendar retorno */}
+      <Dialog open={!!returnPatient} onOpenChange={(o) => { if (!o) setReturnPatient(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Agendar retorno{returnPatient ? ` — ${patientName(returnPatient)}` : ""}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm">Data e horário</Label>
+              <Input type="datetime-local" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-sm">Observação (opcional)</Label>
+              <Input value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="Ex.: reavaliar exames" className="mt-1" />
+            </div>
+            <p className="text-xs text-muted-foreground">O paciente será notificado do retorno agendado.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReturnPatient(null)} disabled={savingReturn}>Cancelar</Button>
+            <Button onClick={submitReturn} disabled={savingReturn}>
+              <CalendarPlus className="w-4 h-4 mr-1.5" /> {savingReturn ? "Agendando…" : "Agendar retorno"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

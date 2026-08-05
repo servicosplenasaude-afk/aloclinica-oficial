@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ShieldCheck, Loader2, AlertCircle, Camera, ArrowRight, Clock, MessageCircle, Mail } from "lucide-react";
 import { warn } from "@/lib/logger";
+import { supportContactUrl } from "@/config/compliance";
 import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -242,7 +243,7 @@ export function KycRequiredGate({ children, returnTo, reason }: Props) {
               </Button>
               <Button asChild variant="ghost" size="sm" className="text-xs">
                 <a
-                  href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20a%20verifica%C3%A7%C3%A3o%20de%20identidade%20na%20AloCl%C3%ADnica"
+                  href={supportContactUrl("Olá! Preciso de ajuda com a verificação de identidade na AloClínica.")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="gap-1.5"

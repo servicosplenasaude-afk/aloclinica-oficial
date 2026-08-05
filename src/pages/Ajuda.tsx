@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supportContactUrl } from "@/config/compliance";
 import { motion } from "framer-motion";
 import {
   MagnifyingGlass,
@@ -237,7 +238,7 @@ const Ajuda = () => {
                     className="bg-[#25D366] hover:bg-[#1da851] text-white font-bold"
                   >
                     <a
-                      href="https://wa.me/5500000000000?text=Ol%C3%A1!%20Preciso%20de%20ajuda."
+                      href={supportContactUrl("Olá! Preciso de ajuda.")}
                       target="_blank"
                       rel="noopener noreferrer"
                     >

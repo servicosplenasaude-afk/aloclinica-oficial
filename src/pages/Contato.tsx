@@ -6,6 +6,7 @@ import { Envelope, Phone, MapPin, PaperPlaneRight, CheckCircle } from "@phosphor
 import { Textarea } from "@/components/ui/textarea";
 import Header from "@/components/landing/Header";
 import SEOHead from "@/components/SEOHead";
+import { COMPLIANCE } from "@/config/compliance";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));
 
@@ -13,20 +14,20 @@ const contactMethods = [
   {
     icon: Envelope,
     title: "Email",
-    value: "contato@aloclinica.com.br",
+    value: COMPLIANCE.emailContato,
     desc: "Resposta em até 2 horas úteis",
   },
   {
-    icon: Phone,
-    title: "Telefone",
-    value: "+55 11 98765-4321",
-    desc: "Seg-Sex, 8h-18h",
+    icon: Envelope,
+    title: "Suporte",
+    value: COMPLIANCE.emailSuporte,
+    desc: "Ajuda com sua conta e consultas",
   },
   {
     icon: MapPin,
-    title: "Escritório",
-    value: "São Paulo, SP",
-    desc: "Atendimento por agendamento",
+    title: "Sede",
+    value: COMPLIANCE.enderecoSede,
+    desc: "Atendimento 100% online, em todo o Brasil",
   },
 ];
 
