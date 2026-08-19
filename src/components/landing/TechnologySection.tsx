@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Video, ShieldCheck, Cpu, Lock, Zap } from "lucide-react";
-import technologyAsset from "@/assets/pingo-tecnologia-seguranca.png";
+import technologyAsset from "@/assets/pingo-tecnologia-seguranca.webp";
 
 const TechnologySection = ({ config }: { config?: any }) => {
   const title = config?.title || "Inovação a serviço da sua saúde";

@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, FlaskConical, Headphones, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import telemedicineImage from "@/assets/card-teleconsulta.png";
-import examsImage from "@/assets/card-agendar.png";
-import supportImage from "@/assets/card-suporte.png";
+import telemedicineImage from "@/assets/card-teleconsulta.webp";
+import examsImage from "@/assets/card-agendar.webp";
+import supportImage from "@/assets/card-suporte.webp";
 
 const campaignCards = [
   {
@@ -80,7 +80,7 @@ const PingoCampaignShowcase = () => {
                   <img
                     src={card.image}
                     alt={card.title}
-                    loading={index === 0 ? "eager" : "lazy"}
+                    loading="lazy"
                     decoding="async"
                     className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.05]"
                   />

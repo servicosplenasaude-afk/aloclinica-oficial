@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { Stethoscope, VideoCamera, Buildings, FileText, SignIn, SignOut, SquaresFour, CaretRight, Eye, CreditCard, Users, Heart, Star, ChatsCircle, House, Info, FirstAidKit, Question } from "@phosphor-icons/react";
 import { PINGO_LOGO_URL } from "@/lib/constants";
-import brandLogo from "@/assets/logo.png";
+import brandLogo from "@/assets/logo.webp";
 const mascot = brandLogo; // logo oficial AloClínica (pinguim + cruz)
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";

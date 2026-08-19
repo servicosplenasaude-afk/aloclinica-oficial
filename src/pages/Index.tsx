@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Building2, CalendarCheck, Stethoscope, Video } from "lucide-react";
 import { useHomeBlocks } from "@/lib/site-blocks";
 import { motion } from "framer-motion";
-import doctorTeleconsultaAsset from "@/assets/medica-pingo-teleconsulta.png";
+import doctorTeleconsultaAsset from "@/assets/medica-pingo-teleconsulta.webp";
 import pingoCalendar from "@/assets/pingo-calendar.jpg";
 import pingoVideocall from "@/assets/pingo-videocall.png";
 import pingoPrescription from "@/assets/pingo-prescription.jpg";

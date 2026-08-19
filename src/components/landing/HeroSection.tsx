@@ -5,7 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } fro
 import { usePrefetchRoute } from "@/hooks/use-prefetch-route";
 import OptimizedImage from "@/components/ui/optimized-image";
 import { ArrowRight, ShieldCheck, Clock, Users, Video, FileText, BadgeCheck } from "lucide-react";
-import heroPingoFamily from "@/assets/hero-pingo-family.png";
+import heroPingoFamily from "@/assets/hero-pingo-family.webp";
 
 const highlights = [
   { icon: FileText, text: "Receita digital", sub: "válida em todo o Brasil" },
