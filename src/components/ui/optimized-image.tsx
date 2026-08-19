@@ -50,7 +50,7 @@ const OptimizedImage = ({
     >
       {/* Skeleton placeholder (nunca para a imagem LCP, que deve pintar de imediato) */}
       {!loaded && !priority && (
-        <div className="absolute inset-0 bg-muted/40 shimmer-v2 rounded-inherit" />
+        <div aria-hidden="true" className="absolute inset-0 bg-muted/40 shimmer-v2 rounded-inherit" />
       )}
       <img
         ref={imgRef}

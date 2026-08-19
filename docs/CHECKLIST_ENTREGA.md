@@ -1,5 +1,9 @@
 # Checklist de Entrega — AloClínica (produção)
 
+> Registro histórico de entrega. Para go-live, revalide cada conclusão usando a
+> matriz objetiva em [`READINESS_MATRIX.md`](READINESS_MATRIX.md); o repositório
+> não comprova sozinho deploy, secrets ou estado da infraestrutura.
+
 ## ✅ O que foi corrigido / adicionado
 
 ### Segurança (CRÍTICO)
@@ -44,7 +48,7 @@
 | # | Item | Por quê |
 |---|---|---|
 | 1 | **Chaves de produção Memed** | Assinatura ICP-Brasil real da receita (CFM Art 13 d) |
-| 2 | **Deploy das Edge Functions** (Access Token `sbp_` do Supabase) | Para as correções de segurança do backend entrarem no ar |
+| 2 | **Confirmar paridade das 87 Edge Functions locais com o Supabase** | O deploy requer `SUPABASE_ACCESS_TOKEN`; anexar a lista remota e o run da release |
 | 3 | **Finalizar inscrição CRM-PJ** (Roraima) | CFM Art 17 |
 | 4 | **DPA com o Supabase** | CFM Art 3 §4 / LGPD (responsabilidade compartilhada) |
 | 5 | **Rotacionar credenciais** expostas durante o setup | GitHub token, senha VPS, chaves Supabase/Hostinger |

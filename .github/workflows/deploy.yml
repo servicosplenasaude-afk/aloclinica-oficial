@@ -7,11 +7,11 @@ on:
 
 env:
   SUPABASE_PROJECT_REF: pwxvvimdtmvziynbspgx
-  VPS_HOST: 72.62.138.208
+  CLOUDFLARE_ACCOUNT_ID: 33720391faeb23516de3151780648caf
 
 jobs:
   deploy-frontend:
-    name: Frontend — Build + Deploy VPS
+    name: Frontend — Build + Deploy Cloudflare Pages
     runs-on: ubuntu-latest
 
     steps:
@@ -23,21 +23,6 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
-
-      - name: Preflight SSH access to VPS
-        shell: bash
-        run: |
-          echo "Checking SSH connectivity to ${VPS_HOST}:22..."
-          for attempt in 1 2 3; do
-            if timeout 20 bash -c "</dev/tcp/${VPS_HOST}/22"; then
-              echo "SSH port reachable on attempt ${attempt}."
-              exit 0
-            fi
-            echo "SSH port not reachable (attempt ${attempt}/3)."
-            sleep 10
-          done
-          echo "::error::SSH port 22 on ${VPS_HOST} is unreachable from GitHub Actions. Check VPS firewall, provider security rules, or sshd before deploying."
-          exit 1
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund --prefer-offline
@@ -52,53 +37,29 @@ jobs:
           VITE_MERCADOPAGO_PUBLIC_KEY: APP_USR-b35f421a-132b-4421-8499-cef0b3decf54
           NODE_OPTIONS: "--max-old-space-size=4096"
 
-      - name: Copy artifacts to VPS via SCP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy frontend to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          host: ${{ env.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          source: "dist/,nginx.conf,Dockerfile.ci,docker-compose.yml"
-          target: "/opt/aloclinica/"
-          strip_components: 0
-          timeout: 300s
-          command_timeout: 20m
-
-      - name: Build and restart container on VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          timeout: 300s
-          command_timeout: 20m
-          script: |
-            set -e
-            cd /opt/aloclinica
-            docker compose build --no-cache aloclinica-web
-            docker compose up -d --force-recreate aloclinica-web
-            docker image prune -f
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name aloclinica-production --branch main
 
       - name: Health check
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          timeout: 300s
-          command_timeout: 5m
-          script: |
-            for i in 1 2 3 4 5 6 7 8 9 10; do
-              if curl -skf https://aloclinica.com.br/health > /dev/null 2>&1; then
-                echo "Deploy OK (attempt $i)"
-                exit 0
+        shell: bash
+        run: |
+          for path in / /agendar /auth/paciente; do
+            for attempt in 1 2 3 4 5 6; do
+              if curl --fail --silent --show-error "https://aloclinica.com.br${path}" > /dev/null; then
+                echo "${path}: OK (attempt ${attempt})"
+                break
               fi
-              echo "waiting... ($i/10)"
+              if [ "${attempt}" = "6" ]; then
+                echo "::error::Health check failed for ${path}."
+                exit 1
+              fi
               sleep 5
             done
-            echo "Health check failed after 50s"
-            docker logs aloclinica-web --tail 30
-            exit 1
+          done
 
   deploy-supabase:
     name: Supabase — Edge Functions

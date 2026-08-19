@@ -198,7 +198,7 @@ const AuthShell = ({
 
       {/* ──────────── MOBILE HERO ──────────── */}
       <header
-        className={`lg:hidden relative overflow-hidden bg-gradient-to-br ${theme.panelGradient} px-5 pt-[max(env(safe-area-inset-top,16px),16px)] pb-6`}
+        className={`lg:hidden relative overflow-hidden bg-gradient-to-br ${theme.panelGradient} px-4 sm:px-5 pt-[max(env(safe-area-inset-top),0.75rem)] pb-3 sm:pb-4`}
       >
         <div className="absolute top-[-30%] right-[-15%] w-[240px] h-[240px] rounded-full bg-white/[0.08] blur-[80px]" />
         <div className="absolute bottom-[-25%] left-[-15%] w-[200px] h-[200px] rounded-full bg-white/[0.06] blur-[70px]" />
@@ -206,7 +206,7 @@ const AuthShell = ({
         <div className="relative z-10 flex items-center justify-between gap-3">
           <Link
             to="/"
-            className="text-white/70 hover:text-white transition-colors -ml-1 p-1 rounded-lg"
+            className="text-white/70 hover:text-white transition-colors -ml-2 min-w-11 min-h-11 flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             aria-label="Voltar ao início"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -236,7 +236,7 @@ const AuthShell = ({
               src={mascotSrc}
               alt=""
               aria-hidden="true"
-              className="w-[64px] h-[64px] object-contain select-none shrink-0"
+              className="w-12 h-12 sm:w-14 sm:h-14 object-contain select-none shrink-0"
               style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,50,.35))" }}
               animate={{ y: [0, -4, 0] }}
               transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
@@ -255,7 +255,7 @@ const AuthShell = ({
 
       {/* ──────────── FORM COLUMN ──────────── */}
       <main className="flex-1 flex flex-col">
-        <div className="flex-1 flex items-center justify-center px-5 py-8 lg:px-10 lg:py-12 xl:px-16 overflow-y-auto">
+        <div className="flex-1 flex items-start lg:items-center justify-center px-4 sm:px-5 py-5 sm:py-7 lg:px-10 lg:py-12 xl:px-16 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -264,14 +264,14 @@ const AuthShell = ({
           >
             {children}
 
-            <p className="text-center text-[10.5px] text-muted-foreground/50 mt-10">
+            <p className="text-center text-[10.5px] text-muted-foreground/50 mt-7 sm:mt-10">
               © {new Date().getFullYear()} AloClínica — Tecnologia em Saúde
             </p>
           </motion.div>
         </div>
 
         {footerItems && footerItems.length > 0 && (
-          <footer className="px-5 py-3.5 pb-[max(env(safe-area-inset-bottom,8px),8px)] border-t border-border/40 bg-muted/20 flex items-center justify-center gap-5 text-[11.5px] text-muted-foreground">
+          <footer className="px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] border-t border-border/40 bg-muted/20 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[11.5px] text-muted-foreground">
             {footerItems.map((f) => (
               <span
                 key={f.label}

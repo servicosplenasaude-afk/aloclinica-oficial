@@ -24,6 +24,8 @@ import { logError } from "@/lib/logger";
 import { prefetchOnIdle } from "./hooks/use-prefetch-route";
 import ScrollToTop from "./components/ScrollToTop";
 import { PingoAssistantChat } from "@/components/ai/PingoAssistantChat";
+import SandboxBanner from "@/components/SandboxBanner";
+import { isSandbox } from "@/lib/app-environment";
 
 const Auth = lazy(() => import("./pages/Auth"));
 
@@ -255,6 +257,18 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    if (!isSandbox) return;
+    let robots = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if (!robots) {
+      robots = document.createElement("meta");
+      robots.name = "robots";
+      document.head.appendChild(robots);
+    }
+    robots.content = "noindex, nofollow, noarchive, nosnippet";
+    document.documentElement.dataset.environment = "sandbox";
+  }, []);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       const cancelCriticalPrefetch = prefetchOnIdle(
         [
@@ -329,6 +343,7 @@ const App = () => {
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <AuthProvider>
                 <ContratoProvider>
+                  <SandboxBanner />
                   <Suspense fallback={null}>
                     <KeyboardShortcutsProvider />
                     <SubdomainRedirectProvider />

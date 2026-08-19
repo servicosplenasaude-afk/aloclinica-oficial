@@ -47,7 +47,8 @@ function loadPagbankSdk(): Promise<PagSeguroSdk> {
     s.async = true;
     s.onload = () => {
       const sdk = (window as unknown as { PagSeguro?: PagSeguroSdk }).PagSeguro;
-      sdk ? resolve(sdk) : reject(new Error("SDK do PagBank carregou sem PagSeguro"));
+      if (sdk) resolve(sdk);
+      else reject(new Error("SDK do PagBank carregou sem PagSeguro"));
     };
     s.onerror = () => reject(new Error("Falha ao carregar o SDK do PagBank"));
     document.head.appendChild(s);

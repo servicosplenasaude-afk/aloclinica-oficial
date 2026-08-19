@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { streamClaudeAsOpenAI, FAST_CLAUDE_MODEL } from "../_shared/anthropic.ts";
+import { getCaller } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,38 +12,48 @@ const corsHeaders = {
 async function checkRateLimit(identifier: string, endpoint: string, maxReqs: number, windowMin: number): Promise<boolean> {
   try {
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const since = new Date(Date.now() - windowMin * 60000).toISOString();
-    const { count } = await sb.from("rate_limits").select("id", { count: "exact", head: true })
-      .eq("identifier", identifier).eq("endpoint", endpoint).gte("window_start", since);
-    if ((count ?? 0) >= maxReqs) return false;
-    await sb.from("rate_limits").insert({ identifier, endpoint, window_start: new Date().toISOString() });
-    return true;
-  } catch { return true; }
-}
-
-/** Validate JWT and return user ID, or null if invalid */
-async function authenticateUser(req: Request): Promise<{ userId: string; role?: string } | null> {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) return null;
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
-  const token = authHeader.replace("Bearer ", "");
-  const { data, error } = await supabase.auth.getClaims(token);
-  if (error || !data?.claims) return null;
-
-  return { userId: data.claims.sub as string };
+    const { data, error } = await sb.rpc("check_ai_assistant_rate_limit", {
+      p_identifier: identifier,
+      p_endpoint: endpoint,
+      p_max_requests: maxReqs,
+      p_window_minutes: windowMin,
+    });
+    return !error && data === true;
+  } catch { return false; }
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, context, role } = await req.json();
+    const caller = await getCaller(req);
+    if (!caller.user || !caller.client) {
+      return new Response(JSON.stringify({ error: "Não autenticado" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: roleRows, error: roleError } = await caller.client
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", caller.user.id);
+    if (roleError) {
+      console.error("ai-assistant role lookup failed", roleError);
+      return new Response(JSON.stringify({ error: "Autorização indisponível" }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const assignedRoles = new Set((roleRows ?? []).map(({ role }) => String(role)));
+    const rolePriority = ["admin", "doctor", "clinic", "reception", "support", "patient"];
+    const resolvedRole = rolePriority.find((candidate) => assignedRoles.has(candidate));
+    if (!resolvedRole) {
+      return new Response(JSON.stringify({ error: "Acesso não autorizado" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { messages, context } = await req.json();
 
     // Validate input
     if (!Array.isArray(messages) || messages.length === 0) {
@@ -60,12 +71,8 @@ serve(async (req) => {
       }
     }
 
-    // Authenticate user (optional for now, but log)
-    const auth = await authenticateUser(req);
-
-    // Rate limit: 30 requests per 10 minutes per user or IP
-    const identifier = auth?.userId || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-    const allowed = await checkRateLimit(identifier, "ai-assistant", 30, 10);
+    // Authenticated user IDs are stable and cannot be spoofed via proxy headers.
+    const allowed = await checkRateLimit(caller.user.id, "ai-assistant", 30, 10);
     if (!allowed) {
       return new Response(JSON.stringify({ error: "Muitas requisições. Aguarde um momento." }), {
         status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -95,7 +102,7 @@ serve(async (req) => {
 - Interpretação de relatórios financeiros
 - Gestão de aprovações e onboarding de médicos`,
 
-      receptionist: `Você auxilia RECEPCIONISTAS com:
+      reception: `Você auxilia RECEPCIONISTAS com:
 - Orientações sobre agendamento e check-in de pacientes
 - Scripts de atendimento telefônico
 - Gestão de filas e encaixes
@@ -113,9 +120,8 @@ serve(async (req) => {
 - Orientações sobre credenciamento e CNPJ`,
     };
 
-    // Sanitize role input
-    const safeRole = typeof role === "string" && role in roleInstructions ? role : "patient";
-    const roleContext = roleInstructions[safeRole];
+    // Authorization comes exclusively from user_roles; request JSON cannot elevate it.
+    const roleContext = roleInstructions[resolvedRole];
 
     // Sanitize context
     const safeContext = typeof context === "string" ? context.slice(0, 2000) : "";

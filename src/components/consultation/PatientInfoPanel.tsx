@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -71,12 +71,7 @@ const PatientInfoPanel = ({ patientId, appointmentId }: PatientInfoPanelProps) =
     setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  useEffect(() => {
-    if (!patientId) return;
-    fetchAllData();
-  }, [patientId, appointmentId]);
-
-  const fetchAllData = async () => {
+  const fetchAllData = useCallback(async () => {
     const [profileRes, symptomsRes, pastRes, prescRes] = await Promise.all([
       db.from("profiles")
         .select("first_name, last_name, date_of_birth, blood_type, allergies, chronic_conditions, phone, cpf")
@@ -105,7 +100,12 @@ const PatientInfoPanel = ({ patientId, appointmentId }: PatientInfoPanelProps) =
     if (pastRes.data) setPastConsults(pastRes.data);
     if (prescRes.data) setPrescriptions(prescRes.data as unknown as PrescriptionData[]);
     setLoading(false);
-  };
+  }, [appointmentId, patientId]);
+
+  useEffect(() => {
+    if (!patientId) return;
+    fetchAllData();
+  }, [patientId, fetchAllData]);
 
   if (loading) {
     return (

@@ -16,16 +16,17 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface JitsiRoomProps {
+  appointmentId: string;
   roomId: string;
   displayName: string;
   onEnd: () => void;
   /** true = médico (host/apresentador da sala MiroTalk). */
-  presenter?: boolean;
 }
 
-const JitsiRoom = ({ roomId, displayName, onEnd, presenter }: JitsiRoomProps) => {
+const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd }: JitsiRoomProps) => {
   const [elapsed, setElapsed] = useState(0);
   const [meetUrl, setMeetUrl] = useState<string | null>(null);
+  const [tokenError, setTokenError] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setElapsed((p) => p + 1), 1000);
@@ -38,19 +39,19 @@ const JitsiRoom = ({ roomId, displayName, onEnd, presenter }: JitsiRoomProps) =>
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      let token: string | null = null;
       try {
-        const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000));
-        const call = db.functions
-          .invoke("mirotalk-token", { body: { room: roomId, name: displayName, presenter: !!presenter } })
-          .then(({ data }: { data: { token?: string | null } | null }) => data?.token ?? null)
-          .catch(() => null);
-        token = await Promise.race([call, timeout]);
-      } catch { /* fallback sem token */ }
-      if (!cancelled) setMeetUrl(getJitsiUrl(roomId, displayName, token));
+        const { data, error } = await db.functions.invoke("mirotalk-token", {
+          body: { appointmentId, room: roomId, name: displayName },
+        });
+        const token = (data as { token?: string } | null)?.token;
+        if (error || !token) throw error ?? new Error("missing token");
+        if (!cancelled) setMeetUrl(getJitsiUrl(roomId, displayName, token));
+      } catch {
+        if (!cancelled) setTokenError(true);
+      }
     })();
     return () => { cancelled = true; };
-  }, [roomId, displayName, presenter]);
+  }, [appointmentId, roomId, displayName]);
 
   const formatTime = (s: number) => {
     const h = Math.floor(s / 3600);
@@ -110,7 +111,11 @@ const JitsiRoom = ({ roomId, displayName, onEnd, presenter }: JitsiRoomProps) =>
       </div>
 
       <div className="flex-1 relative" style={{ height: "calc(100% - 60px)" }}>
-        {meetUrl ? (
+        {tokenError ? (
+          <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-destructive">
+            Não foi possível autorizar sua entrada nesta sala. Verifique o horário da consulta e tente novamente.
+          </div>
+        ) : meetUrl ? (
           <iframe
             src={meetUrl}
             allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"

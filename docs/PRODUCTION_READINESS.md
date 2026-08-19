@@ -2,6 +2,10 @@
 
 This document defines the sequence to move AloClinica from advanced MVP to real production operation.
 
+The release decision and evidence status are maintained in
+[`READINESS_MATRIX.md`](READINESS_MATRIX.md). Requirements here describe the
+target; they do not prove that the current production environment passed it.
+
 ## Current architecture confirmed
 
 - Public site: `https://aloclinica.com.br`

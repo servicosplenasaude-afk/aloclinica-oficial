@@ -55,7 +55,11 @@ export function EmptyState({
 }: EmptyStateProps) {
   const s = variantStyles[variant];
   return (
-    <div className={cn("rounded-2xl border p-8 sm:p-10 text-center", s.wrap, className)}>
+    <div
+      role={variant === "error" ? "alert" : "status"}
+      aria-live={variant === "error" ? "assertive" : "polite"}
+      className={cn("rounded-2xl border p-8 sm:p-10 text-center", s.wrap, className)}
+    >
       {Icon && (
         <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3", s.iconWrap)}>
           <Icon className={cn("w-7 h-7", s.iconColor)} aria-hidden="true" />
@@ -67,7 +71,7 @@ export function EmptyState({
         <div className="flex flex-wrap items-center justify-center gap-2">
           {action && (
             <Button size="sm" className="rounded-xl gap-1.5" onClick={action.onClick}>
-              {action.icon && <action.icon className="w-4 h-4" />}
+              {action.icon && <action.icon className="w-4 h-4" aria-hidden="true" />}
               {action.label}
             </Button>
           )}

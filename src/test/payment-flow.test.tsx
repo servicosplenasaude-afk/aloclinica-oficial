@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import PaymentHistory from "@/components/patient/PaymentHistory";
 
 // ── Supabase mock ─────────────────────────────────────────────────────────────
 const mockInvoke = vi.fn();
@@ -104,7 +105,6 @@ describe("PaymentHistory", () => {
   });
 
   it("exibe plano ativo buscando subscriptions e plans", async () => {
-    const { default: PaymentHistory } = await import("@/components/patient/PaymentHistory");
     render(
       <BrowserRouter>
         <PaymentHistory />
@@ -119,7 +119,6 @@ describe("PaymentHistory", () => {
   });
 
   it("exibe badge 'Ativa' para assinatura ativa", async () => {
-    const { default: PaymentHistory } = await import("@/components/patient/PaymentHistory");
     render(
       <BrowserRouter>
         <PaymentHistory />
@@ -135,7 +134,6 @@ describe("PaymentHistory", () => {
   });
 
   it("busca assinaturas e planos quando o usuário está autenticado", async () => {
-    const { default: PaymentHistory } = await import("@/components/patient/PaymentHistory");
     render(
       <BrowserRouter>
         <PaymentHistory />

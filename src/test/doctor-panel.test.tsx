@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
+import DoctorPrescriptions from "@/components/doctor/DoctorPrescriptions";
 
 // ── Supabase mock ─────────────────────────────────────────────────────────────
 const mockFrom = vi.fn();
@@ -132,7 +133,6 @@ describe("DoctorPrescriptions", () => {
   });
 
   it("carrega prescrições do médico corretamente", async () => {
-    const { default: DoctorPrescriptions } = await import("@/components/doctor/DoctorPrescriptions");
     render(
       <BrowserRouter>
         <DoctorPrescriptions />
@@ -144,7 +144,6 @@ describe("DoctorPrescriptions", () => {
   });
 
   it("busca prescrições e perfis de pacientes do banco", async () => {
-    const { default: DoctorPrescriptions } = await import("@/components/doctor/DoctorPrescriptions");
     render(
       <BrowserRouter>
         <DoctorPrescriptions />

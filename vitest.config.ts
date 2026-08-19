@@ -9,6 +9,9 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    // Keep jsdom workers bounded: unrestricted CPU-based fan-out makes the
+    // integration-style component specs contend during module transforms.
+    maxWorkers: 4,
   },
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },

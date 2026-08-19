@@ -9,23 +9,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hide all scrollbars globally (still scrollable via wheel/touch/keyboard) */
-* {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge legacy */
-}
-*::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-  display: none !important;
-  background: transparent !important;
-}
-*::-webkit-scrollbar-thumb,
-*::-webkit-scrollbar-track,
-*::-webkit-scrollbar-corner {
-  background: transparent !important;
-}
-
 @layer base {
   :root {
     --background: 210 30% 97%;
@@ -57,6 +40,17 @@
     --ring: 215 75% 32%;
 
     --radius: 0.625rem;
+
+    /* Shared motion tokens: calm feedback, short travel, interruptible transitions. */
+    --motion-duration-immediate: 120ms;
+    --motion-duration-fast: 160ms;
+    --motion-duration-standard: 220ms;
+    --motion-duration-region: 320ms;
+    --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --motion-ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+    --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --motion-distance-sm: 4px;
+    --motion-distance-md: 8px;
 
     --sidebar-background: 215 25% 98%;
     --sidebar-foreground: 215 25% 22%;
@@ -1286,6 +1280,21 @@ select:focus {
 
 /* ─── Reduced motion overrides ───────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-delay: 0s !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+
   .card-interactive,
   .kpi-card,
   .shimmer-v2,

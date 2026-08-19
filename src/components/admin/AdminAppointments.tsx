@@ -271,7 +271,7 @@ const AdminAppointments = () => {
     }
 
     // Filtra por especialidade só quando existem colegas; caso contrário lista todos os médicos aprovados.
-    let filteredBySpecialty = specialtyIds.length > 0 && peerIds.length > 0;
+    const filteredBySpecialty = specialtyIds.length > 0 && peerIds.length > 0;
     let docQuery = db.from("doctor_profiles").select("id, user_id, is_approved").eq("is_approved", true);
     if (filteredBySpecialty) docQuery = docQuery.in("id", peerIds);
     const { data: docs } = await docQuery;

@@ -48,6 +48,24 @@ serve(async (req) => {
     const valueCents = Math.round(Number(appt.price_at_booking ?? 0) * 100);
     if (!(valueCents > 0)) return json({ error: "valor inválido para esta consulta" }, 400);
 
+    const durableReference = `pagbank:pix:${appt.id}`;
+    const { data: existing } = await svc.from("payment_transactions").select("*")
+      .eq("pagbank_reference_id", durableReference).maybeSingle();
+    if (existing?.pagbank_order_id) {
+      const savedQr = (existing.raw_response as any)?.qr_codes?.[0];
+      const savedLinks = savedQr?.links ?? [];
+      return json({ success: true, idempotent: true, order_id: existing.pagbank_order_id,
+        pix_copy_paste: savedQr?.text ?? null,
+        pix_qr_image: savedLinks.find((l: any) => l.media === "image/png")?.href ?? null,
+        expires_at: savedQr?.expiration_date ?? null });
+    }
+    const { error: intentError } = await svc.from("payment_transactions").insert({
+      user_id: appt.patient_id, gateway: "pagbank", payment_method: "pix",
+      amount_cents: valueCents, currency: "BRL", status: "creating",
+      resource_id: appt.id, resource_type: "appointment", pagbank_reference_id: durableReference,
+    } as any);
+    if (intentError) return json({ error: "pagamento ja esta sendo criado" }, 409);
+
     // Dados do pagador
     const { data: profile } = await svc
       .from("profiles").select("first_name, last_name, cpf").eq("user_id", appt.patient_id).single();
@@ -77,12 +95,18 @@ serve(async (req) => {
 
     const { ok, status, data } = await pagbankCreateOrder(order);
     if (!ok) {
+      await svc.from("payment_transactions").update({ status: "failed", raw_response: data } as any)
+        .eq("pagbank_reference_id", durableReference);
       console.error("[pagbank-create-payment] falha:", status, JSON.stringify(data));
       return json({ error: "falha ao criar cobrança no PagBank", details: data }, status);
     }
 
     const qr = (data.qr_codes as Array<Record<string, unknown>> | undefined)?.[0];
     const links = (qr?.links as Array<{ media?: string; href?: string }> | undefined) ?? [];
+    const { error: persistError } = await svc.from("payment_transactions").update({
+      pagbank_order_id: String(data.id ?? ""), status: "pending", raw_response: data,
+    } as any).eq("pagbank_reference_id", durableReference);
+    if (persistError) return json({ error: "cobranca criada mas nao conciliada" }, 503);
 
     return json({
       success: true,

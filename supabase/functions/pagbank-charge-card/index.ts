@@ -40,6 +40,18 @@ serve(async (req) => {
     const valueCents = Math.round(Number(appt.price_at_booking ?? 0) * 100);
     if (!(valueCents > 0)) return json({ error: "valor inválido para esta consulta" }, 400);
 
+    const durableReference = `pagbank:card:${appt.id}`;
+    const { data: existing } = await svc.from("payment_transactions").select("pagbank_order_id,status")
+      .eq("pagbank_reference_id", durableReference).maybeSingle();
+    if (existing?.pagbank_order_id) return json({ success: existing.status === "approved", idempotent: true,
+      paid: existing.status === "approved", status: existing.status, order_id: existing.pagbank_order_id });
+    const { error: intentError } = await svc.from("payment_transactions").insert({
+      user_id: appt.patient_id, gateway: "pagbank", payment_method: "credit_card",
+      amount_cents: valueCents, currency: "BRL", status: "creating",
+      resource_id: appt.id, resource_type: "appointment", pagbank_reference_id: durableReference,
+    } as any);
+    if (intentError) return json({ error: "pagamento ja esta sendo criado" }, 409);
+
     const { data: profile } = await svc
       .from("profiles").select("first_name, last_name, cpf").eq("user_id", appt.patient_id).single();
     const { data: authUser } = await svc.auth.admin.getUserById(appt.patient_id);
@@ -77,6 +89,11 @@ serve(async (req) => {
     const charge = (data.charges as Array<Record<string, unknown>> | undefined)?.[0];
     const chargeStatus = String(charge?.status ?? "");
     const paid = ["PAID", "AUTHORIZED"].includes(chargeStatus);
+    const { error: persistError } = await svc.from("payment_transactions").update({
+      pagbank_order_id: String(data.id ?? ""), status: paid ? "approved" : (ok ? "pending" : "failed"),
+      raw_response: data,
+    } as any).eq("pagbank_reference_id", durableReference);
+    if (persistError) return json({ error: "cobranca criada mas nao conciliada" }, 503);
 
     if (paid) {
       await svc

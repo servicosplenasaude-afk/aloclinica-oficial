@@ -46,10 +46,32 @@ serve(async (req) => {
     const isPaid = ["PAID", "AVAILABLE", "APPROVED"].includes(String(status).toUpperCase());
 
     if (isPaid) {
-      await svc
+      const orderId = String(body?.id ?? "");
+      const amount = Number(charge?.amount?.value ?? qr?.amount?.value ?? body?.amount?.value);
+      const currency = String(charge?.amount?.currency ?? qr?.amount?.currency ?? body?.amount?.currency ?? "");
+      if (!orderId || !Number.isSafeInteger(amount) || amount <= 0 || currency !== "BRL") {
+        return json({ error: "payload de pagamento inconsistente" }, 422);
+      }
+      const { data: tx } = await svc.from("payment_transactions").select("*")
+        .eq("pagbank_order_id", orderId).maybeSingle();
+      if (!tx || tx.gateway !== "pagbank" || tx.resource_type !== "appointment" ||
+          tx.resource_id !== referenceId || Number(tx.amount_cents) !== amount || tx.currency !== currency) {
+        console.error("[pagbank-webhook] conciliacao rejeitada", { orderId, referenceId, amount, currency });
+        return json({ error: "pagamento nao conciliado" }, 409);
+      }
+      const { data: appt } = await svc.from("appointments").select("id,patient_id,price_at_booking")
+        .eq("id", referenceId).maybeSingle();
+      if (!appt || appt.patient_id !== tx.user_id || Math.round(Number(appt.price_at_booking) * 100) !== amount) {
+        return json({ error: "paciente ou preco divergente" }, 409);
+      }
+      const { error: txError } = await svc.from("payment_transactions")
+        .update({ status: "approved", raw_response: body } as any).eq("id", tx.id);
+      if (txError) return json({ error: "falha ao persistir conciliacao" }, 500);
+      const { error: apptError } = await svc
         .from("appointments")
         .update({ payment_status: "approved", payment_confirmed_at: new Date().toISOString() })
         .eq("id", referenceId);
+      if (apptError) return json({ error: "falha ao confirmar consulta" }, 500);
 
       // Dispara a confirmação idempotente (e-mail/WhatsApp/in-app) — mesma função do MP.
       try {
@@ -70,7 +92,6 @@ serve(async (req) => {
     return json({ received: true, status });
   } catch (e) {
     console.error("[pagbank-webhook] erro:", e);
-    // 200 mesmo em erro de parse pra evitar reentrega infinita; log fica registrado.
-    return json({ received: true, error: e instanceof Error ? e.message : "erro" });
+    return json({ error: e instanceof Error ? e.message : "erro" }, 500);
   }
 });

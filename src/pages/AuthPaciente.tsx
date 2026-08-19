@@ -1027,29 +1027,30 @@ const AuthPaciente = () => {
       <LeftPanel />
 
       {/* Mobile hero — inline to avoid remount */}
-      <div className="lg:hidden relative overflow-hidden bg-gradient-to-br from-primary via-primary to-secondary px-6 pt-10 pb-10 rounded-b-[40px] shadow-2xl shadow-primary/20">
+      <div className="lg:hidden relative overflow-hidden bg-gradient-to-br from-primary via-primary to-secondary px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-4 rounded-b-3xl shadow-lg shadow-primary/15">
         <div className="absolute top-[-30%] right-[-15%] w-[300px] h-[300px] rounded-full bg-white/[0.1] blur-[80px]" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[200px] h-[200px] rounded-full bg-secondary/30 blur-[60px]" />
         
         <div className="relative z-10 flex flex-col items-center text-center">
-          <div className="flex items-center gap-3 mb-6">
-            <img src={logo} alt="AloClínica" className="w-10 h-10 rounded-xl ring-2 ring-white/30 shadow-lg" />
-            <h1 className="text-2xl font-black text-white tracking-tight">AloClínica</h1>
+          <div className="flex items-center gap-2.5 mb-2">
+            <img src={logo} alt="AloClínica" className="w-9 h-9 rounded-xl ring-2 ring-white/30 shadow-lg" />
+            <h1 className="text-lg font-black text-white tracking-tight">AloClínica</h1>
           </div>
           
           <motion.img
             src={mascotWave}
-            alt="Pingo"
-            className="w-32 h-32 object-contain select-none mb-4"
+            alt=""
+            aria-hidden="true"
+            className="w-16 h-16 object-contain select-none"
             style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,50,.3))" }}
-            animate={{ y: [0, -8, 0] }}
+            animate={{ y: [0, -3, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           />
           
-          <h2 className="text-xl font-bold text-white leading-tight">
+          <h2 className="sr-only">
             Sua saúde em <br /> boas mãos
           </h2>
-          <p className="text-white/60 text-sm mt-2 font-medium">
+          <p className="text-white/70 text-xs mt-1 font-medium">
             Telemedicina 24h sem filas
           </p>
         </div>
@@ -1058,7 +1059,8 @@ const AuthPaciente = () => {
           <button
             type="button"
             onClick={() => mode === "signup" && signupStep > 1 ? setSignupStep(s => s - 1) : setMode("welcome")}
-            className="absolute top-8 left-6 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 active:scale-95 transition-all"
+            className="absolute top-[max(env(safe-area-inset-top),0.75rem)] left-2 w-11 h-11 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            aria-label="Voltar"
           >
             <ArrowLeft className="w-5 h-5" weight="bold" />
           </button>
@@ -1066,14 +1068,15 @@ const AuthPaciente = () => {
         
         <Link
           to="/"
-          className="absolute top-8 right-6 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 active:scale-95 transition-all"
+          className="absolute top-[max(env(safe-area-inset-top),0.75rem)] right-2 w-11 h-11 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          aria-label="Voltar ao início"
         >
           <SignIn className="w-5 h-5" weight="bold" />
         </Link>
       </div>
 
       {/* Right / main form area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-5 py-8 lg:px-10 lg:py-12 xl:px-16 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-start lg:justify-center px-4 sm:px-5 py-5 sm:py-7 lg:px-10 lg:py-12 xl:px-16 overflow-y-auto">
         <div className="w-full max-w-md">
           {formContent}
 

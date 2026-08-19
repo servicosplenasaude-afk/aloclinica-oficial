@@ -287,11 +287,13 @@ const DoctorEarnings = () => {
       return;
     }
     setSubmitting(true);
-    const { error } = await db.from("withdrawal_requests").insert({
-      user_id: user!.id,
-      amount,
-      pix_key: pixKey,
-    });
+    // Amount is display-only: the RPC derives the full available balance from
+    // doctor_payouts and serializes against automatic payout creation.
+    const { error } = await db.rpc("fn_create_withdrawal_request", {
+      p_pix_key: pixKey,
+      p_source: "manual",
+      p_user_id: user!.id,
+    } as any);
     if (error) {
       toast.error("Erro ao solicitar saque");
     } else {

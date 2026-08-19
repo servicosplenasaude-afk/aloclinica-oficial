@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
     // SECURITY: atomically CLAIM the withdrawal (flip to 'processing') before
     // calling MP. Only one request can transition a non-completed/non-processing
     // row, so a double-submit cannot trigger a second real payout.
-    const { data: claimed } = await admin.from("withdrawal_requests").update({
+    const { data: claimed, error: withdrawalClaimError } = await admin.from("withdrawal_requests").update({
       status: "processing",
       payout_gateway: "mercadopago",
     } as any)
@@ -107,6 +107,7 @@ Deno.serve(async (req) => {
       .not("status", "in", "(completed,processing)")
       .select("id");
 
+    if (withdrawalClaimError) return json({ error: "Falha ao reivindicar saque" }, 500);
     if (!claimed || claimed.length === 0) {
       return json({ error: "Saque já processado ou em processamento" }, 409);
     }
@@ -114,14 +115,21 @@ Deno.serve(async (req) => {
     // LEDGER: debita o repasse REAL (doctor_payouts) ANTES do PIX — marca os
     // repasses 'ready' do medico como 'paid'. Fecha o double-spend (sacar o mesmo
     // saldo 2x). Requer as funcoes SQL fn_claim_ready_payouts / fn_unclaim_payouts;
-    // ate existirem, o rpc falha e e ignorado (comportamento legado preservado).
+    // Any RPC error is fatal: no external payout may happen without ledger claim.
     let claimedDoctorId: string | null = null;
     try {
       const { data: dp } = await admin.from("doctor_profiles").select("id").eq("user_id", wd.user_id).maybeSingle();
       claimedDoctorId = (dp as any)?.id ?? null;
-      if (claimedDoctorId) await admin.rpc("fn_claim_ready_payouts", { p_doctor_id: claimedDoctorId, p_withdrawal_id: withdrawal_id });
+      if (!claimedDoctorId) throw new Error("Perfil médico do saque não encontrado");
+      const { data: claimedAmount, error: claimError } = await admin.rpc("fn_claim_ready_payouts", { p_doctor_id: claimedDoctorId, p_withdrawal_id: withdrawal_id });
+      if (claimError) throw claimError;
+      if (Number(claimedAmount) !== Number(wd.amount)) throw new Error("Valor reivindicado diverge do saque");
     } catch (e) {
-      console.warn("[mp-withdraw] fn_claim_ready_payouts indisponivel (aplique o SQL do saque):", e);
+      console.error("[mp-withdraw] claim do ledger falhou; saque abortado:", e);
+      const { error: restoreError } = await admin.from("withdrawal_requests")
+        .update({ status: "pending" } as any).eq("id", withdrawal_id).eq("status", "processing");
+      if (restoreError) console.error("[mp-withdraw] falha ao restaurar solicitacao:", restoreError);
+      return json({ error: "Nao foi possivel reservar o saldo; nenhum PIX foi enviado" }, 409);
     }
 
     // Mercado Pago Money Request (PIX out)

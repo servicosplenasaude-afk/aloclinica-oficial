@@ -20,7 +20,7 @@ sempre que adicionar uma nova integração externa, edge function ou tabela.
 │  Supabase (pwxvvimdtmvziynbspgx)         │         │  Containers internos        │
 │  - Auth                                  │         │  - aloclinica-web (nginx)   │
 │  - PostgreSQL + RLS                      │         │  - mirotalk (vídeo)         │
-│  - Edge Functions (Deno) — 30+          │         │  - compreface (KYC face)    │
+│  - Edge Functions (Deno) — 87 locais    │         │  - compreface (KYC face)    │
 │  - Storage                               │         │  - coturn (TURN próprio)    │
 │  - Realtime                              │         │  - waha (WhatsApp)          │
 │  - pg_cron                               │         │                             │
@@ -83,7 +83,10 @@ sempre que adicionar uma nova integração externa, edge function ou tabela.
 | Site/CMS | `site_sections` (com `draft_config` + `has_draft`), `site_config`, `site_media` |
 | Auditoria | `activity_logs` (com `_archive` para >90 dias), `lgpd_access_log` |
 
-### Edge Functions (30+)
+### Edge Functions (87 implantáveis no checkout)
+Essa contagem considera diretórios em `supabase/functions/` com `index.ts` e
+exclui `_shared`. Ela não comprova paridade com o ambiente remoto; o procedimento
+de conferência está em [`READINESS_MATRIX.md`](READINESS_MATRIX.md).
 Veja `supabase/functions/`. Categorias:
 - **Pagamentos:** `mercadopago-create-payment`, `-webhook`, `-save-card`, `-charge-saved-card`, `-create-subscription`, `-cancel-subscription`, `-refund`, `-withdraw` (saque PIX médico via Money Out)
 - **KYC:** `didit-kyc` (CompreFace + Claude Vision), `compreface-proxy`

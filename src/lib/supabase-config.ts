@@ -4,6 +4,16 @@ const DEFAULT_SUPABASE_PUBLISHABLE_KEY =
 
 const envUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
 const envKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+const appEnvironment = import.meta.env.VITE_APP_ENV?.trim().toLowerCase();
+
+if (appEnvironment === "sandbox") {
+  if (!envUrl || !envKey) {
+    throw new Error("Sandbox bloqueado: configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.");
+  }
+  if (envUrl === DEFAULT_SUPABASE_URL) {
+    throw new Error("Sandbox bloqueado: o projeto Supabase de produção não pode ser usado.");
+  }
+}
 
 export const SUPABASE_URL = envUrl || DEFAULT_SUPABASE_URL;
 export const SUPABASE_PUBLISHABLE_KEY = envKey || DEFAULT_SUPABASE_PUBLISHABLE_KEY;

@@ -25,7 +25,6 @@ export function RichTextEditor({ value, onChange, placeholder }: {
   const emit = () => onChange(ref.current?.innerHTML ?? "");
   const exec = (cmd: string, arg?: string) => {
     ref.current?.focus();
-    // eslint-disable-next-line deprecation/deprecation
     document.execCommand(cmd, false, arg);
     emit();
   };

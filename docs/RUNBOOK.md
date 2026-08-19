@@ -2,6 +2,10 @@
 
 Procedimentos práticos pra rodar a plataforma em produção.
 
+> Reconciliado em 2026-08-19. Este checkout tem **87 Edge Functions** com
+> `index.ts` (sem contar `_shared`). Antes de operar uma release, confirme a
+> paridade remota e os gates em [`READINESS_MATRIX.md`](READINESS_MATRIX.md).
+
 ---
 
 ## URLs e credenciais

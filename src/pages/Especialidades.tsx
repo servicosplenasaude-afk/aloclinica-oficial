@@ -103,7 +103,7 @@ const Especialidades = forwardRef<HTMLDivElement>((_, ref) => {
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="pt-24 pb-10 sm:pt-28 sm:pb-14 lg:pt-32 lg:pb-16 px-4">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -111,13 +111,13 @@ const Especialidades = forwardRef<HTMLDivElement>((_, ref) => {
             transition={{ duration: 0.7, ease: "easeOut" }}
             className="text-center max-w-4xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/25 mb-4 sm:mb-6">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
                 30+ Especialidades Disponíveis
               </span>
             </div>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-foreground leading-[1.1] mb-8 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-foreground leading-[1.08] mb-4 sm:mb-6 tracking-tight">
               O <span className="text-primary italic">Pingo</span> que faltava na sua <span className="relative">
                 saúde
                 <svg className="absolute -bottom-2 left-0 w-full h-3 text-primary/30" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -125,15 +125,23 @@ const Especialidades = forwardRef<HTMLDivElement>((_, ref) => {
                 </svg>
               </span>
             </h1>
-            <p className="text-xl sm:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
+            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
               Conectamos você a especialistas verificados através de um atendimento humanizado e tecnologia de ponta.
             </p>
+            <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+              <Button asChild size="lg" className="h-12 rounded-xl font-bold shadow-lg shadow-primary/20">
+                <a href="#buscar-especialidade">Encontrar minha especialidade</a>
+              </Button>
+              <Button variant="outline" size="lg" className="h-12 rounded-xl font-bold" onClick={() => navigate("/agendar")}>
+                Agendar agora <Calendar className="w-4 h-4 ml-2" weight="bold" />
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Search & Filter */}
-      <section className="section-band band-tint band-divider !py-12">
+      <section id="buscar-especialidade" className="section-band band-tint band-divider !py-8 sm:!py-10 scroll-mt-20">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 2xl:px-28">
           <div className="max-w-4xl mx-auto relative">
             <motion.div 
@@ -144,14 +152,14 @@ const Especialidades = forwardRef<HTMLDivElement>((_, ref) => {
               <img src={pingoMedicoTeleconsulta} alt="Pingo Médico" className="w-32 h-32 object-contain pingo-float drop-shadow-xl" />
             </motion.div>
             
-            <div className="relative mb-8 shadow-sm">
+            <div className="relative mb-5 sm:mb-7 shadow-sm">
               <MagnifyingGlass className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground/60" weight="bold" />
               <Input
                 type="text"
                 placeholder="Procure por especialidade ou sintoma..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-14 h-16 rounded-2xl text-lg border-2 border-border/40 focus:border-primary transition-all shadow-subtle placeholder:text-muted-foreground/40"
+                className="pl-12 sm:pl-14 h-14 sm:h-16 rounded-2xl text-base sm:text-lg border-2 border-border/60 bg-background focus:border-primary transition-all shadow-subtle placeholder:text-muted-foreground/60"
               />
               {searchTerm && (
                 <button

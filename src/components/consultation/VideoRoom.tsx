@@ -1580,10 +1580,10 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
           <VideoErrorBoundary onEndCall={endCall}>
             {useJitsi && jitsiRoomId ? (
               <JitsiRoom
+                appointmentId={appointmentId!}
                 roomId={jitsiRoomId}
                 displayName={currentUserName}
                 onEnd={endCall}
-                presenter={isDoctor}
               />
             ) : (
               <VideoConsultation

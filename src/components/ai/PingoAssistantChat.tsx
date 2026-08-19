@@ -26,6 +26,7 @@ export function PingoAssistantChat() {
   const [lastUserMessage, setLastUserMessage] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const [cookieConsentVisible, setCookieConsentVisible] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -39,6 +40,16 @@ export function PingoAssistantChat() {
       }
     }
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    const syncCookieConsent = (event?: Event) => {
+      const detail = (event as CustomEvent<{ visible?: boolean }> | undefined)?.detail;
+      setCookieConsentVisible(detail?.visible ?? Boolean(document.getElementById("cookie-consent-banner")));
+    };
+    syncCookieConsent();
+    window.addEventListener("cookie-consent-visibility", syncCookieConsent);
+    return () => window.removeEventListener("cookie-consent-visibility", syncCookieConsent);
+  }, []);
 
   const toggleVoice = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -171,7 +182,11 @@ export function PingoAssistantChat() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end gap-4 pointer-events-none">
+    <div className={cn(
+      "fixed right-3 sm:right-6 z-[100] flex flex-col items-end gap-3 sm:gap-4 pointer-events-none",
+      "bottom-[max(env(safe-area-inset-bottom),0.75rem)] sm:bottom-6",
+      cookieConsentVisible && "max-sm:hidden"
+    )}>
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -180,9 +195,9 @@ export function PingoAssistantChat() {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             className={cn(
               "pointer-events-auto bg-background border border-border/60 shadow-2xl rounded-3xl overflow-hidden flex flex-col transition-all duration-300 ease-in-out",
-              isMaximized 
-                ? "fixed inset-4 md:inset-10 z-[101] w-auto h-auto rounded-3xl" 
-                : "w-[90vw] sm:w-[380px] h-[550px] max-h-[80vh]"
+              isMaximized
+                ? "fixed inset-x-2 top-[max(env(safe-area-inset-top),0.5rem)] bottom-[max(env(safe-area-inset-bottom),0.5rem)] sm:inset-4 md:inset-10 z-[101] w-auto h-auto rounded-2xl sm:rounded-3xl"
+                : "w-[calc(100vw-1.5rem)] sm:w-[380px] h-[min(36rem,calc(100dvh-6.5rem-env(safe-area-inset-top)))] sm:h-[550px] max-h-[80dvh] rounded-2xl sm:rounded-3xl"
             )}
           >
             {/* Header */}
@@ -203,16 +218,18 @@ export function PingoAssistantChat() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="w-8 h-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                  className="w-11 h-11 sm:w-9 sm:h-9 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
                   onClick={() => setIsMaximized(!isMaximized)}
+                  aria-label={isMaximized ? "Restaurar janela do Pingo" : "Maximizar janela do Pingo"}
                 >
                   {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="w-8 h-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                  className="w-11 h-11 sm:w-9 sm:h-9 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors"
                   onClick={() => setIsOpen(false)}
+                  aria-label="Fechar conversa com o Pingo"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -381,10 +398,12 @@ export function PingoAssistantChat() {
 
       {/* Trigger Button */}
       <motion.button
-        className="pointer-events-auto w-16 h-16 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 relative z-[102] group"
+        className="pointer-events-auto w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 relative z-[102] group"
         whileHover={{ scale: 1.05, y: -4 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Fechar conversa com o Pingo" : "Abrir conversa com o Pingo"}
+        aria-expanded={isOpen}
       >
         <AnimatePresence mode="wait">
           {isOpen ? (

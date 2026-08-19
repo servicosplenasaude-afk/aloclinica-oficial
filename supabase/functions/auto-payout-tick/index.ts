@@ -59,50 +59,17 @@ Deno.serve(async (req) => {
       if (!freq || !isPayoutDay(freq, now)) continue;
       const userId = (d as any).user_id as string;
 
-      // Evita duplicidade no mesmo dia
-      const startToday = new Date(now); startToday.setUTCHours(0, 0, 0, 0);
-      const { count: todayCount } = await sb
-        .from("withdrawal_requests")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .gte("created_at", startToday.toISOString());
-      if ((todayCount ?? 0) > 0) {
-        skipped.push({ doctor_user_id: userId, reason: "already_requested_today" });
-        continue;
-      }
-
-      // Saldo REAL = repasses liberados ('ready') em doctor_payouts (fonte unica).
-      // Fallback legado (wallet_transactions) so ate o SQL do saque ser aplicado.
-      const doctorId = (d as any).id as string;
-      let credit = 0;
-      const { data: bal, error: balErr } = await sb.rpc("fn_doctor_available_balance", { p_doctor_id: doctorId });
-      if (!balErr && bal != null) {
-        credit = Number(bal);
-      } else {
-        const { data: tx } = await sb.from("wallet_transactions").select("amount").eq("user_id", userId);
-        credit = (tx ?? []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
-      }
-      const { data: pendApr } = await sb.from("withdrawal_requests")
-        .select("amount").eq("user_id", userId).in("status", ["pending", "approved", "processing"]);
-      const blocked = (pendApr ?? []).reduce((s: number, r: any) => s + Number(r.amount || 0), 0);
-      const available = Math.max(0, credit - blocked);
-
-      if (available < MIN_WITHDRAWAL) {
-        skipped.push({ doctor_user_id: userId, reason: `below_min (R$ ${available.toFixed(2)})` });
-        continue;
-      }
-
-      const { error: insErr } = await sb.from("withdrawal_requests").insert({
-        user_id: userId,
-        amount: available,
-        status: "pending",
-        pix_key: (d as any).pix_key ?? null,
-      } as any);
+      const { data: made, error: insErr } = await sb.rpc("fn_create_withdrawal_request", {
+        p_pix_key: (d as any).pix_key ?? "",
+        p_source: "automatic",
+        p_user_id: userId,
+      });
       if (insErr) {
         skipped.push({ doctor_user_id: userId, reason: `insert_failed: ${insErr.message}` });
         continue;
       }
-
+      const row = Array.isArray(made) ? made[0] : made;
+      const available = Number((row as any)?.amount ?? 0);
       createdCount++;
       created.push({ doctor_user_id: userId, amount: available });
     }

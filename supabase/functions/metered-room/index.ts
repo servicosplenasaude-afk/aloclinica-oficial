@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // SECURITY: authenticate + authorize the caller before minting a joinable room.
 import { getCaller } from "../_shared/auth.ts";
+import { isVideoAccessWindowOpen } from "../_shared/video-access.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,7 +49,7 @@ serve(async (req) => {
     // SECURITY: load ownership columns so we can authorize the caller.
     const { data: appt } = await supabase
       .from("appointments")
-      .select("id, status, patient_id, doctor_id")
+      .select("id, status, patient_id, doctor_id, scheduled_at, duration_minutes")
       .eq("id", appointmentId)
       .in("status", ["confirmed", "in_progress", "scheduled"])
       .maybeSingle();
@@ -56,6 +57,12 @@ serve(async (req) => {
     if (!appt) {
       return new Response(JSON.stringify({ error: "Appointment not found or not active" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!isVideoAccessWindowOpen(appt)) {
+      return new Response(JSON.stringify({ error: "Appointment outside access window" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

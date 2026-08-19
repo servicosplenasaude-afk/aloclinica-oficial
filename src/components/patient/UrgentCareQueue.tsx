@@ -264,7 +264,8 @@ const UrgentCareQueue = () => {
   const toggleRedFlag = (f: string) =>
     setRedFlags((prev) => {
       const n = new Set(prev);
-      n.has(f) ? n.delete(f) : n.add(f);
+      if (n.has(f)) n.delete(f);
+      else n.add(f);
       return n;
     });
 

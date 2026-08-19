@@ -38,3 +38,11 @@ temp/
 # Playwright test results
 test-results/
 playwright-report/
+.playwright-cli/
+output/
+
+# Local Supabase CLI state
+supabase/.temp/
+
+# TypeScript incremental build cache
+*.tsbuildinfo

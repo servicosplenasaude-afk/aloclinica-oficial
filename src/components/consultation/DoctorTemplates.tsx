@@ -29,14 +29,15 @@ interface Template {
 
 export function useDoctorTemplates(type?: TemplateType) {
   const { user } = useAuth();
+  const userId = user?.id;
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
     setLoading(true);
     try {
-      let q = db.from("doctor_text_templates").select("id, type, title, body").eq("doctor_user_id", user.id);
+      let q = db.from("doctor_text_templates").select("id, type, title, body").eq("doctor_user_id", userId);
       if (type) q = q.eq("type", type);
       const { data } = await q.order("created_at", { ascending: false }).limit(40);
       setTemplates((data ?? []) as Template[]);
@@ -45,15 +46,15 @@ export function useDoctorTemplates(type?: TemplateType) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, type]);
+  }, [userId, type]);
 
   useEffect(() => { load(); }, [load]);
 
   const save = useCallback(async (title: string, body: string, t: TemplateType) => {
-    if (!user) return;
+    if (!userId) return;
     try {
       const { data, error } = await db.from("doctor_text_templates")
-        .insert({ doctor_user_id: user.id, title, body, type: t } as any)
+        .insert({ doctor_user_id: userId, title, body, type: t } as any)
         .select("id, type, title, body")
         .single();
       if (error) throw error;
@@ -62,7 +63,7 @@ export function useDoctorTemplates(type?: TemplateType) {
     } catch (e: any) {
       toast.error("Não foi possível salvar", { description: e?.message });
     }
-  }, [user?.id]);
+  }, [userId]);
 
   const remove = useCallback(async (id: string) => {
     try {

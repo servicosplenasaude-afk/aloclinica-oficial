@@ -44,6 +44,13 @@ const CookieBanner = () => {
     if (!loadPrefs()) setVisible(true);
   }, []);
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("cookie-consent-visibility", { detail: { visible } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent("cookie-consent-visibility", { detail: { visible: false } }));
+    };
+  }, [visible]);
+
   const acceptAll = async () => {
     await savePrefs({ essential: true, analytics: true, marketing: true });
     setVisible(false);
@@ -61,8 +68,13 @@ const CookieBanner = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6 pointer-events-none">
-      <div className="pointer-events-auto max-w-xl mx-auto rounded-2xl border border-border bg-card shadow-lg p-5 sm:p-6 space-y-4">
+    <div
+      id="cookie-consent-banner"
+      role="region"
+      aria-label="Preferências de cookies"
+      className="fixed bottom-0 inset-x-0 z-50 p-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] sm:p-6 pointer-events-none"
+    >
+      <div className="pointer-events-auto max-h-[min(78dvh,34rem)] overflow-y-auto overscroll-contain max-w-xl mx-auto rounded-t-2xl sm:rounded-2xl border border-border bg-card shadow-2xl p-4 sm:p-6 space-y-3 sm:space-y-4">
         <div className="flex items-start gap-3">
           <Cookie className="w-6 h-6 text-primary shrink-0 mt-0.5" />
           <div className="space-y-1">
@@ -93,21 +105,21 @@ const CookieBanner = () => {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2 justify-end">
+        <div className="grid grid-cols-1 sm:flex gap-2 sm:justify-end">
           {!showPrefs && (
-            <Button variant="ghost" size="sm" className="rounded-xl text-xs" onClick={() => setShowPrefs(true)}>
+            <Button variant="ghost" size="sm" className="min-h-11 rounded-xl text-xs" onClick={() => setShowPrefs(true)}>
               <Settings2 className="w-3.5 h-3.5 mr-1" /> Personalizar
             </Button>
           )}
-          <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={rejectAll}>
+          <Button variant="outline" size="sm" className="min-h-11 rounded-xl text-xs" onClick={rejectAll}>
             Recusar opcionais
           </Button>
           {showPrefs ? (
-            <Button size="sm" className="rounded-xl text-xs" onClick={saveCustom}>
+            <Button size="sm" className="min-h-11 rounded-xl text-xs" onClick={saveCustom}>
               Salvar preferências
             </Button>
           ) : (
-            <Button size="sm" className="rounded-xl text-xs" onClick={acceptAll}>
+            <Button size="sm" className="min-h-11 rounded-xl text-xs" onClick={acceptAll}>
               Aceitar todos
             </Button>
           )}

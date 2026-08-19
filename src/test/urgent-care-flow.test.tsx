@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import UrgentCareQueue from "@/components/patient/UrgentCareQueue";
 
 // Mock supabase
-const mockInvoke = vi.fn().mockResolvedValue({ data: { shift: "day", price: 75, label: "Diurno" } });
-const mockFrom = vi.fn();
-const mockChannel = vi.fn().mockReturnValue({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() });
-const mockRemoveChannel = vi.fn();
+const { mockInvoke, mockFrom, mockChannel, mockRemoveChannel } = vi.hoisted(() => ({
+  mockInvoke: vi.fn().mockResolvedValue({ data: { shift: "day", price: 75, label: "Diurno" } }),
+  mockFrom: vi.fn(),
+  mockChannel: vi.fn().mockReturnValue({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() }),
+  mockRemoveChannel: vi.fn(),
+}));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
@@ -81,7 +84,6 @@ describe("UrgentCareQueue", () => {
   });
 
   it("renders shift price info from edge function", async () => {
-    const { default: UrgentCareQueue } = await import("@/components/patient/UrgentCareQueue");
     render(<UrgentCareQueue />);
 
     await waitFor(() => {
@@ -94,7 +96,6 @@ describe("UrgentCareQueue", () => {
   });
 
   it("shows correct shift pricing tiers", async () => {
-    const { default: UrgentCareQueue } = await import("@/components/patient/UrgentCareQueue");
     render(<UrgentCareQueue />);
 
     await waitFor(() => {
@@ -108,7 +109,6 @@ describe("UrgentCareQueue", () => {
   });
 
   it("checks discount card on mount", async () => {
-    const { default: UrgentCareQueue } = await import("@/components/patient/UrgentCareQueue");
     render(<UrgentCareQueue />);
 
     await waitFor(() => {

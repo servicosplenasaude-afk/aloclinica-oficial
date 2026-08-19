@@ -1,4 +1,9 @@
-# ✅ AloClínica — Checklist de Go-Live (estado em 2026-07)
+# AloClínica — Checklist histórico de Go-Live (estado relatado em 2026-07)
+
+> Este arquivo preserva o relato operacional de julho e pode estar desatualizado.
+> A decisão atual deve usar [`READINESS_MATRIX.md`](READINESS_MATRIX.md), com
+> evidência nova por gate; itens “verificados ao vivo” abaixo não são prova da
+> release de agosto.
 
 Status consolidado após a vistoria. O que **funciona**, e o que **falta** (com passos).
 

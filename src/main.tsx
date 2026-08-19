@@ -5,6 +5,7 @@ import { logError } from "./lib/logger";
 // push-service-worker cleanup deferred to after mount
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { MotionConfig } from "framer-motion";
 
 /* ── Chunk-error recovery ─────────────────────────────── */
 const CHUNK_RELOAD_KEY = "__chunk_reloaded";
@@ -69,7 +70,12 @@ requestIdleCallback(() => {
       }
     } else {
       import("@/lib/push-service-worker")
-        .then(({ unregisterLegacyRootPushServiceWorkers }) => unregisterLegacyRootPushServiceWorkers())
+        .then(async ({ deleteLegacySensitiveCaches, unregisterLegacyRootPushServiceWorkers }) => {
+          await Promise.all([
+            unregisterLegacyRootPushServiceWorkers(),
+            deleteLegacySensitiveCaches(),
+          ]);
+        })
         .catch(() => {});
     }
   }
@@ -94,7 +100,9 @@ document.body.setAttribute("data-app-booting", "true");
 try {
   createRoot(root).render(
     <ErrorBoundary>
-      <App />
+      <MotionConfig reducedMotion="user">
+        <App />
+      </MotionConfig>
     </ErrorBoundary>,
   );
   document.documentElement.removeAttribute("data-app-booting");

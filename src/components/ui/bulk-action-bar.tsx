@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ReactNode } from "react";
+import { fadeUpVariants } from "@/lib/motion";
 
 type Props = {
   count: number;
@@ -20,10 +21,10 @@ export function BulkActionBar({ count, onClear, noun = "itens", children }: Prop
     <AnimatePresence>
       {count > 0 && (
         <motion.div
-          initial={{ y: -8, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -8, opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          variants={fadeUpVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
           className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-primary/5 border border-primary/20"
           role="region"
           aria-label="Ações em lote"

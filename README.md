@@ -13,7 +13,7 @@ Plataforma de telemedicina para o Brasil: **teleconsulta por vídeo, agendamento
 | **Frontend** | React 18 · TypeScript · Vite · Tailwind + shadcn/radix · React Router · TanStack Query · PWA · Capacitor (Android/iOS) · Sentry |
 | **Backend** | **Supabase** — Postgres (RLS), Auth (GoTrue), Storage, **Edge Functions (Deno)**, pg_cron |
 | **Integrações** | Mercado Pago (pagamentos) · Anthropic (IA clínica) · MiroTalk + coturn (vídeo) · Memed (prescrição ICP-Brasil) · Evolution API (WhatsApp) · Resend (e-mail) |
-| **Deploy** | Docker + nginx (frontend) · Caddy (HTTPS) · VPS · Supabase (backend gerenciado) |
+| **Deploy** | Docker + nginx (frontend) · Easypanel/Traefik (TLS) · VPS · Supabase (backend gerenciado) |
 
 ## 🏗️ Arquitetura
 
@@ -21,7 +21,7 @@ Plataforma de telemedicina para o Brasil: **teleconsulta por vídeo, agendamento
 Navegador / App (Capacitor)
         │  HTTPS
         ▼
-Frontend SPA (React) ── nginx no container Docker ── Caddy (TLS) ── VPS
+Frontend SPA (React) ── nginx no container Docker ── Traefik (TLS) ── VPS
         │
         │  supabase-js (Auth JWT + RLS)
         ▼
@@ -70,11 +70,12 @@ COMPREFACE_URL/VERIFY_KEY/DETECT_KEY (HTTPS)   DOCTOR_PROFESSIONAL_ADDRESS (fall
 
 ## 📦 Deploy
 
-**Frontend (VPS):** build multi-stage Docker + Caddy para HTTPS automático.
+**Frontend (VPS):** o workflow `.github/workflows/deploy.yml` gera `dist/`, envia
+os artefatos à VPS e recria o container `aloclinica-web`; o Traefik termina TLS.
 ```sh
 docker build -t aloclinica-web .
 docker run -d --name aloclinica-web --restart unless-stopped -p 127.0.0.1:8080:80 aloclinica-web
-# Caddy faz o TLS de aloclinica.com.br → 127.0.0.1:8080
+# Em produção, o roteamento/TLS é administrado pelo Easypanel/Traefik.
 ```
 
 **Backend (Supabase):**
@@ -103,6 +104,11 @@ supabase/
   migrations/   # schema + RLS + políticas
 docs/           # RUNBOOK, conformidade, deploy, auditorias
 ```
+
+O checkout contém **87 Edge Functions implantáveis** (diretórios com `index.ts`,
+excluindo `_shared`). A contagem e os gates objetivos de lançamento estão em
+[`docs/READINESS_MATRIX.md`](docs/READINESS_MATRIX.md); ela mede o repositório e
+não presume que todas estejam implantadas no ambiente remoto.
 
 ## 📄 Licença
 

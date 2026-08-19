@@ -1,5 +1,5 @@
 // Optimized Vite configuration for AloClinica
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
@@ -7,7 +7,20 @@ import { VitePWA } from "vite-plugin-pwa";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  if (mode === "sandbox") {
+    const sandboxUrl = env.VITE_SUPABASE_URL?.trim();
+    const sandboxKey = env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
+    if (!sandboxUrl || !sandboxKey) {
+      throw new Error("Sandbox bloqueado: configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY em .env.sandbox.");
+    }
+    if (sandboxUrl === "https://pwxvvimdtmvziynbspgx.supabase.co") {
+      throw new Error("Sandbox bloqueado: VITE_SUPABASE_URL aponta para o Supabase de produção.");
+    }
+  }
+
+  return ({
   server: {
     host: "::",
     port: 8080,
@@ -63,33 +76,9 @@ export default defineConfig(({ mode }) => ({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          {
-            urlPattern: /^https:\/\/pwxvvimdtmvziynbspgx\.supabase\.co\/rest\/v1\/(medical_records|prescriptions|profiles|appointments).*/i,
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "supabase-medical-data",
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 30 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/pwxvvimdtmvziynbspgx\.supabase\.co\/rest\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "supabase-api",
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 5 },
-              networkTimeoutSeconds: 5,
-            },
-          },
-          {
-            urlPattern: /^https:\/\/pwxvvimdtmvziynbspgx\.supabase\.co\/storage\/.*/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "supabase-storage",
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
+          // Respostas autenticadas do Supabase podem conter dados clínicos e PII.
+          // Elas ficam exclusivamente no cache em memória do cliente HTTP; o service
+          // worker nunca deve persistir API ou Storage no Cache Storage do navegador.
         ],
       },
       manifest: {
@@ -227,4 +216,5 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-}));
+  });
+});

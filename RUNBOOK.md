@@ -1,7 +1,8 @@
 # AloClínica — Runbook operacional
 
 Documento de referência para operar e diagnosticar a plataforma em produção.
-Atualizado em 2026-05-29 — versão **v2.0**.
+Reconciliado com o repositório em 2026-08-19 — versão **v2.1**. Para autorizar
+lançamento, use a matriz canônica em [`docs/READINESS_MATRIX.md`](docs/READINESS_MATRIX.md).
 
 ---
 
@@ -255,4 +256,7 @@ git push origin main     # dispara redeploy do estado anterior
 
 ---
 
-**Última auditoria operacional:** 2026-05-29 — 29 crons ativos, 79 edge functions, 117 tabelas, 0 dados de teste residuais.
+**Snapshot histórico remoto:** a auditoria de 2026-05-29 registrou 29 crons, 79
+Edge Functions e 117 tabelas. Esses números não devem ser tratados como estado
+atual. O checkout de 2026-08-19 contém **87** Edge Functions implantáveis; antes
+do go-live, compare os 87 slugs com o Supabase e execute os gates da matriz.

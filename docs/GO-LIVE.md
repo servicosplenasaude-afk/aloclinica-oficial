@@ -1,8 +1,9 @@
 # Guia de Go-Live — AloClínica
 
-Checklist para colocar a plataforma no ar com segurança. O **software está pronto e
-deployado**; o que falta abaixo é **configuração de infraestrutura e ações operacionais**
-que só você (ou o contador/TI) pode fazer. Ordem sugerida: faça os 🔴 **críticos** primeiro.
+Checklist operacional histórico para colocar a plataforma no ar com segurança.
+O repositório não basta para afirmar que o software está pronto ou implantado.
+Use [`READINESS_MATRIX.md`](READINESS_MATRIX.md) como critério canônico e trate os
+estados datados abaixo como pendentes de reconfirmação.
 
 ---
 

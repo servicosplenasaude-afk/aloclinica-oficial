@@ -369,7 +369,7 @@ export default function AdminStudio() {
             <Input value={previewSrc} onChange={(e) => setPreviewSrc(e.target.value)} className="h-7 text-xs flex-1" />
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
               const f = document.getElementById("studio-preview-iframe") as HTMLIFrameElement | null;
-              if (f) f.src = f.src;
+              if (f) f.setAttribute("src", f.getAttribute("src") ?? f.src);
             }}>
               <RefreshCw className="w-3.5 h-3.5" />
             </Button>

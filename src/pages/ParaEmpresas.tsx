@@ -250,8 +250,8 @@ const ParaEmpresas = () => {
       <Header />
 
       {/* Hero */}
-      <section className="pt-32 pb-12 md:pt-40 md:pb-20 px-4">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
+      <section className="pt-24 pb-10 sm:pt-28 md:pt-32 md:pb-16 px-4 bg-gradient-to-b from-primary/[0.04] via-background to-background">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -261,51 +261,52 @@ const ParaEmpresas = () => {
               <Buildings className="w-3.5 h-3.5" weight="fill" />
               Para Empresas
             </span>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
+            <h1 className="text-4xl leading-[1.08] md:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
               Saúde para sua equipe, <span className="text-gradient">sem complicação</span>
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground mb-6 leading-relaxed max-w-xl">
+            <p className="text-base md:text-lg text-muted-foreground mb-5 leading-relaxed max-w-xl">
               Ofereça teleconsulta 24h, mais de 30 especialidades e bem-estar real para seus
               colaboradores. Atendimento humano, tecnologia segura e custo previsível.
             </p>
 
-            <div className="flex flex-wrap gap-x-6 gap-y-3 mb-7">
-              {[
-                { value: "Previsível", label: "custo fixo por colaborador" },
-                { value: "24h", label: "disponível" },
-                { value: "Escalável", label: "para empresas de todo porte" },
-              ].map((stat) => (
-                <div key={stat.label} className="flex items-baseline gap-2">
-                  <span className="text-2xl md:text-3xl font-extrabold text-primary">{stat.value}</span>
-                  <span className="text-xs md:text-sm text-muted-foreground">{stat.label}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button asChild size="lg" className="font-bold">
+            <div className="flex flex-col sm:flex-row gap-3 mb-5">
+              <Button asChild size="lg" className="h-12 font-bold shadow-lg shadow-primary/20">
                 <a href="#solicitar-proposta">
                   Solicitar proposta
                   <ArrowRight className="w-5 h-5 ml-2" weight="bold" />
                 </a>
               </Button>
-              <Button asChild variant="outline" size="lg" className="font-bold">
+              <Button asChild variant="outline" size="lg" className="h-12 font-bold bg-background/80">
                 <Link to="/contato">Falar com consultor</Link>
               </Button>
             </div>
+
+            <div className="grid grid-cols-3 gap-3 mb-6 border-y border-border/60 py-4">
+              {[
+                { value: "Previsível", label: "custo fixo por colaborador" },
+                { value: "24h", label: "disponível" },
+                { value: "Escalável", label: "para empresas de todo porte" },
+              ].map((stat) => (
+                <div key={stat.label} className="flex flex-col gap-0.5">
+                  <span className="text-xl sm:text-2xl md:text-3xl font-extrabold text-primary">{stat.value}</span>
+                  <span className="text-[11px] sm:text-xs md:text-sm leading-tight text-muted-foreground">{stat.label}</span>
+                </div>
+              ))}
+            </div>
+
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="relative flex justify-center"
+            className="relative flex justify-center mt-1 lg:mt-0"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-secondary/15 blur-3xl" />
             <img
               src={pingoEmpresa}
               alt="Pingo, mascote da AloClínica, com ferramentas médicas"
-              className="relative w-full max-w-md object-contain drop-shadow-2xl"
+              className="relative w-full max-w-sm lg:max-w-md object-contain drop-shadow-2xl [image-rendering:auto]"
               loading="eager"
               decoding="async"
             />

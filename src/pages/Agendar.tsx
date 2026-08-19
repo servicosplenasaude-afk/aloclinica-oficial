@@ -352,7 +352,7 @@ const Agendar = () => {
 
         <Header />
 
-        <div className="pt-24 pb-20 px-4">
+        <div className="pt-20 sm:pt-24 pb-16 px-4">
           <div className="max-w-5xl mx-auto">
 
             {/* ═══════ STEP 1: SPECIALTIES ═══════ */}
@@ -368,16 +368,16 @@ const Agendar = () => {
                   <StepIndicator step={1} />
 
                   {/* Hero */}
-                  <div className="text-center mb-10">
+                  <div className="text-center mb-6 sm:mb-8">
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] sm:text-xs font-semibold mb-3"
                     >
                       <HeartPulse className="w-3.5 h-3.5" />
                       Teleconsulta — Atendimento 100% Online
                     </motion.div>
-                    <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight mb-3">
+                    <h1 className="font-display text-[2rem] leading-[1.08] sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight mb-3">
                       Qual especialidade{" "}
                       <span className="text-gradient-brand">você precisa?</span>
                     </h1>
@@ -407,7 +407,7 @@ const Agendar = () => {
                   )}
 
                   {/* Popular searches */}
-                  <div className="max-w-3xl mx-auto mb-6">
+                  <div className="max-w-3xl mx-auto mb-5">
                     <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-center mb-2.5">
                       Buscas populares
                     </p>
@@ -416,7 +416,7 @@ const Agendar = () => {
                         <button
                           key={s}
                           onClick={() => handleSelectSpecialty(s)}
-                          className="text-xs font-medium px-3 py-1.5 rounded-full border border-border/60 bg-card hover:bg-primary/5 hover:border-primary/30 hover:text-primary text-muted-foreground transition-all"
+                          className="min-h-11 text-xs font-semibold px-3 py-2 rounded-full border border-border bg-card hover:bg-primary/5 hover:border-primary/40 hover:text-primary text-foreground/75 transition-all"
                         >
                           {s}
                         </button>
@@ -425,7 +425,7 @@ const Agendar = () => {
                   </div>
 
                   {/* Specialty Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3 max-w-4xl mx-auto">
                     {visibleSpecs.map((spec, i) => (
                       <motion.button
                         key={spec.name}
@@ -436,13 +436,13 @@ const Agendar = () => {
                         whileTap={{ scale: 0.97 }}
                         onClick={() => handleSelectSpecialty(spec.name)}
                         className={cn(
-                          "relative flex flex-col items-center gap-2 p-5 rounded-2xl border bg-gradient-to-br transition-all duration-200",
+                          "relative min-h-36 sm:min-h-40 flex flex-col items-center justify-center gap-2 p-3 sm:p-5 rounded-2xl border bg-gradient-to-br transition-all duration-200",
                           "hover:shadow-md hover:border-primary/30 group cursor-pointer",
                           spec.color
                         )}
                       >
                         <div className="pingo-float" style={{ animationDelay: `${(i % 6) * 0.3}s` }}>
-                          <img src={spec.img} alt={spec.name} className="w-12 h-12 sm:w-16 sm:h-16 object-contain pingo-hover-bounce" loading="lazy" />
+                          <img src={spec.img} alt={spec.name} className="w-14 h-14 sm:w-16 sm:h-16 object-contain pingo-hover-bounce [image-rendering:auto]" loading={i < 4 ? "eager" : "lazy"} decoding="async" />
                         </div>
                         <div className="flex flex-col items-center gap-1">
                           <span className="text-xs sm:text-sm font-bold text-foreground text-center leading-tight">

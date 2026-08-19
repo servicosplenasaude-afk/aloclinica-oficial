@@ -1,6 +1,12 @@
 export const PUSH_SW_URL = "/push-sw.js";
 export const PUSH_SW_SCOPE = "/push/";
 
+const LEGACY_SENSITIVE_CACHE_NAMES = new Set([
+  "supabase-medical-data",
+  "supabase-api",
+  "supabase-storage",
+]);
+
 const getServiceWorkerScriptUrl = (registration: ServiceWorkerRegistration) => {
   return registration.active?.scriptURL
     ?? registration.waiting?.scriptURL
@@ -37,5 +43,17 @@ export const unregisterLegacyRootPushServiceWorkers = async () => {
         return scriptUrl.includes(PUSH_SW_URL) && registration.scope === rootScope;
       })
       .map((registration) => registration.unregister()),
+  );
+};
+
+/** Remove caches criados por versões antigas da configuração PWA. */
+export const deleteLegacySensitiveCaches = async () => {
+  if (!("caches" in window)) return;
+
+  const cacheNames = await caches.keys();
+  await Promise.all(
+    cacheNames
+      .filter((cacheName) => LEGACY_SENSITIVE_CACHE_NAMES.has(cacheName))
+      .map((cacheName) => caches.delete(cacheName)),
   );
 };
