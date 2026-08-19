@@ -4,19 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: "Known good commit SHA to redeploy"
+        description: Known good commit SHA to rebuild and deploy
         required: true
       confirm:
-        description: "Type ROLLBACK to confirm"
+        description: Type ROLLBACK to confirm
         required: true
+
+env:
+  CLOUDFLARE_ACCOUNT_ID: 33720391faeb23516de3151780648caf
 
 jobs:
   rollback:
-    name: Redeploy known good commit
+    name: Redeploy known good commit to Cloudflare Pages
     runs-on: ubuntu-latest
+    environment: production
     if: ${{ inputs.confirm == 'ROLLBACK' }}
-    env:
-      VPS_HOST: 72.62.138.208
     steps:
       - uses: actions/checkout@v5
         with:
@@ -25,22 +27,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: "npm"
-
-      - name: Preflight SSH access to VPS
-        shell: bash
-        run: |
-          echo "Checking SSH connectivity to ${VPS_HOST}:22..."
-          for attempt in 1 2 3; do
-            if timeout 20 bash -c "</dev/tcp/${VPS_HOST}/22"; then
-              echo "SSH port reachable on attempt ${attempt}."
-              exit 0
-            fi
-            echo "SSH port not reachable (attempt ${attempt}/3)."
-            sleep 10
-          done
-          echo "::error::SSH port 22 on ${VPS_HOST} is unreachable from GitHub Actions. Check VPS firewall, provider security rules, or sshd before rollback."
-          exit 1
+          cache: npm
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund --prefer-offline
@@ -51,34 +38,14 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          NODE_OPTIONS: --max-old-space-size=4096
 
-      - name: Copy artifacts to VPS via SCP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Deploy rollback to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          host: ${{ env.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          source: "dist/,nginx.conf,Dockerfile.ci,docker-compose.yml"
-          target: "/opt/aloclinica/"
-          strip_components: 0
-          timeout: 300s
-          command_timeout: 20m
-
-      - name: Rebuild and restart production container
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ env.VPS_HOST }}
-          username: root
-          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-          timeout: 300s
-          command_timeout: 20m
-          script: |
-            set -e
-            cd /opt/aloclinica
-            docker compose build --no-cache aloclinica-web
-            docker compose up -d --force-recreate aloclinica-web
-            docker image prune -f
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name aloclinica-production --branch main
 
       - name: Health check
         run: npm run health:production

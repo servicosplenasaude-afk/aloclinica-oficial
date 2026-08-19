@@ -1,13 +1,17 @@
-name: Deploy to Staging
+name: Deploy to Sandbox
 
 on:
   workflow_dispatch:
   push:
     branches: [dev]
 
+env:
+  CLOUDFLARE_ACCOUNT_ID: 33720391faeb23516de3151780648caf
+  STAGING_SUPABASE_PROJECT_REF: hikttmmwxcjmzexxhgda
+
 jobs:
-  deploy-staging:
-    name: Build and deploy staging
+  deploy-frontend:
+    name: Frontend - Build + Deploy Cloudflare Pages
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -16,22 +20,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: "npm"
-
-      - name: Preflight SSH access to staging VPS
-        shell: bash
-        run: |
-          echo "Checking SSH connectivity to staging VPS:22..."
-          for attempt in 1 2 3; do
-            if timeout 20 bash -c "</dev/tcp/${{ secrets.STAGING_VPS_HOST }}/22"; then
-              echo "SSH port reachable on attempt ${attempt}."
-              exit 0
-            fi
-            echo "SSH port not reachable (attempt ${attempt}/3)."
-            sleep 10
-          done
-          echo "::error::SSH port 22 on staging VPS is unreachable from GitHub Actions. Check VPS firewall, provider security rules, or sshd before deploying."
-          exit 1
+          cache: npm
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund --prefer-offline
@@ -42,52 +31,46 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.STAGING_VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STAGING_VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SENTRY_DSN: ${{ secrets.STAGING_VITE_SENTRY_DSN }}
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          VITE_APP_ENV: sandbox
+          NODE_OPTIONS: --max-old-space-size=4096
 
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
+      - name: Deploy frontend to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name aloclinica-sandbox --branch dev
+
+      - name: Health check
+        shell: bash
+        run: |
+          for path in / /agendar /auth/paciente; do
+            for attempt in 1 2 3 4 5 6; do
+              if curl --fail --silent --show-error "https://sandbox.aloclinica.com.br${path}" > /dev/null; then
+                echo "${path}: OK (attempt ${attempt})"
+                break
+              fi
+              if [ "${attempt}" = "6" ]; then
+                echo "::error::Health check failed for ${path}."
+                exit 1
+              fi
+              sleep 5
+            done
+          done
+
+  deploy-supabase:
+    name: Supabase Sandbox - Edge Functions
+    runs-on: ubuntu-latest
+    environment: staging
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      - name: Copy artifacts to staging VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.STAGING_VPS_HOST }}
-          username: ${{ secrets.STAGING_VPS_USER }}
-          key: ${{ secrets.STAGING_VPS_SSH_PRIVATE_KEY }}
-          source: "dist/,nginx.conf,Dockerfile.ci,docker-compose.yml"
-          target: "/opt/aloclinica-staging/"
-          strip_components: 0
-          timeout: 300s
-          command_timeout: 20m
-
-      - name: Build and restart staging container
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.STAGING_VPS_HOST }}
-          username: ${{ secrets.STAGING_VPS_USER }}
-          key: ${{ secrets.STAGING_VPS_SSH_PRIVATE_KEY }}
-          timeout: 300s
-          command_timeout: 20m
-          script: |
-            set -e
-            cd /opt/aloclinica-staging
-            docker compose -p aloclinica-staging build --no-cache aloclinica-web
-            docker compose -p aloclinica-staging up -d --force-recreate aloclinica-web
-            docker image prune -f
-
-      - name: Deploy staging Supabase functions
-        run: |
-          if [ -z "$STAGING_SUPABASE_PROJECT_REF" ]; then
-            echo "STAGING_SUPABASE_PROJECT_REF not set; skipping Supabase function deploy."
-            exit 0
-          fi
-          supabase functions deploy --project-ref "$STAGING_SUPABASE_PROJECT_REF"
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --project-ref "${STAGING_SUPABASE_PROJECT_REF}"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          STAGING_SUPABASE_PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
-
-      - name: Staging health
-        run: npm run health:production -- --target "${{ secrets.STAGING_SITE_URL }}"
-        env:
-          SUPABASE_PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}

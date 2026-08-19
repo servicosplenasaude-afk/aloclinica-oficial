@@ -8,12 +8,12 @@ Plataforma de telemedicina para o Brasil: **teleconsulta por vídeo, agendamento
 
 ## 🧱 Stack
 
-| Camada | Tecnologias |
-|---|---|
-| **Frontend** | React 18 · TypeScript · Vite · Tailwind + shadcn/radix · React Router · TanStack Query · PWA · Capacitor (Android/iOS) · Sentry |
-| **Backend** | **Supabase** — Postgres (RLS), Auth (GoTrue), Storage, **Edge Functions (Deno)**, pg_cron |
+| Camada          | Tecnologias                                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend**    | React 18 · TypeScript · Vite · Tailwind + shadcn/radix · React Router · TanStack Query · PWA · Capacitor (Android/iOS) · Sentry                             |
+| **Backend**     | **Supabase** — Postgres (RLS), Auth (GoTrue), Storage, **Edge Functions (Deno)**, pg_cron                                                                   |
 | **Integrações** | Mercado Pago (pagamentos) · Anthropic (IA clínica) · MiroTalk + coturn (vídeo) · Memed (prescrição ICP-Brasil) · Evolution API (WhatsApp) · Resend (e-mail) |
-| **Deploy** | Docker + nginx (frontend) · Easypanel/Traefik (TLS) · VPS · Supabase (backend gerenciado) |
+| **Deploy**      | Cloudflare Pages (frontend) · GitHub Actions · Supabase (backend gerenciado)                                                                                |
 
 ## 🏗️ Arquitetura
 
@@ -21,7 +21,7 @@ Plataforma de telemedicina para o Brasil: **teleconsulta por vídeo, agendamento
 Navegador / App (Capacitor)
         │  HTTPS
         ▼
-Frontend SPA (React) ── nginx no container Docker ── Traefik (TLS) ── VPS
+Frontend SPA (React) ── Cloudflare Pages/CDN ── aloclinica.com.br
         │
         │  supabase-js (Auth JWT + RLS)
         ▼
@@ -42,7 +42,7 @@ Supabase ─ Postgres (RLS por perfil) · Auth · Storage · Edge Functions (Den
 Requisitos: Node.js 20+.
 
 ```sh
-git clone https://github.com/aloclinica/aloclinica.git
+git clone https://github.com/servicosplenasaude-afk/aloclinica-oficial.git
 cd aloclinica
 npm ci
 cp .env.example .env   # preencha as variáveis (ver abaixo)
@@ -54,6 +54,7 @@ Outros comandos: `npm run build` (produção) · `npm run lint` · `npm test` (V
 ## 🔑 Variáveis de ambiente
 
 **Frontend (build-time, `VITE_*`):** já têm default público embutido (projeto Supabase de produção). Para sobrescrever:
+
 ```
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
@@ -62,6 +63,7 @@ VITE_MERCADOPAGO_PUBLIC_KEY=
 ```
 
 **Backend (Supabase → secrets das Edge Functions):**
+
 ```
 SUPABASE_SERVICE_ROLE_KEY   MERCADOPAGO_ACCESS_TOKEN   ANTHROPIC_API_KEY
 INTERNAL_FUNCTION_SECRET     MEMED_API_KEY / MEMED_SECRET_KEY   EVOLUTION_API_KEY / URL
@@ -70,8 +72,10 @@ COMPREFACE_URL/VERIFY_KEY/DETECT_KEY (HTTPS)   DOCTOR_PROFESSIONAL_ADDRESS (fall
 
 ## 📦 Deploy
 
-**Frontend (VPS):** o workflow `.github/workflows/deploy.yml` gera `dist/`, envia
-os artefatos à VPS e recria o container `aloclinica-web`; o Traefik termina TLS.
+**Frontend:** o workflow `.github/workflows/deploy.yml` gera `dist/` e publica no
+Cloudflare Pages (`aloclinica-production`). O sandbox usa o projeto
+`aloclinica-sandbox` e o domínio `sandbox.aloclinica.com.br`.
+
 ```sh
 docker build -t aloclinica-web .
 docker run -d --name aloclinica-web --restart unless-stopped -p 127.0.0.1:8080:80 aloclinica-web
@@ -79,11 +83,12 @@ docker run -d --name aloclinica-web --restart unless-stopped -p 127.0.0.1:8080:8
 ```
 
 **Backend (Supabase):**
+
 1. Migrações: aplicar `supabase/migrations/*` (`supabase db push`) ou colar `docs/APLICAR_NO_SUPABASE.sql` no SQL Editor.
 2. Edge Functions: `supabase functions deploy` (requer Access Token `sbp_`).
 3. Secrets: `supabase secrets set ...` para as chaves acima.
 
-**DNS:** registro A de `aloclinica.com.br` → IP da VPS.
+**DNS:** `aloclinica.com.br`, `www` e `sandbox` são gerenciados pelo Cloudflare.
 
 ## ⚖️ Conformidade
 
