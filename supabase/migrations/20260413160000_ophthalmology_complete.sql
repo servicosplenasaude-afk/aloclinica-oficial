@@ -37,9 +37,17 @@ CREATE TABLE IF NOT EXISTS public.ophthalmology_exams (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_ophthalmology_exams_patient ON public.ophthalmology_exams(patient_id);
-CREATE INDEX idx_ophthalmology_exams_doctor ON public.ophthalmology_exams(doctor_id);
-CREATE INDEX idx_ophthalmology_exams_appointment ON public.ophthalmology_exams(appointment_id);
+-- Earlier installations already have the technician-oriented version of this
+-- table. CREATE TABLE IF NOT EXISTS does not merge schemas, so add the bridge
+-- columns needed by the policies below without destroying existing exam data.
+ALTER TABLE public.ophthalmology_exams
+  ADD COLUMN IF NOT EXISTS appointment_id UUID REFERENCES public.appointments(id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS patient_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS doctor_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+
+CREATE INDEX IF NOT EXISTS idx_ophthalmology_exams_patient ON public.ophthalmology_exams(patient_id);
+CREATE INDEX IF NOT EXISTS idx_ophthalmology_exams_doctor ON public.ophthalmology_exams(doctor_id);
+CREATE INDEX IF NOT EXISTS idx_ophthalmology_exams_appointment ON public.ophthalmology_exams(appointment_id);
 
 -- Glasses/Contact lens prescription
 CREATE TABLE IF NOT EXISTS public.ophthalmology_prescriptions (
@@ -84,9 +92,13 @@ CREATE TABLE IF NOT EXISTS public.ophthalmology_prescriptions (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_ophthalmology_prescriptions_patient ON public.ophthalmology_prescriptions(patient_id);
-CREATE INDEX idx_ophthalmology_prescriptions_exam ON public.ophthalmology_prescriptions(exam_id);
-CREATE INDEX idx_ophthalmology_prescriptions_doctor ON public.ophthalmology_prescriptions(doctor_id);
+ALTER TABLE public.ophthalmology_prescriptions
+  ADD COLUMN IF NOT EXISTS patient_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS prescription_type TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_ophthalmology_prescriptions_patient ON public.ophthalmology_prescriptions(patient_id);
+CREATE INDEX IF NOT EXISTS idx_ophthalmology_prescriptions_exam ON public.ophthalmology_prescriptions(exam_id);
+CREATE INDEX IF NOT EXISTS idx_ophthalmology_prescriptions_doctor ON public.ophthalmology_prescriptions(doctor_id);
 
 -- Prescription PDF/document storage
 CREATE TABLE IF NOT EXISTS public.ophthalmology_prescription_documents (
@@ -97,7 +109,7 @@ CREATE TABLE IF NOT EXISTS public.ophthalmology_prescription_documents (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_prescription_documents ON public.ophthalmology_prescription_documents(prescription_id);
+CREATE INDEX IF NOT EXISTS idx_prescription_documents ON public.ophthalmology_prescription_documents(prescription_id);
 
 -- RLS policies
 ALTER TABLE public.ophthalmology_exams ENABLE ROW LEVEL SECURITY;

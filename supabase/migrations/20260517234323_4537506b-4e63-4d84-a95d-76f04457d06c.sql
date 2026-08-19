@@ -39,6 +39,11 @@ END$$;
 REVOKE SELECT ON public.prescription_validations FROM anon, authenticated;
 GRANT SELECT ON public.prescription_validations TO authenticated;
 
+ALTER TABLE public.prescription_validations
+  ADD COLUMN IF NOT EXISTS verification_code TEXT UNIQUE,
+  ADD COLUMN IF NOT EXISTS is_valid BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS validated_at TIMESTAMPTZ;
+
 -- Public verification helper: returns only safe fields by verification_code
 CREATE OR REPLACE FUNCTION public.verify_prescription_code(p_code text)
 RETURNS TABLE(verification_code text, is_valid boolean, validated_at timestamptz)

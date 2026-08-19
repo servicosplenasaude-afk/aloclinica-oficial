@@ -91,6 +91,10 @@ const VideoRoom = () => {
   // Ref evita stale-closure nos callbacks; é preenchido em fetchAppointment.
   const roomSecretRef = useRef<string>("");
   const [webrtcStatus, setWebrtcStatus] = useState<string>("idle");
+  const [mediaState, setMediaState] = useState({
+    isMuted: false, isVideoOff: false, isScreenSharing: false,
+    isRecording: false, hasRecording: false,
+  });
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -174,7 +178,7 @@ const VideoRoom = () => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isDoctor]);
+  }, [isDoctor, showChat, showNotes, showInfo, showAI]);
 
   const [showShortcuts, setShowShortcuts] = useState(false);
 
@@ -946,6 +950,12 @@ const VideoRoom = () => {
   useEffect(() => { elapsedRef.current = elapsed; }, [elapsed]);
 
   const endCall = useCallback(async () => {
+    const confirmed = window.confirm(
+      isDoctor
+        ? "Encerrar esta consulta? O atendimento será concluído e o prontuário será salvo."
+        : "Sair desta consulta? Você poderá entrar novamente enquanto o médico não concluir o atendimento."
+    );
+    if (!confirmed) return;
     videoRef.current?.hangUp();
     if (presenceLogId.current) {
       await db.from("video_presence_logs").update({
@@ -970,7 +980,7 @@ const VideoRoom = () => {
 
     toast.success(isDoctor ? "Consulta encerrada" : "Você saiu da consulta");
     setShowSummary(true);
-  }, [isDoctor, appointmentId, soap.isDirty]);
+  }, [isDoctor, appointmentId, soap.isDirty, soap.saveNotes, user]);
 
   const handleSummaryContinue = useCallback(() => {
     if (isDoctor) navigate(`/dashboard/prescribe/${appointmentId}`);
@@ -1311,7 +1321,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
     active?: boolean; icon: React.ReactNode; label: string; badge?: number; onClick: () => void;
   }) => (
     <button
-      className={`relative flex items-center justify-center gap-1.5 min-w-[44px] min-h-[44px] px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 ${
+      className={`relative flex shrink-0 items-center justify-center gap-1.5 min-w-[44px] min-h-[44px] px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 motion-reduce:transition-none ${
         active
           ? "bg-primary/15 text-primary border border-primary/25 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
           : "text-[hsl(220,15%,55%)] hover:text-white hover:bg-[hsl(220,20%,12%)] active:bg-[hsl(220,20%,16%)] border border-transparent"
@@ -1433,18 +1443,18 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
 
       {/* Desktop toolbar — below top bar, above video */}
       {!isMobile && (
-        <div className="flex items-center justify-center gap-1.5 px-5 py-2 bg-[hsl(220,25%,6%)] border-b border-[hsl(220,15%,10%)] shrink-0">
+        <div className="flex items-center justify-start xl:justify-center gap-1.5 px-5 py-2 bg-[hsl(220,25%,6%)] border-b border-[hsl(220,15%,10%)] shrink-0 overflow-x-auto overscroll-x-contain">
           {/* Media controls */}
           <ToolbarBtn
-            active={videoRef.current?.isMuted}
-            icon={videoRef.current?.isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-            label={videoRef.current?.isMuted ? "Ativar Mic" : "Mutar"}
+            active={mediaState.isMuted}
+            icon={mediaState.isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+            label={mediaState.isMuted ? "Ativar Mic" : "Mutar"}
             onClick={() => videoRef.current?.toggleMute()}
           />
           <ToolbarBtn
-            active={videoRef.current?.isVideoOff}
-            icon={videoRef.current?.isVideoOff ? <VideoOff className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
-            label={videoRef.current?.isVideoOff ? "Ativar Cam" : "Câmera"}
+            active={mediaState.isVideoOff}
+            icon={mediaState.isVideoOff ? <VideoOff className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
+            label={mediaState.isVideoOff ? "Ativar Cam" : "Câmera"}
             onClick={() => videoRef.current?.toggleVideo()}
           />
 
@@ -1515,12 +1525,12 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                 onClick={handlePiP}
               />
               <ToolbarBtn
-                active={videoRef.current?.isRecording}
-                icon={<Disc className={`w-3.5 h-3.5 ${videoRef.current?.isRecording ? "text-red-500 animate-pulse" : ""}`} />}
-                label={videoRef.current?.isRecording ? "Parar" : "Gravar"}
+                active={mediaState.isRecording}
+                icon={<Disc className={`w-3.5 h-3.5 ${mediaState.isRecording ? "text-red-500 animate-pulse motion-reduce:animate-none" : ""}`} />}
+                label={mediaState.isRecording ? "Parar" : "Gravar"}
                 onClick={handleToggleRecording}
               />
-              {videoRef.current?.hasRecording && !videoRef.current?.isRecording && (
+              {mediaState.hasRecording && !mediaState.isRecording && (
                 <ToolbarBtn
                   icon={<Download className="w-3.5 h-3.5" />}
                   label="Baixar"
@@ -1592,6 +1602,8 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                 roomId={((appointment as { video_room_secret?: string } | null)?.video_room_secret) || appointmentId!}
                 userName={currentUserName}
                 onEndCall={endCall}
+                showControls={false}
+                onMediaStateChange={setMediaState}
                 onStatusChange={(s) => {
                   setWebrtcStatus(s);
                   captureBreadcrumb("webrtc", `status: ${s}`, { appointmentId });
@@ -1832,18 +1844,18 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
       {/* Mobile bottom toolbar — fixed at bottom */}
       {isMobile && (
         <div
-          className="shrink-0 flex items-center justify-around gap-1 px-2 py-2 bg-[hsl(220,25%,6%)] border-t border-[hsl(220,15%,10%)]"
+          className="shrink-0 flex items-center justify-start gap-1 px-2 py-2 bg-[hsl(220,25%,6%)] border-t border-[hsl(220,15%,10%)] overflow-x-auto overscroll-x-contain"
           style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)" }}
         >
           <ToolbarBtn
-            active={videoRef.current?.isMuted}
-            icon={videoRef.current?.isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            active={mediaState.isMuted}
+            icon={mediaState.isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             label="Mic"
             onClick={() => videoRef.current?.toggleMute()}
           />
           <ToolbarBtn
-            active={videoRef.current?.isVideoOff}
-            icon={videoRef.current?.isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+            active={mediaState.isVideoOff}
+            icon={mediaState.isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
             label="Cam"
             onClick={() => videoRef.current?.toggleVideo()}
           />

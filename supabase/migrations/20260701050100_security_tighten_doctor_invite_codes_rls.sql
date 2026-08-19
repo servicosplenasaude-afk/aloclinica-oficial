@@ -53,17 +53,11 @@ DROP POLICY IF EXISTS "Doctors manage own codes" ON public.doctor_invite_codes;
 CREATE POLICY "Doctors manage own codes" ON public.doctor_invite_codes
   FOR ALL
   USING (
-    EXISTS (
-      SELECT 1 FROM public.doctor_profiles dp
-      WHERE dp.id = doctor_id AND dp.user_id = auth.uid()
-    )
+    created_by = auth.uid()
     OR public.has_role(auth.uid(), 'admin')
   )
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.doctor_profiles dp
-      WHERE dp.id = doctor_id AND dp.user_id = auth.uid()
-    )
+    created_by = auth.uid()
     OR public.has_role(auth.uid(), 'admin')
   );
 

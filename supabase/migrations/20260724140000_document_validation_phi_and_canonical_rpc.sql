@@ -25,7 +25,9 @@ AS $function$
   FROM public.document_verifications dv WHERE dv.verification_code = p_code LIMIT 1;
 $function$;
 
-CREATE OR REPLACE FUNCTION public.validate_signature_public(p_document_id text)
+DROP FUNCTION IF EXISTS public.validate_signature_public(text);
+
+CREATE FUNCTION public.validate_signature_public(p_document_id text)
  RETURNS TABLE(
    document_id text, document_type text, doctor_name text, doctor_crm text,
    patient_name text, signed_at timestamptz, document_hash text,

@@ -23,7 +23,7 @@ LANGUAGE sql
 SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
-  SELECT COALESCE(value, '{"enabled": false}'::jsonb)
+  SELECT COALESCE(value::jsonb, '{"enabled": false}'::jsonb)
     FROM public.app_settings
    WHERE key = 'maintenance_mode'
    LIMIT 1

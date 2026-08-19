@@ -45,9 +45,9 @@ END $$;
 DO $$ BEGIN
   DROP POLICY IF EXISTS "Access exames" ON public.aloc_exames;
   CREATE POLICY "Access exames" ON public.aloc_exames FOR SELECT USING (
-    auth.uid() = patient_id 
-    OR auth.uid() = doctor_id 
-    OR EXISTS (SELECT 1 FROM public.clinic_profiles cp WHERE cp.id = clinic_id AND cp.user_id = auth.uid())
+    auth.uid() = paciente_id
+    OR auth.uid() = medico_solicitante_id
+    OR auth.uid() = laudista_id
     OR public.has_role(auth.uid(), 'admin')
   );
 END $$;
@@ -56,9 +56,12 @@ END $$;
 DO $$ BEGIN
   DROP POLICY IF EXISTS "Access laudos" ON public.aloc_laudos;
   CREATE POLICY "Access laudos" ON public.aloc_laudos FOR SELECT USING (
-    auth.uid() = doctor_id 
-    OR auth.uid() = laudista_id 
-    OR EXISTS (SELECT 1 FROM public.aloc_exames e WHERE e.id = exam_id AND (e.patient_id = auth.uid() OR e.doctor_id = auth.uid()))
+    auth.uid() = medico_id
+    OR EXISTS (SELECT 1 FROM public.aloc_exames e WHERE e.id = exame_id AND (
+      e.paciente_id = auth.uid()
+      OR e.medico_solicitante_id = auth.uid()
+      OR e.laudista_id = auth.uid()
+    ))
     OR public.has_role(auth.uid(), 'admin')
   );
 END $$;

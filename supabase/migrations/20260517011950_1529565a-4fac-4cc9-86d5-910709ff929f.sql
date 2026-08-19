@@ -30,6 +30,10 @@ CREATE POLICY "Authenticated upload recordings"
   WITH CHECK (bucket_id = 'recordings');
 
 -- 5) Prescription validations: esconde IP/UA do público
+ALTER TABLE public.prescription_validations
+  ADD COLUMN IF NOT EXISTS validator_ip INET,
+  ADD COLUMN IF NOT EXISTS validator_user_agent TEXT;
+
 REVOKE SELECT (validator_ip, validator_user_agent)
 ON public.prescription_validations FROM anon;
 

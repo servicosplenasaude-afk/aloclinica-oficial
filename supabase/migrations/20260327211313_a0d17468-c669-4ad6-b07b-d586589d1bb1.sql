@@ -45,7 +45,7 @@ CREATE TABLE public.aloc_laudos (
   status TEXT NOT NULL DEFAULT 'rascunho' CHECK (status IN ('rascunho','assinado','entregue')),
   assinado_em TIMESTAMPTZ,
   pdf_url TEXT,
-  qr_token TEXT UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+  qr_token TEXT UNIQUE DEFAULT encode(extensions.gen_random_bytes(16), 'hex'),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

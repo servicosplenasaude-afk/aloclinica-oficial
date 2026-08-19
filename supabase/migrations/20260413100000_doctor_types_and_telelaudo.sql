@@ -19,5 +19,5 @@ UPDATE public.doctor_profiles dp
 SET doctor_type = 'laudista'
 WHERE EXISTS (
   SELECT 1 FROM public.user_roles ur
-  WHERE ur.user_id = dp.user_id AND ur.role = 'laudista'
+  WHERE ur.user_id = dp.user_id AND ur.role::text = 'laudista'
 ) AND doctor_type = 'telemedicina';

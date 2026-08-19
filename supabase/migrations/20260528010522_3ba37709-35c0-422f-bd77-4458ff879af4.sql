@@ -6,10 +6,10 @@ DROP POLICY IF EXISTS "Public can view doctor profiles" ON public.profiles;
 -- 2) doctor_profiles: restrict anon to safe columns only
 REVOKE SELECT ON public.doctor_profiles FROM anon;
 GRANT SELECT (
-  id, user_id, crm, crm_state, crm_verified, bio, price, return_price,
-  consultation_duration, is_approved, is_active, is_on_duty, slug,
-  professional_photo_url, areas_of_expertise, social_name, rating_avg,
-  rating_count, display_name, doctor_type, council_type, council_number, council_state
+  id, user_id, crm, crm_state, crm_verified, bio, consultation_price,
+  consultation_duration_min, is_approved, is_active, available_now,
+  full_name, avatar_url, sub_specialties, education, rating, total_reviews,
+  available_for_telemedicine, doctor_type, council_type, council_number, council_state
 ) ON public.doctor_profiles TO anon;
 
 CREATE POLICY "Anon can list approved active doctors (safe cols)"
@@ -20,7 +20,7 @@ CREATE POLICY "Anon can list approved active doctors (safe cols)"
 
 -- 3) profiles: restrict anon to safe public columns and re-create a narrower public listing policy
 REVOKE SELECT ON public.profiles FROM anon;
-GRANT SELECT (id, user_id, first_name, last_name, avatar_url, social_name)
+GRANT SELECT (id, user_id, first_name, last_name, avatar_url)
   ON public.profiles TO anon;
 
 CREATE POLICY "Anon can view doctor public profile names"

@@ -78,7 +78,7 @@ LANGUAGE sql
 SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
-  SELECT COALESCE(value, '{}'::jsonb)
+  SELECT COALESCE(value::jsonb, '{}'::jsonb)
     FROM public.app_settings
    WHERE key = 'theme'
    LIMIT 1
@@ -90,44 +90,21 @@ GRANT EXECUTE ON FUNCTION public.get_active_theme() TO anon, authenticated;
 -- ──────────────────────────────────────────────────────────
 -- Procura tabelas relacionadas a laudos/exames/consultas
 -- Foco: aloc_laudos (se existir) ou exam_requests
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='exam_requests') THEN
-    CREATE OR REPLACE VIEW public.doctor_sla_dashboard AS
-    SELECT
-      d.id AS doctor_id,
-      d.user_id AS doctor_user_id,
-      p.first_name || ' ' || p.last_name AS doctor_name,
-      d.crm,
-      d.crm_state,
-      COUNT(er.id) FILTER (WHERE er.status NOT IN ('completed', 'cancelled', 'rejected')) AS pendentes,
-      COUNT(er.id) FILTER (WHERE er.sla_deadline < NOW() AND er.status NOT IN ('completed', 'cancelled', 'rejected')) AS atrasados,
-      COUNT(er.id) FILTER (WHERE er.sla_deadline >= NOW() AND er.sla_deadline < NOW() + INTERVAL '24 hours' AND er.status NOT IN ('completed', 'cancelled', 'rejected')) AS proximos_24h,
-      AVG(EXTRACT(EPOCH FROM (er.completed_at - er.created_at))/3600)::numeric(10,2) AS avg_resolution_hours,
-      MIN(er.sla_deadline) FILTER (WHERE er.status NOT IN ('completed', 'cancelled', 'rejected')) AS proximo_sla
-      FROM public.doctor_profiles d
-      LEFT JOIN public.profiles p ON p.user_id = d.user_id
-      LEFT JOIN public.exam_requests er ON er.doctor_id = d.id
-     GROUP BY d.id, d.user_id, p.first_name, p.last_name, d.crm, d.crm_state;
-  ELSE
-    -- Fallback: usa appointments como proxy
-    CREATE OR REPLACE VIEW public.doctor_sla_dashboard AS
-    SELECT
-      d.id AS doctor_id,
-      d.user_id AS doctor_user_id,
-      p.first_name || ' ' || p.last_name AS doctor_name,
-      d.crm,
-      d.crm_state,
-      COUNT(a.id) FILTER (WHERE a.status NOT IN ('completed', 'cancelled')) AS pendentes,
-      0::bigint AS atrasados,
-      0::bigint AS proximos_24h,
-      NULL::numeric AS avg_resolution_hours,
-      NULL::timestamptz AS proximo_sla
-      FROM public.doctor_profiles d
-      LEFT JOIN public.profiles p ON p.user_id = d.user_id
-      LEFT JOIN public.appointments a ON a.doctor_id = d.id
-     GROUP BY d.id, d.user_id, p.first_name, p.last_name, d.crm, d.crm_state;
-  END IF;
-END $$;
+CREATE OR REPLACE VIEW public.doctor_sla_dashboard AS
+SELECT
+  d.id AS doctor_id,
+  d.user_id AS doctor_user_id,
+  p.first_name || ' ' || p.last_name AS doctor_name,
+  d.crm,
+  d.crm_state,
+  COUNT(a.id) FILTER (WHERE a.status NOT IN ('completed', 'cancelled')) AS pendentes,
+  0::bigint AS atrasados,
+  0::bigint AS proximos_24h,
+  NULL::numeric AS avg_resolution_hours,
+  NULL::timestamptz AS proximo_sla
+FROM public.doctor_profiles d
+LEFT JOIN public.profiles p ON p.user_id = d.user_id
+LEFT JOIN public.appointments a ON a.doctor_id = d.id
+GROUP BY d.id, d.user_id, p.first_name, p.last_name, d.crm, d.crm_state;
 
 GRANT SELECT ON public.doctor_sla_dashboard TO authenticated;

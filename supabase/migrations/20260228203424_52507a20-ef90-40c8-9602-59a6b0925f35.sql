@@ -6,6 +6,22 @@ INSERT INTO public.plans (id, name, description, price, interval, is_active, max
   ('a0000000-0003-4000-8000-000000000003', 'Família', 'Plano para toda a família', 149.90, 'monthly', true, null, '["Até 5 dependentes", "Consultas ilimitadas", "Prioridade total", "Desconto em exames"]'::jsonb)
 ON CONFLICT (id) DO NOTHING;
 
+-- Legacy demonstration data below references users from the original project.
+-- Keep fresh environments portable by inserting it only when those principals
+-- actually exist; sandbox test data is created by seed-test-users instead.
+DO $$
+BEGIN
+IF (
+  SELECT count(*) FROM auth.users
+  WHERE id IN (
+    'bc5ed973-4764-4229-a4e5-4d06435f0e70',
+    'a5c1ac9a-5368-4429-83a0-85e2b3d4a353',
+    '38dae434-500c-43db-b0c1-a1f4d0a4ad67',
+    '0f4b19af-687a-40c7-b510-aebe2269f17b',
+    'e4483e14-aea8-417b-81ff-02f3cbb502f2'
+  )
+) = 5 THEN
+
 -- Appointments
 INSERT INTO public.appointments (id, doctor_id, patient_id, scheduled_at, status, payment_status, price_at_booking, appointment_type, notes) VALUES
   ('b0000000-0001-4000-8000-000000000001', '13e95540-3dc7-4dd0-81a5-5d8086375784', 'bc5ed973-4764-4229-a4e5-4d06435f0e70', now() - interval '7 days', 'completed', 'approved', 89, 'teleconsulta', 'Consulta de rotina - paciente estável'),
@@ -131,3 +147,7 @@ INSERT INTO public.activity_logs (action, entity_type, entity_id, user_id, detai
   ('appointment_created', 'appointment', 'b0000000-0001-4000-8000-000000000001', 'bc5ed973-4764-4229-a4e5-4d06435f0e70', '{"status":"scheduled"}'::jsonb),
   ('appointment_status_change', 'appointment', 'b0000000-0001-4000-8000-000000000001', '38dae434-500c-43db-b0c1-a1f4d0a4ad67', '{"old_status":"scheduled","new_status":"completed"}'::jsonb),
   ('login', 'user', 'bc5ed973-4764-4229-a4e5-4d06435f0e70', 'bc5ed973-4764-4229-a4e5-4d06435f0e70', '{"method":"email"}'::jsonb);
+
+END IF;
+END
+$$;

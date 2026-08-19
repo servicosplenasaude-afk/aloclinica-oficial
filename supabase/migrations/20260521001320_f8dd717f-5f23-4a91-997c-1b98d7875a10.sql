@@ -145,7 +145,7 @@ BEGIN
     RAISE EXCEPTION 'forbidden';
   END IF;
 
-  v_code := upper(encode(gen_random_bytes(6), 'hex'));
+  v_code := upper(encode(extensions.gen_random_bytes(6), 'hex'));
 
   INSERT INTO public.doctor_signup_invites (code, email, notes, expires_at, created_by)
   VALUES (v_code, NULLIF(trim(p_email),''), p_notes,

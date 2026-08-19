@@ -243,6 +243,8 @@ CREATE TABLE IF NOT EXISTS public.doctor_applications (
   invite_code_id uuid,
   created_at timestamptz DEFAULT now()
 );
+ALTER TABLE public.doctor_applications
+  ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL;
 CREATE INDEX IF NOT EXISTS idx_doctor_applications_user_id ON public.doctor_applications(user_id);
 ALTER TABLE public.doctor_applications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS doctor_applications_sel ON public.doctor_applications;

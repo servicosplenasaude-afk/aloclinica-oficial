@@ -2,6 +2,8 @@
 -- 1) Notifications: aliases message/link
 ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS message TEXT;
 ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS link TEXT;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS body TEXT;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS action_url TEXT;
 
 CREATE OR REPLACE FUNCTION public.fn_notifications_sync_legacy()
 RETURNS trigger LANGUAGE plpgsql AS $$
@@ -24,6 +26,7 @@ UPDATE public.notifications SET message = COALESCE(message, body), link = COALES
 
 -- 2) faq_items: alias order_index
 ALTER TABLE public.faq_items ADD COLUMN IF NOT EXISTS order_index INT;
+ALTER TABLE public.faq_items ADD COLUMN IF NOT EXISTS display_order INT;
 
 CREATE OR REPLACE FUNCTION public.fn_faq_sync_order()
 RETURNS trigger LANGUAGE plpgsql AS $$
@@ -44,6 +47,8 @@ UPDATE public.faq_items SET order_index = COALESCE(order_index, display_order, 0
 ALTER TABLE public.testimonials ADD COLUMN IF NOT EXISTS order_index INT;
 ALTER TABLE public.testimonials ADD COLUMN IF NOT EXISTS text TEXT;
 ALTER TABLE public.testimonials ADD COLUMN IF NOT EXISTS company TEXT;
+ALTER TABLE public.testimonials ADD COLUMN IF NOT EXISTS display_order INT;
+ALTER TABLE public.testimonials ADD COLUMN IF NOT EXISTS content TEXT;
 
 CREATE OR REPLACE FUNCTION public.fn_testimonials_sync()
 RETURNS trigger LANGUAGE plpgsql AS $$
@@ -67,8 +72,12 @@ ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS cancel_reason TEXT;
 
 -- 5) enum appointment_status: adicionar 'confirmed' se ausente
 DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumtypid='appointment_status'::regtype AND enumlabel='confirmed') THEN
-    ALTER TYPE appointment_status ADD VALUE 'confirmed';
+  IF EXISTS (SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname='public' AND t.typname='appointment_status')
+     AND NOT EXISTS (
+       SELECT 1 FROM pg_enum e JOIN pg_type t ON t.oid=e.enumtypid JOIN pg_namespace n ON n.oid=t.typnamespace
+       WHERE n.nspname='public' AND t.typname='appointment_status' AND e.enumlabel='confirmed'
+     ) THEN
+    ALTER TYPE public.appointment_status ADD VALUE 'confirmed';
   END IF;
 END $$;
 

@@ -13,4 +13,8 @@
 -- later, e.g. for reissued/personal codes) but is no longer required for the
 -- pre-signup generation flow. This is an additive/loosening change: existing
 -- rows already satisfy a nullable column, so it is safe and reversible.
-ALTER TABLE public.doctor_invite_codes ALTER COLUMN doctor_id DROP NOT NULL;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='doctor_invite_codes' AND column_name='doctor_id') THEN
+    ALTER TABLE public.doctor_invite_codes ALTER COLUMN doctor_id DROP NOT NULL;
+  END IF;
+END $$;

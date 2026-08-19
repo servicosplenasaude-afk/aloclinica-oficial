@@ -66,6 +66,12 @@ serve(async (req) => {
       if (existingUser) {
         const userId = (existingUser as any).id;
 
+        const { error: passwordError } = await supabase.auth.admin.updateUserById(userId, {
+          password: u.password,
+          email_confirm: true,
+        });
+        if (passwordError) throw passwordError;
+
         // Ensure profile exists
         const { data: profile } = await supabase.from("profiles").select("id").eq("user_id", userId).maybeSingle();
         if (!profile) {
@@ -199,33 +205,65 @@ serve(async (req) => {
  
      if (patient && doctor) {
        const patientId = patient.id;
-       const doctorId = doctor.id;
+       const doctorUserId = doctor.id;
+       const { data: doctorProfile, error: doctorProfileError } = await supabase
+         .from("doctor_profiles").select("id").eq("user_id", doctorUserId).single();
+       if (doctorProfileError) throw doctorProfileError;
+       const doctorId = doctorProfile.id;
+
+       for (const verification of [
+         { user_id: patientId, tipo: "paciente" },
+         { user_id: doctorUserId, tipo: "medico" },
+       ]) {
+         const { error: deleteKycError } = await supabase
+           .from("kyc_verificacoes").delete().eq("user_id", verification.user_id);
+         if (deleteKycError) throw deleteKycError;
+         const { error: kycError } = await supabase.from("kyc_verificacoes").insert({
+           ...verification, status: "aprovado", similarity: 1,
+         });
+         if (kycError) throw kycError;
+       }
+
+       const { error: doctorKycError } = await supabase.from("doctor_profiles").update({
+         kyc_status: "approved", is_approved: true, crm_verified: true,
+       }).eq("id", doctorId);
+       if (doctorKycError) throw doctorKycError;
  
        // Create availability slot for today
-       const today = new Date().toISOString().split('T')[0];
+       const dayOfWeek = new Date().getDay();
        await supabase.from("availability_slots").upsert({
          doctor_id: doctorId,
-         date: today,
+         day_of_week: dayOfWeek,
          start_time: "09:00:00",
          end_time: "23:59:00",
-         status: "available"
-       }, { onConflict: "doctor_id,date,start_time" });
+         is_active: true
+       }, { onConflict: "doctor_id,day_of_week,start_time" });
  
        // Create a test appointment for "now" (rounded to hour)
        const scheduledFor = startOfHour(addHours(new Date(), 1)).toISOString();
+
+       const { error: cleanupAppointmentError } = await supabase.from("appointments").delete()
+         .eq("patient_id", patientId)
+         .eq("doctor_id", doctorId)
+         .eq("notes", "SANDBOX_TEST_CONSULTATION")
+         .in("status", ["scheduled", "confirmed", "waiting"]);
+       if (cleanupAppointmentError) throw cleanupAppointmentError;
        
-       const { data: appointment, error: appError } = await supabase.from("appointments").upsert({
+       const { data: appointment, error: appError } = await supabase.from("appointments").insert({
          patient_id: patientId,
          doctor_id: doctorId,
-         scheduled_for: scheduledFor,
+         scheduled_at: scheduledFor,
          status: "confirmed",
          payment_status: "confirmed",
-         specialty: "Clínico Geral",
+         appointment_type: "first_visit",
+         notes: "SANDBOX_TEST_CONSULTATION",
          duration_minutes: 30
-       }, { onConflict: "patient_id,doctor_id,scheduled_for" }).select().single();
+       }).select().single();
+
+       if (appError) throw appError;
  
        if (appointment) {
-         results.push({ type: "appointment", id: appointment.id, scheduled_for: scheduledFor, status: "created" });
+         results.push({ type: "appointment", id: appointment.id, scheduled_at: scheduledFor, status: "created" });
        }
      }
  

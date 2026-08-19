@@ -8,8 +8,9 @@
 -- - Cron monthly day 1 03:00 -> generate-sweepstake-tickets
 -- - Cron daily 09:00 -> notify-expired-prescriptions
 
-CREATE EXTENSION IF NOT EXISTS pg_cron;
-CREATE EXTENSION IF NOT EXISTS pg_net;
+-- pg_cron and pg_net are managed by Supabase and already enabled on hosted
+-- projects. Re-creating them here can fail because their privileges are owned
+-- by the platform role.
 
 -- Helper: invoke edge function via pg_net.http_post.
 -- Edge functions must be deployed with --no-verify-jwt (already in deploy.yml)
@@ -22,8 +23,13 @@ SET search_path = public, net
 AS $$
 DECLARE
   request_id bigint;
-  base_url text := 'https://pwxvvimdtmvziynbspgx.supabase.co/functions/v1/';
+  base_url text := current_setting('app.settings.supabase_url', true);
 BEGIN
+  IF base_url IS NULL OR base_url = '' THEN
+    RAISE WARNING 'app.settings.supabase_url is not configured; skipping edge invocation';
+    RETURN NULL;
+  END IF;
+  base_url := rtrim(base_url, '/') || '/functions/v1/';
   SELECT net.http_post(
     url := base_url || fn_name,
     headers := jsonb_build_object('Content-Type', 'application/json'),

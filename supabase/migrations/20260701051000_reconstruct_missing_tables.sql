@@ -86,6 +86,8 @@ CREATE TABLE IF NOT EXISTS public.digital_signatures (
   is_valid          boolean DEFAULT true,
   created_at        timestamptz DEFAULT now()
 );
+ALTER TABLE public.digital_signatures
+  ADD COLUMN IF NOT EXISTS verification_code text;
 CREATE INDEX IF NOT EXISTS idx_digital_signatures_verif ON public.digital_signatures (verification_code);
 CREATE INDEX IF NOT EXISTS idx_digital_signatures_record ON public.digital_signatures (related_record_id);
 ALTER TABLE public.digital_signatures ENABLE ROW LEVEL SECURITY;

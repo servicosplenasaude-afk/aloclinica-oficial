@@ -9,6 +9,20 @@
 -- ──────────────────────────────────────────────────────────────────
 -- 1. SAVED CARDS — adiciona mp_card_id (vault Mercado Pago)
 -- ──────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.saved_cards (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  pagbank_card_id TEXT,
+  brand TEXT,
+  last4 TEXT,
+  holder_name TEXT,
+  expiry_month INTEGER,
+  expiry_year INTEGER,
+  is_default BOOLEAN DEFAULT false,
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
 ALTER TABLE public.saved_cards
   ADD COLUMN IF NOT EXISTS mp_card_id TEXT,
   -- Mercado Pago atrela cartões a um customer; guardamos o customer_id também
@@ -35,6 +49,20 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_mp_preapproval ON public.subscripti
 -- ──────────────────────────────────────────────────────────────────
 -- 3. PAYMENT_TRANSACTIONS — adiciona mp_payment_id
 -- ──────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.payment_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  amount_cents BIGINT,
+  currency TEXT DEFAULT 'BRL',
+  payment_method TEXT,
+  status TEXT,
+  resource_id TEXT,
+  resource_type TEXT,
+  raw_response JSONB,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 ALTER TABLE public.payment_transactions
   ADD COLUMN IF NOT EXISTS mp_payment_id TEXT,
   ADD COLUMN IF NOT EXISTS mp_preapproval_id TEXT,

@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS public.health_cards (
   sus_card_number   TEXT,
   organ_donor       BOOLEAN DEFAULT false,
   notes             TEXT,
-  qr_token          TEXT UNIQUE DEFAULT encode(gen_random_bytes(16), 'hex'),
+  qr_token          TEXT UNIQUE DEFAULT encode(extensions.gen_random_bytes(16), 'hex'),
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -126,7 +126,7 @@ CREATE POLICY "laudistas_see_second_opinions"
   USING (
     requesting_user_id = auth.uid()
     OR assigned_laudista_id = auth.uid()
-    OR EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role IN ('admin','laudista'))
+    OR EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role::text IN ('admin','laudista'))
   );
 
 CREATE POLICY "laudistas_update_second_opinions"

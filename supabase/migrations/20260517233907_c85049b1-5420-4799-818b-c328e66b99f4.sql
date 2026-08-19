@@ -48,6 +48,8 @@ END $$;
 -- ============================================================
 -- 2) REALTIME: RLS por tópico em realtime.messages
 -- ============================================================
+DO $realtime$
+BEGIN
 ALTER TABLE IF EXISTS realtime.messages ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Authenticated can read own topics" ON realtime.messages;
@@ -93,6 +95,11 @@ WITH CHECK (
   )
   OR public.is_admin()
 );
+
+EXCEPTION WHEN insufficient_privilege THEN
+  RAISE NOTICE 'Skipping realtime.messages policies; table is managed by Supabase';
+END
+$realtime$;
 
 -- ============================================================
 -- 3) STORAGE: policies de DELETE e UPDATE em buckets privados

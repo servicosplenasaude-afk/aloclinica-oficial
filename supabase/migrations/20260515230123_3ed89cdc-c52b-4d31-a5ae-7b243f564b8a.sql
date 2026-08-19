@@ -14,10 +14,14 @@ CREATE TRIGGER trg_subscriptions_updated_at
   FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 
 -- 3. Rename appointment_waitlist columns to match SQL functions
-ALTER TABLE public.appointment_waitlist
-  RENAME COLUMN preferred_date TO desired_date;
-ALTER TABLE public.appointment_waitlist
-  RENAME COLUMN is_notified TO notified;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='appointment_waitlist' AND column_name='preferred_date') THEN
+    ALTER TABLE public.appointment_waitlist RENAME COLUMN preferred_date TO desired_date;
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='appointment_waitlist' AND column_name='is_notified') THEN
+    ALTER TABLE public.appointment_waitlist RENAME COLUMN is_notified TO notified;
+  END IF;
+END $$;
 
 -- 4. Fix fn_handle_doctor_no_show — use invoke_edge_function helper (correct project URL)
 CREATE OR REPLACE FUNCTION public.fn_handle_doctor_no_show()

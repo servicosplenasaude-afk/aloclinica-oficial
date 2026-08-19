@@ -35,7 +35,7 @@ BEGIN
       raw_app_meta_data, raw_user_meta_data, is_super_admin, is_anonymous
     ) VALUES (
       v_user_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-      v_email, crypt('SeedDoctor!2026', gen_salt('bf')),
+      v_email, extensions.crypt('SeedDoctor!2026', extensions.gen_salt('bf')),
       now(), now(), now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       jsonb_build_object('first_name', d->>'first', 'last_name', d->>'last', 'seed', true),

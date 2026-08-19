@@ -1,6 +1,9 @@
 
 ALTER VIEW public.doctor_profiles_public SET (security_invoker = true);
 
+ALTER TABLE public.doctor_profiles
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true;
+
 -- Public read of approved+active doctor rows (only non-sensitive columns are exposed via the view)
 DROP POLICY IF EXISTS "Public can view approved active doctors" ON public.doctor_profiles;
 CREATE POLICY "Public can view approved active doctors"

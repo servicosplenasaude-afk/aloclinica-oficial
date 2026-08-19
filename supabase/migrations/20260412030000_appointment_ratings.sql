@@ -52,7 +52,8 @@ create trigger appointment_rating_trigger
   for each row execute function public.trg_appointment_rating();
 
 -- RLS: only the patient who booked can rate their own appointment
-create policy if not exists "patient can rate own appointment"
+drop policy if exists "patient can rate own appointment" on public.appointments;
+create policy "patient can rate own appointment"
   on public.appointments
   for update
   to authenticated

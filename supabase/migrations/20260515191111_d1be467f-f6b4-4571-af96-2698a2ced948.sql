@@ -6,6 +6,11 @@ DROP POLICY IF EXISTS "Anyone can verify" ON public.document_verifications;
 DROP POLICY IF EXISTS "Anyone can verify documents by code" ON public.document_verifications;
 DROP POLICY IF EXISTS "Anyone can view verification by code" ON public.document_verifications;
 
+ALTER TABLE public.document_verifications
+  ADD COLUMN IF NOT EXISTS signer_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS is_valid BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ;
+
 CREATE POLICY "Signer or admin can read verifications"
 ON public.document_verifications
 FOR SELECT
@@ -49,6 +54,9 @@ GRANT EXECUTE ON FUNCTION public.verify_document_by_code(text) TO anon, authenti
 -- 2. guest_patients: require auth + creator
 -- =========================================================
 DROP POLICY IF EXISTS "Guest patients can be created" ON public.guest_patients;
+
+ALTER TABLE public.guest_patients
+  ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
 CREATE POLICY "Authenticated users create their own guest patients"
 ON public.guest_patients
@@ -227,5 +235,4 @@ DROP POLICY IF EXISTS "Anyone can view signed laudos" ON storage.objects;
 ALTER FUNCTION public.on_appointment_status_change() SET search_path = public;
 ALTER FUNCTION public.touch_app_settings() SET search_path = public;
 ALTER FUNCTION public.touch_notification_templates() SET search_path = public;
-ALTER FUNCTION public.touch_payment_transactions() SET search_path = public;
 ALTER FUNCTION public.touch_updated_at() SET search_path = public;

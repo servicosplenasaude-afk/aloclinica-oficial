@@ -1,7 +1,2 @@
-UPDATE auth.users 
-SET encrypted_password = crypt('@Costagold2026', gen_salt('bf')),
-    email_confirmed_at = now(),
-    updated_at = now(),
-    raw_app_meta_data = raw_app_meta_data || '{"provider":"email","providers":["email"]}',
-    raw_user_meta_data = raw_user_meta_data || '{"full_name":"Admin Plena Saúde"}'
-WHERE email = 'plenasaudebv@gmail.com';
+-- Intentionally empty. Passwords must never be assigned by a migration or
+-- committed to source control; use the Auth Admin API and a secret manager.

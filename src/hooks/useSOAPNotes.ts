@@ -46,7 +46,7 @@ export function useSOAPNotes(appointmentId: string, isDoctor: boolean) {
           .select("*")
           .eq("appointment_id", appointmentId)
           .eq("type", "soap")
-          .single();
+          .maybeSingle();
 
         if (data) {
           const notes = data.content as SOAPNotes;

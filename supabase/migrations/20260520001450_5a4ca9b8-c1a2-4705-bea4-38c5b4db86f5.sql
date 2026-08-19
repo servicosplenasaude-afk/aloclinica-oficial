@@ -6,15 +6,26 @@ DECLARE
   v_doc2 UUID := 'e9903fb1-03be-42be-8174-1d59830b477b';
   v_doc3 UUID := 'faea37ab-0caf-4b91-9cbf-d1bd7b4f83b6';
   v_doc1_user UUID := 'c8d71512-5b54-452f-9802-de479be986da';
-  v_clinica UUID := (SELECT id FROM specialties WHERE slug='clinica-geral');
-  v_cardio  UUID := (SELECT id FROM specialties WHERE slug='cardiologia');
-  v_derma   UUID := (SELECT id FROM specialties WHERE slug='dermatologia');
-  v_pedi    UUID := (SELECT id FROM specialties WHERE slug='pediatria');
-  v_nutri   UUID := (SELECT id FROM specialties WHERE slug='nutricao');
+  v_clinica UUID;
+  v_cardio UUID;
+  v_derma UUID;
+  v_pedi UUID;
+  v_nutri UUID;
   v_plan_premium UUID := '0de6eace-c748-4a2f-bcba-c029ec031eea';
   v_sub UUID; v_acct UUID;
   v_appt1 UUID; v_appt2 UUID; v_appt3 UUID;
 BEGIN
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = v_user)
+     OR NOT EXISTS (SELECT 1 FROM doctor_profiles WHERE id IN (v_doc1, v_doc2, v_doc3)) THEN
+    RAISE NOTICE 'Skipping legacy demo seed because its fixed users are absent';
+    RETURN;
+  END IF;
+
+  SELECT id INTO v_clinica FROM specialties WHERE name ILIKE '%clínica%' LIMIT 1;
+  SELECT id INTO v_cardio FROM specialties WHERE name ILIKE '%cardio%' LIMIT 1;
+  SELECT id INTO v_derma FROM specialties WHERE name ILIKE '%derma%' LIMIT 1;
+  SELECT id INTO v_pedi FROM specialties WHERE name ILIKE '%pedia%' LIMIT 1;
+  SELECT id INTO v_nutri FROM specialties WHERE name ILIKE '%nutri%' LIMIT 1;
   UPDATE doctor_profiles SET bio='Médico clínico geral com 10+ anos de experiência. Atendimento humanizado via telemedicina.',
     price=89, crm=COALESCE(crm,'CRM-12345-SP'), crm_state=COALESCE(crm_state,'SP'), crm_verified=true,
     slug=COALESCE(slug,'carlos-medico'),
@@ -138,6 +149,7 @@ INSERT INTO sweepstakes (title,description,prize_value,prize_description,draw_da
 INSERT INTO sweepstake_tickets (sweepstake_id,user_id,ticket_number,source)
 SELECT s.id,'77c528d4-c8b4-4e7f-8678-dabef20b5a44',lpad((floor(random()*999999))::text,6,'0'),'monthly'
 FROM sweepstakes s WHERE s.status='open'
+  AND EXISTS (SELECT 1 FROM auth.users WHERE id='77c528d4-c8b4-4e7f-8678-dabef20b5a44')
   AND NOT EXISTS (SELECT 1 FROM sweepstake_tickets st WHERE st.sweepstake_id=s.id AND st.user_id='77c528d4-c8b4-4e7f-8678-dabef20b5a44')
 LIMIT 1;
 

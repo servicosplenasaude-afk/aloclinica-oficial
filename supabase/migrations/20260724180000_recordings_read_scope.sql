@@ -8,6 +8,8 @@
 -- admin — consistente com update/delete. (Bucket vazio hoje: risco zero. Acesso do
 -- paciente à própria gravação, quando a feature for ao ar, deve ser mediado por
 -- edge function que valida a posse da consulta, já que o path é prefixado pelo médico.)
-ALTER POLICY "Doctors view recordings" ON storage.objects
+DROP POLICY IF EXISTS "Doctors view recordings" ON storage.objects;
+CREATE POLICY "Doctors view recordings" ON storage.objects
+  FOR SELECT TO authenticated
   USING (bucket_id = 'recordings'
          AND (((auth.uid())::text = (storage.foldername(name))[1]) OR is_admin()));

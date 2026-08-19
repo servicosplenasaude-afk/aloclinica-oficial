@@ -11,6 +11,14 @@ CREATE TABLE IF NOT EXISTS public.referrals (
   usage_count integer NOT NULL DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.referrals
+  ADD COLUMN IF NOT EXISTS referrer_user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS code text,
+  ADD COLUMN IF NOT EXISTS usage_count integer NOT NULL DEFAULT 0;
+UPDATE public.referrals
+SET referrer_user_id = COALESCE(referrer_user_id, referrer_id),
+    code = COALESCE(code, referral_code);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_referrals_code ON public.referrals(code);
 CREATE INDEX IF NOT EXISTS idx_referrals_referrer ON public.referrals(referrer_user_id);
 ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "owner reads own code" ON public.referrals;

@@ -10,7 +10,7 @@ ALTER TABLE public.prescription_renewals
   ADD COLUMN IF NOT EXISTS renewed_to_prescription_id uuid REFERENCES public.prescriptions(id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS idx_prescription_renewals_doctor_status
-  ON public.prescription_renewals(doctor_id, status);
+  ON public.prescription_renewals(assigned_doctor_id, status);
 CREATE INDEX IF NOT EXISTS idx_prescription_renewals_patient
   ON public.prescription_renewals(patient_id);
 
@@ -26,7 +26,7 @@ BEGIN
   IF NEW.status <> 'pending' THEN RETURN NEW; END IF;
 
   -- doctor_id em prescription_renewals é o doctor_profiles.id → buscar user_id
-  SELECT user_id INTO doc_user_id FROM public.doctor_profiles WHERE id = NEW.doctor_id;
+  SELECT user_id INTO doc_user_id FROM public.doctor_profiles WHERE id = NEW.assigned_doctor_id;
   IF doc_user_id IS NULL THEN RETURN NEW; END IF;
 
   SELECT COALESCE(NULLIF(TRIM(CONCAT(first_name, ' ', last_name)), ''), 'um paciente')

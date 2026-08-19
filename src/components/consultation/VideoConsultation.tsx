@@ -41,6 +41,8 @@ interface VideoConsultationProps {
   userName?: string;
   onEndCall: () => void;
   onStatusChange?: (status: CallStatus) => void;
+  showControls?: boolean;
+  onMediaStateChange?: (state: Pick<VideoConsultationHandle, "isMuted" | "isVideoOff" | "isScreenSharing" | "isRecording" | "hasRecording">) => void;
 }
 
 const STATUS_LABELS: Record<CallStatus, string> = {
@@ -55,7 +57,7 @@ const STATUS_LABELS: Record<CallStatus, string> = {
 };
 
 const VideoConsultation = forwardRef<VideoConsultationHandle, VideoConsultationProps>(
-  ({ appointmentId, roomId, userName, onEndCall, onStatusChange }, ref) => {
+  ({ appointmentId, roomId, userName, onEndCall, onStatusChange, showControls = true, onMediaStateChange }, ref) => {
     const { user, roles } = useAuth();
     const isMobile = useIsMobile();
     const isDoctor = roles.includes("doctor") || roles.includes("admin");
@@ -155,6 +157,10 @@ const VideoConsultation = forwardRef<VideoConsultationHandle, VideoConsultationP
     useEffect(() => {
       onStatusChange?.(status);
     }, [status, onStatusChange]);
+
+    useEffect(() => {
+      onMediaStateChange?.({ isMuted, isVideoOff, isScreenSharing, isRecording, hasRecording });
+    }, [hasRecording, isMuted, isRecording, isScreenSharing, isVideoOff, onMediaStateChange]);
 
     // ─── Criar stream combinado para gravação ───────────────────────────────────
     const createRecordingStream = useRef(() => {
@@ -377,7 +383,7 @@ const VideoConsultation = forwardRef<VideoConsultationHandle, VideoConsultationP
         </motion.div>
 
         {/* ===== Controles de Vídeo — Bottom Center ===== */}
-        {isActive && (
+        {showControls && isActive && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
