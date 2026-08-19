@@ -71,6 +71,15 @@ jobs:
           version: latest
 
       - name: Deploy Edge Functions
-        run: supabase functions deploy --project-ref "${STAGING_SUPABASE_PROJECT_REF}"
+        run: |
+          functions=()
+          for function_dir in supabase/functions/*; do
+            function_name="$(basename "$function_dir")"
+            if [ ! -d "$function_dir" ] || [ "$function_name" = "_shared" ] || [ "$function_name" = "mcp" ]; then
+              continue
+            fi
+            functions+=("$function_name")
+          done
+          supabase functions deploy "${functions[@]}" --project-ref "${STAGING_SUPABASE_PROJECT_REF}" --use-api --jobs 4
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
