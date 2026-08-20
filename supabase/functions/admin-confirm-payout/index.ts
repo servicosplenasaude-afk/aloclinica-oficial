@@ -45,6 +45,23 @@ Deno.serve(async (req) => {
     p_admin_id: caller.user.id,
   });
   if (error) {
+    // Compatibility path while older projects are waiting for the RPC migration.
+    // The status predicate still makes the write idempotent and server-only.
+    if (error.code === "PGRST202" || error.message.includes("fn_admin_confirm_manual_payout")) {
+      const { data: updated, error: updateError } = await admin.from("doctor_payouts")
+        .update({ status: "paid", paid_at: new Date().toISOString(), pix_tx_id: transactionId })
+        .eq("id", payoutId).eq("status", "ready")
+        .select("id, doctor_id, net_amount").maybeSingle();
+      if (updateError) return json({ error: "Não foi possível confirmar o repasse" }, 500);
+      if (!updated) return json({ error: "Repasse já processado ou indisponível" }, 409);
+      const { error: auditError } = await admin.from("activity_logs").insert({
+        user_id: null, performed_by: caller.user.id, action: "manual_payout_confirmed",
+        entity_type: "doctor_payout", entity_id: payoutId,
+        details: { transaction_id: transactionId, confirmation_source: "external_statement_verified", previous_status: "ready", doctor_id: updated.doctor_id, net_amount: updated.net_amount, compatibility_path: true },
+      });
+      if (auditError) console.error("[admin-confirm-payout] audit write failed", auditError.code);
+      return json({ ok: true, result: { id: payoutId, status: "paid" } });
+    }
     console.error("[admin-confirm-payout]", error.code, error.message);
     const conflict = error.message.includes("not ready");
     return json({ error: conflict ? "Repasse já processado ou indisponível" : "Não foi possível confirmar o repasse" }, conflict ? 409 : 500);
