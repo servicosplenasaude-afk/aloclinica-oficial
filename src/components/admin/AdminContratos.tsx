@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { getAdminNav } from "./adminNav";
@@ -421,12 +421,13 @@ const AdminContratos = () => {
 function BeneficiariosDialog({ open, onOpenChange, contrato }: { open: boolean; onOpenChange: (v: boolean) => void; contrato: Contrato }) {
   const [list, setList] = useState<any[]>([]);
   const [bulk, setBulk] = useState("");
+  const confirm = useConfirm();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const { data } = await db.from("contrato_beneficiarios").select("*").eq("contrato_id", contrato.id).order("created_at", { ascending: false });
     setList(data ?? []);
-  };
-  useEffect(() => { if (open) load(); }, [open, contrato.id]);
+  }, [contrato.id]);
+  useEffect(() => { if (open) load(); }, [open, load]);
 
   const importar = async () => {
     const linhas = bulk.split("\n").map((l) => l.trim()).filter(Boolean);
@@ -443,7 +444,11 @@ function BeneficiariosDialog({ open, onOpenChange, contrato }: { open: boolean; 
   };
 
   const remover = async (id: string) => {
-    await db.from("contrato_beneficiarios").delete().eq("id", id);
+    const ok = await confirm({ title: "Remover beneficiário?", description: "O beneficiário perderá o vínculo com este contrato.", confirmLabel: "Remover", destructive: true });
+    if (!ok) return;
+    const { error } = await db.from("contrato_beneficiarios").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover beneficiário", { description: error.message }); return; }
+    toast.success("Beneficiário removido");
     load();
   };
 
@@ -505,12 +510,13 @@ function VouchersDialog({ open, onOpenChange, contrato }: { open: boolean; onOpe
   const [codigo, setCodigo] = useState("");
   const [usos, setUsos] = useState("1");
   const [validade, setValidade] = useState("");
+  const confirm = useConfirm();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const { data } = await db.from("vouchers").select("*").eq("contrato_id", contrato.id).order("created_at", { ascending: false });
     setList(data ?? []);
-  };
-  useEffect(() => { if (open) load(); }, [open, contrato.id]);
+  }, [contrato.id]);
+  useEffect(() => { if (open) load(); }, [open, load]);
 
   const criar = async () => {
     if (!codigo.trim()) return;
@@ -528,7 +534,11 @@ function VouchersDialog({ open, onOpenChange, contrato }: { open: boolean; onOpe
   };
 
   const remover = async (id: string) => {
-    await db.from("vouchers").delete().eq("id", id);
+    const ok = await confirm({ title: "Excluir voucher?", description: "O código deixará de funcionar imediatamente.", confirmLabel: "Excluir", destructive: true });
+    if (!ok) return;
+    const { error } = await db.from("vouchers").delete().eq("id", id);
+    if (error) { toast.error("Erro ao excluir voucher", { description: error.message }); return; }
+    toast.success("Voucher excluído");
     load();
   };
 
@@ -571,12 +581,13 @@ function DocumentosDialog({ open, onOpenChange, contrato }: { open: boolean; onO
   const [docs, setDocs] = useState<any[]>([]);
   const [tipo, setTipo] = useState("edital");
   const [uploading, setUploading] = useState(false);
+  const confirm = useConfirm();
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const { data } = await db.from("contrato_documentos").select("*").eq("contrato_id", contrato.id).order("created_at", { ascending: false });
     setDocs(data ?? []);
-  };
-  useEffect(() => { if (open) load(); }, [open, contrato.id]);
+  }, [contrato.id]);
+  useEffect(() => { if (open) load(); }, [open, load]);
 
   const onUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -604,8 +615,13 @@ function DocumentosDialog({ open, onOpenChange, contrato }: { open: boolean; onO
   };
 
   const remover = async (d: any) => {
-    await supabase.storage.from("contrato-docs").remove([d.storage_path]);
-    await db.from("contrato_documentos").delete().eq("id", d.id);
+    const ok = await confirm({ title: "Excluir documento?", description: `O arquivo “${d.nome ?? "documento"}” será removido permanentemente.`, confirmLabel: "Excluir", destructive: true });
+    if (!ok) return;
+    const { error: storageError } = await supabase.storage.from("contrato-docs").remove([d.storage_path]);
+    if (storageError) { toast.error("Erro ao remover arquivo", { description: storageError.message }); return; }
+    const { error } = await db.from("contrato_documentos").delete().eq("id", d.id);
+    if (error) { toast.error("Erro ao remover registro", { description: error.message }); return; }
+    toast.success("Documento excluído");
     load();
   };
 

@@ -110,20 +110,23 @@ const AdminPayouts = () => {
   // Idempotente: só marca um repasse que ainda NÃO foi pago (pending/ready).
   // Evita re-marcar/duplicar um repasse que o fluxo automático de saque já pagou.
   const markPaidCore = async (id: string, tx: string): Promise<"ok" | "noop" | "error"> => {
-    const { data: updated, error } = await db
-      .from("doctor_payouts")
-      .update({ status: "paid", paid_at: new Date().toISOString(), pix_tx_id: tx })
-      .eq("id", id)
-      .in("status", ["pending", "ready"])
-      .select("id");
-    if (error) { toast.error(error.message); return "error"; }
-    if (!updated || updated.length === 0) return "noop";
+    const { data, error } = await db.functions.invoke("admin-confirm-payout", {
+      body: { payout_id: id, transaction_id: tx, confirmation_source: "external_statement_verified" },
+    });
+    if (error) { toast.error("Não foi possível confirmar o repasse no servidor."); return "error"; }
+    if (!data?.ok) return "noop";
     return "ok";
   };
 
   const markPaid = async (id: string) => {
     const tx = txMap[id]?.trim();
     if (!tx) { toast.error("Informe o ID da transação PIX"); return; }
+    const approved = await confirm({
+      title: "Confirmar pagamento externo?",
+      description: "Confirme somente após conferir o identificador no extrato do provedor. A ação será registrada na auditoria.",
+      confirmLabel: "Extrato conferido — confirmar",
+    });
+    if (!approved) return;
     const res = await markPaidCore(id, tx);
     if (res === "noop") { toast.error("Repasse já estava pago ou cancelado — nada foi alterado."); return; }
     if (res === "ok") {

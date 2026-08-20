@@ -5,11 +5,12 @@ import { getAdminNav } from "@/components/admin/adminNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Clock, Database, Bot, Globe, Server, Users, FileText, Calendar, HardDrive, Shield, Monitor, Video, MessageCircle, CreditCard, Mail, Brain, Stethoscope, FileSignature, Eye, Bell, Plug } from "lucide-react";
+import { RefreshCw, CheckCircle2, XCircle, Clock, Database, Bot, Globe, Server, Users, FileText, Calendar, HardDrive, Shield, Video, MessageCircle, CreditCard, Mail, Plug, GitCommitHorizontal, Archive } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { SUPABASE_FUNCTIONS_URL, SUPABASE_PUBLISHABLE_KEY } from "@/lib/supabase-config";
 import { useServiceHealth } from "@/hooks/use-service-health";
+import { getBackupState, shortRelease } from "@/lib/admin-system-health";
 
 interface HealthCheck {
   name: string;
@@ -27,7 +28,6 @@ interface DbStats {
   prescriptions: number;
   activeSubscriptions: number;
   queueWaiting: number;
-  storageBuckets: number;
 }
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
@@ -59,7 +59,6 @@ const SystemHealth = () => {
       prescriptions: prescriptions.count ?? 0,
       activeSubscriptions: subs.count ?? 0,
       queueWaiting: queue.count ?? 0,
-      storageBuckets: 7,
     });
   };
 
@@ -183,9 +182,12 @@ const SystemHealth = () => {
 
   // Falhas reais dos serviços externos (verificação no servidor) entram no status geral.
   const serverDown = health.summary.down;
-  const allOk = checks.length > 0 && checks.every(c => c.status === "ok") && serverDown === 0;
-  const hasErrors = checks.some(c => c.status === "error") || serverDown > 0;
-  const failCount = checks.filter(c => c.status === "error").length + serverDown;
+  const operational = health.data?.operational;
+  const backupState = getBackupState(operational);
+  const backupFailed = backupState === "failed" || backupState === "never" || backupState === "stale";
+  const allOk = checks.length > 0 && checks.every(c => c.status === "ok") && serverDown === 0 && !backupFailed;
+  const hasErrors = checks.some(c => c.status === "error") || serverDown > 0 || backupFailed;
+  const failCount = checks.filter(c => c.status === "error").length + serverDown + (backupFailed ? 1 : 0);
   const avgLatency = checks.length > 0 ? Math.round(checks.reduce((sum, c) => sum + (c.latency ?? 0), 0) / checks.length) : 0;
 
   const dbStatCards = dbStats ? [
@@ -195,8 +197,15 @@ const SystemHealth = () => {
     { label: "Receitas", value: dbStats.prescriptions, icon: FileText, color: "text-success" },
     { label: "Assinaturas", value: dbStats.activeSubscriptions, icon: Server, color: "text-success" },
     { label: "Fila Urgência", value: dbStats.queueWaiting, icon: Clock, color: dbStats.queueWaiting > 0 ? "text-destructive" : "text-muted-foreground" },
-    { label: "Buckets", value: dbStats.storageBuckets, icon: HardDrive, color: "text-muted-foreground" },
   ] : [];
+
+  const backupPresentation = ({
+    healthy: { label: "Saudável", badge: "ATUALIZADO", tone: "text-success", variant: "default" as const },
+    stale: { label: "Último backup está atrasado", badge: "ATRASADO", tone: "text-amber-600", variant: "secondary" as const },
+    failed: { label: "A execução mais recente falhou", badge: "FALHA", tone: "text-destructive", variant: "destructive" as const },
+    never: { label: "Nenhum backup concluído registrado", badge: "SEM BACKUP", tone: "text-destructive", variant: "destructive" as const },
+    unavailable: { label: "Status indisponível", badge: "INDISPONÍVEL", tone: "text-muted-foreground", variant: "secondary" as const },
+  })[backupState];
 
   return (
     <DashboardLayout title="Administração" nav={getAdminNav("health")}>
@@ -239,6 +248,51 @@ const SystemHealth = () => {
                 </div>
               </CardContent>
             </Card>
+          </motion.div>
+        )}
+
+        {/* Metadados operacionais fornecidos pelo servidor; nenhum secret é exposto. */}
+        {operational && (
+          <motion.div variants={fadeUp}>
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-3 px-1">Operação e recuperação</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <Card className="border-border/50">
+                <CardContent className="p-4">
+                  <Globe className="w-5 h-5 text-primary mb-3" />
+                  <p className="text-xs text-muted-foreground">Ambiente</p>
+                  <p className="font-semibold capitalize">{operational.environment === "unknown" ? "Não identificado" : operational.environment}</p>
+                </CardContent>
+              </Card>
+              <Card className="border-border/50">
+                <CardContent className="p-4">
+                  <GitCommitHorizontal className="w-5 h-5 text-primary mb-3" />
+                  <p className="text-xs text-muted-foreground">Versão implantada</p>
+                  <p className="font-mono font-semibold" title="Identificador abreviado por segurança">{shortRelease(operational.release)}</p>
+                </CardContent>
+              </Card>
+              <Card className="border-border/50">
+                <CardContent className="p-4">
+                  <HardDrive className="w-5 h-5 text-primary mb-3" />
+                  <p className="text-xs text-muted-foreground">Buckets privados/públicos</p>
+                  <p className="font-semibold">{operational.storage.bucketCount ?? "Indisponível"}</p>
+                </CardContent>
+              </Card>
+              <Card className={`border ${backupState === "healthy" ? "border-success/20" : backupState === "failed" || backupState === "never" ? "border-destructive/30" : "border-border"}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <Archive className={`w-5 h-5 mb-3 ${backupPresentation.tone}`} />
+                    <Badge variant={backupPresentation.variant} className="text-[10px]">{backupPresentation.badge}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Backup operacional</p>
+                  <p className="font-semibold text-sm">{backupPresentation.label}</p>
+                  {operational.backup.lastCompleted?.occurredAt && (
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Último sucesso: {format(new Date(operational.backup.lastCompleted.occurredAt), "dd/MM/yyyy HH:mm")}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </motion.div>
         )}
 

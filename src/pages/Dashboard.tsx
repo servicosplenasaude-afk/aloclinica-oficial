@@ -10,6 +10,7 @@ import { warn } from "@/lib/logger";
 import PingoLoader from "@/components/PingoLoader";
 import ReVerificationGate from "@/components/auth/ReVerificationGate";
 import { KycRequiredGate } from "@/components/auth/KycRequiredGate";
+import { AdminRouteGuard } from "@/components/auth/AdminRouteGuard";
 import { FirstLoginKycGate } from "@/components/auth/FirstLoginKycGate";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { getDoctorNav } from "@/components/doctor/doctorNav";
@@ -378,53 +379,53 @@ const Dashboard = () => {
       <Route path="partner/conversion" element={<RoleGuard allowed={["partner"]} roles={roles}><ContextGuard panel="partner" forceRole={forceRole} roles={roles}><PartnerDashboard /></ContextGuard></RoleGuard>} />
 
       {/* Admin */}
-      <Route path="admin/doctors" element={<RoleGuard allowed={[]} roles={roles}><AdminDoctors /></RoleGuard>} />
-      <Route path="admin/users" element={<RoleGuard allowed={[]} roles={roles}><AdminUsers /></RoleGuard>} />
-      <Route path="admin/patients" element={<RoleGuard allowed={[]} roles={roles}><AdminPatients /></RoleGuard>} />
-      <Route path="admin/clinics" element={<RoleGuard allowed={[]} roles={roles}><AdminClinics /></RoleGuard>} />
-      <Route path="admin/appointments" element={<RoleGuard allowed={[]} roles={roles}><AdminAppointments /></RoleGuard>} />
-      <Route path="admin/specialties" element={<RoleGuard allowed={[]} roles={roles}><AdminSpecialties /></RoleGuard>} />
-      <Route path="admin/logs" element={<RoleGuard allowed={[]} roles={roles}><AdminLogs /></RoleGuard>} />
-      <Route path="admin/fraud-signals" element={<RoleGuard allowed={[]} roles={roles}><AdminFraudSignals /></RoleGuard>} />
+      <Route path="admin/doctors" element={<AdminRouteGuard roles={roles}><AdminDoctors /></AdminRouteGuard>} />
+      <Route path="admin/users" element={<AdminRouteGuard roles={roles}><AdminUsers /></AdminRouteGuard>} />
+      <Route path="admin/patients" element={<AdminRouteGuard roles={roles}><AdminPatients /></AdminRouteGuard>} />
+      <Route path="admin/clinics" element={<AdminRouteGuard roles={roles}><AdminClinics /></AdminRouteGuard>} />
+      <Route path="admin/appointments" element={<AdminRouteGuard roles={roles}><AdminAppointments /></AdminRouteGuard>} />
+      <Route path="admin/specialties" element={<AdminRouteGuard roles={roles}><AdminSpecialties /></AdminRouteGuard>} />
+      <Route path="admin/logs" element={<AdminRouteGuard roles={roles}><AdminLogs /></AdminRouteGuard>} />
+      <Route path="admin/fraud-signals" element={<AdminRouteGuard roles={roles}><AdminFraudSignals /></AdminRouteGuard>} />
       <Route path="doctor/protocols" element={<RoleGuard allowed={["doctor"]} roles={roles}><ContextGuard panel="doctor" forceRole={forceRole} roles={roles}><ClinicalProtocols /></ContextGuard></RoleGuard>} />
-      <Route path="admin/leads" element={<RoleGuard allowed={[]} roles={roles}><AdminLeads /></RoleGuard>} />
-      <Route path="admin/contracts/new" element={<RoleGuard allowed={[]} roles={roles}><AdminContractNew /></RoleGuard>} />
-      <Route path="admin/invite-codes" element={<RoleGuard allowed={[]} roles={roles}><AdminInviteCodes /></RoleGuard>} />
-      <Route path="admin/reports" element={<RoleGuard allowed={[]} roles={roles}><AdminReports /></RoleGuard>} />
-      <Route path="admin/retention" element={<RoleGuard allowed={[]} roles={roles}><AdminRetention /></RoleGuard>} />
-      <Route path="admin/nfse" element={<RoleGuard allowed={[]} roles={roles}><AdminNFSe /></RoleGuard>} />
-      <Route path="admin/approvals" element={<RoleGuard allowed={[]} roles={roles}><AdminApprovals /></RoleGuard>} />
-      <Route path="admin/kyc-review" element={<RoleGuard allowed={[]} roles={roles}><AdminKycReview /></RoleGuard>} />
+      <Route path="admin/leads" element={<AdminRouteGuard roles={roles}><AdminLeads /></AdminRouteGuard>} />
+      <Route path="admin/contracts/new" element={<AdminRouteGuard roles={roles}><AdminContractNew /></AdminRouteGuard>} />
+      <Route path="admin/invite-codes" element={<AdminRouteGuard roles={roles}><AdminInviteCodes /></AdminRouteGuard>} />
+      <Route path="admin/reports" element={<AdminRouteGuard roles={roles}><AdminReports /></AdminRouteGuard>} />
+      <Route path="admin/retention" element={<AdminRouteGuard roles={roles}><AdminRetention /></AdminRouteGuard>} />
+      <Route path="admin/nfse" element={<AdminRouteGuard roles={roles}><AdminNFSe /></AdminRouteGuard>} />
+      <Route path="admin/approvals" element={<AdminRouteGuard roles={roles}><AdminApprovals /></AdminRouteGuard>} />
+      <Route path="admin/kyc-review" element={<AdminRouteGuard roles={roles}><AdminKycReview /></AdminRouteGuard>} />
       
-      <Route path="admin/platform-settings" element={<RoleGuard allowed={[]} roles={roles}><AdminPlatformSettings /></RoleGuard>} />
-      <Route path="admin/notification-templates" element={<RoleGuard allowed={[]} roles={roles}><AdminNotificationTemplates /></RoleGuard>} />
-      <Route path="admin/broadcast" element={<RoleGuard allowed={[]} roles={roles}><AdminBroadcast /></RoleGuard>} />
-      <Route path="admin/security" element={<RoleGuard allowed={[]} roles={roles}><AdminSecurity /></RoleGuard>} />
-      <Route path="admin/lgpd-exports" element={<RoleGuard allowed={[]} roles={roles}><AdminLgpdExports /></RoleGuard>} />
-      <Route path="admin/compliance" element={<RoleGuard allowed={[]} roles={roles}><AdminCompliance /></RoleGuard>} />
-      <Route path="admin/theme" element={<RoleGuard allowed={[]} roles={roles}><AdminThemeEditor /></RoleGuard>} />
-      <Route path="admin/doctor-applications" element={<RoleGuard allowed={[]} roles={roles}><AdminDoctorApplications /></RoleGuard>} />
-      <Route path="admin/switch-panel" element={<RoleGuard allowed={[]} roles={roles}><AdminSwitchPanel /></RoleGuard>} />
-      <Route path="admin/nps" element={<RoleGuard allowed={[]} roles={roles}><AdminNPS /></RoleGuard>} />
-      <Route path="admin/whatsapp" element={<RoleGuard allowed={[]} roles={roles}><AdminWhatsApp /></RoleGuard>} />
-      <Route path="admin/health" element={<RoleGuard allowed={[]} roles={roles}><SystemHealth /></RoleGuard>} />
-      <Route path="admin/live" element={<RoleGuard allowed={[]} roles={roles}><AdminLiveConsultations /></RoleGuard>} />
-      <Route path="admin/panel-center" element={<RoleGuard allowed={[]} roles={roles}><PanelCenter /></RoleGuard>} />
-      <Route path="admin/capacity" element={<RoleGuard allowed={[]} roles={roles}><AdminCapacity /></RoleGuard>} />
-      <Route path="admin/onboarding-pipeline" element={<RoleGuard allowed={[]} roles={roles}><AdminOnboardingPipeline /></RoleGuard>} />
-      <Route path="admin/financial" element={<RoleGuard allowed={[]} roles={roles}><AdminFinancial /></RoleGuard>} />
-      <Route path="admin/coupons" element={<RoleGuard allowed={[]} roles={roles}><AdminCoupons /></RoleGuard>} />
+      <Route path="admin/platform-settings" element={<AdminRouteGuard roles={roles}><AdminPlatformSettings /></AdminRouteGuard>} />
+      <Route path="admin/notification-templates" element={<AdminRouteGuard roles={roles}><AdminNotificationTemplates /></AdminRouteGuard>} />
+      <Route path="admin/broadcast" element={<AdminRouteGuard roles={roles}><AdminBroadcast /></AdminRouteGuard>} />
+      <Route path="admin/security" element={<AdminRouteGuard roles={roles}><AdminSecurity /></AdminRouteGuard>} />
+      <Route path="admin/lgpd-exports" element={<AdminRouteGuard roles={roles}><AdminLgpdExports /></AdminRouteGuard>} />
+      <Route path="admin/compliance" element={<AdminRouteGuard roles={roles}><AdminCompliance /></AdminRouteGuard>} />
+      <Route path="admin/theme" element={<AdminRouteGuard roles={roles}><AdminThemeEditor /></AdminRouteGuard>} />
+      <Route path="admin/doctor-applications" element={<AdminRouteGuard roles={roles}><AdminDoctorApplications /></AdminRouteGuard>} />
+      <Route path="admin/switch-panel" element={<AdminRouteGuard roles={roles}><AdminSwitchPanel /></AdminRouteGuard>} />
+      <Route path="admin/nps" element={<AdminRouteGuard roles={roles}><AdminNPS /></AdminRouteGuard>} />
+      <Route path="admin/whatsapp" element={<AdminRouteGuard roles={roles}><AdminWhatsApp /></AdminRouteGuard>} />
+      <Route path="admin/health" element={<AdminRouteGuard roles={roles}><SystemHealth /></AdminRouteGuard>} />
+      <Route path="admin/live" element={<AdminRouteGuard roles={roles}><AdminLiveConsultations /></AdminRouteGuard>} />
+      <Route path="admin/panel-center" element={<AdminRouteGuard roles={roles}><PanelCenter /></AdminRouteGuard>} />
+      <Route path="admin/capacity" element={<AdminRouteGuard roles={roles}><AdminCapacity /></AdminRouteGuard>} />
+      <Route path="admin/onboarding-pipeline" element={<AdminRouteGuard roles={roles}><AdminOnboardingPipeline /></AdminRouteGuard>} />
+      <Route path="admin/financial" element={<AdminRouteGuard roles={roles}><AdminFinancial /></AdminRouteGuard>} />
+      <Route path="admin/coupons" element={<AdminRouteGuard roles={roles}><AdminCoupons /></AdminRouteGuard>} />
       
-      <Route path="admin/site-config" element={<RoleGuard allowed={[]} roles={roles}><AdminSiteConfig /></RoleGuard>} />
+      <Route path="admin/site-config" element={<AdminRouteGuard roles={roles}><AdminSiteConfig /></AdminRouteGuard>} />
       {/* site-editor (site_sections) foi substituido pelo Studio (site_blocks), que agora alimenta a home. Redireciona para nao editar num store morto. */}
-      <Route path="admin/site-editor" element={<Navigate to={`/dashboard/admin/studio${forceRole ? `?role=${forceRole}` : ""}`} replace />} />
-      <Route path="admin/studio" element={<RoleGuard allowed={[]} roles={roles}><AdminStudio /></RoleGuard>} />
-      <Route path="admin/app-editor" element={<RoleGuard allowed={[]} roles={roles}><AdminAppEditor /></RoleGuard>} />
-      <Route path="admin/media" element={<RoleGuard allowed={[]} roles={roles}><AdminMediaLibrary /></RoleGuard>} />
+      <Route path="admin/site-editor" element={<AdminRouteGuard roles={roles}><Navigate to={`/dashboard/admin/studio${forceRole ? `?role=${forceRole}` : ""}`} replace /></AdminRouteGuard>} />
+      <Route path="admin/studio" element={<AdminRouteGuard roles={roles}><AdminStudio /></AdminRouteGuard>} />
+      <Route path="admin/app-editor" element={<AdminRouteGuard roles={roles}><AdminAppEditor /></AdminRouteGuard>} />
+      <Route path="admin/media" element={<AdminRouteGuard roles={roles}><AdminMediaLibrary /></AdminRouteGuard>} />
 
-      <Route path="admin/payouts" element={<RoleGuard allowed={[]} roles={roles}><AdminPayouts /></RoleGuard>} />
-      <Route path="admin/contratos" element={<RoleGuard allowed={[]} roles={roles}><AdminContratos /></RoleGuard>} />
-      <Route path="admin/legal" element={<RoleGuard allowed={[]} roles={roles}><AdminLegalDocuments /></RoleGuard>} />
+      <Route path="admin/payouts" element={<AdminRouteGuard roles={roles}><AdminPayouts /></AdminRouteGuard>} />
+      <Route path="admin/contratos" element={<AdminRouteGuard roles={roles}><AdminContratos /></AdminRouteGuard>} />
+      <Route path="admin/legal" element={<AdminRouteGuard roles={roles}><AdminLegalDocuments /></AdminRouteGuard>} />
 
       {/* Fallback */}
       <Route

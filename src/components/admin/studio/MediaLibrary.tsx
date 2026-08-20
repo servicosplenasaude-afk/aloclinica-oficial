@@ -12,6 +12,7 @@ import { db } from "@/integrations/supabase/untyped";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Copy, Trash2, ImageIcon, Search } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Media = {
   id: string;
@@ -36,6 +37,7 @@ export function MediaLibrary({
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const confirm = useConfirm();
 
   const reload = async () => {
     setLoading(true);
@@ -72,9 +74,16 @@ export function MediaLibrary({
   };
 
   const remove = async (m: Media) => {
-    if (!window.confirm(`Excluir "${m.name}"?`)) return;
+    const ok = await confirm({
+      title: "Excluir imagem?",
+      description: `“${m.name}” será removida da biblioteca e poderá deixar páginas que a utilizam sem imagem.`,
+      confirmLabel: "Excluir",
+      destructive: true,
+    });
+    if (!ok) return;
     try {
-      await supabase.storage.from("site-media").remove([m.path]);
+      const { error: storageError } = await supabase.storage.from("site-media").remove([m.path]);
+      if (storageError) throw storageError;
       const { error } = await (db as any).from("site_media").delete().eq("id", m.id);
       if (error) throw error;
       setItems((prev) => prev.filter((x) => x.id !== m.id));

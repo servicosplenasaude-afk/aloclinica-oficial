@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import { useAuth } from "@/contexts/AuthContext";
 import { SERVICES_PENDING_SETUP } from "@/config/service-status";
+import type { OperationalHealth } from "@/lib/admin-system-health";
 
 export type ServiceStatus = "ok" | "down" | "unconfigured";
 export type HealthMode = "server" | "browser";
@@ -30,6 +31,7 @@ export interface ServiceCheck {
 export interface HealthResult {
   checkedAt: string;
   services: ServiceCheck[];
+  operational?: OperationalHealth;
 }
 
 const POLL_MS = 4 * 60 * 1000; // 4 min

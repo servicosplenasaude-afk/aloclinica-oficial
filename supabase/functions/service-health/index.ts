@@ -25,6 +25,12 @@ const json = (b: unknown, s = 200) =>
 type Status = "ok" | "down" | "unconfigured";
 interface Probe { status: Status; detail: string; }
 
+interface BackupRun {
+  status: "completed" | "failed" | "unknown";
+  occurredAt: string | null;
+  runId: string | null;
+}
+
 const TIMEOUT = 6000;
 const trimSlash = (u: string) => u.replace(/\/+$/, "");
 
@@ -124,5 +130,66 @@ serve(async (req) => {
     }),
   );
 
-  return json({ checkedAt: new Date().toISOString(), services });
+  // Operational metadata is deliberately assembled server-side and only after
+  // the admin authorization check above. Never return URLs, tokens or raw logs.
+  const svc = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const [bucketsResult, backupLogsResult, completedBackupResult] = await Promise.all([
+    svc.storage.listBuckets(),
+    svc.from("activity_logs")
+      .select("created_at, details")
+      .eq("action", "daily_backup_run")
+      .order("created_at", { ascending: false })
+      .limit(1),
+    svc.from("activity_logs")
+      .select("created_at, details")
+      .eq("action", "daily_backup_run")
+      .contains("details", { status: "completed" })
+      .order("created_at", { ascending: false })
+      .limit(1),
+  ]);
+
+  const toBackupRun = (row: { created_at?: unknown; details?: unknown } | undefined): BackupRun | null => {
+    if (!row) return null;
+    const details = row.details && typeof row.details === "object"
+      ? row.details as Record<string, unknown>
+      : {};
+    const status = details.status === "completed" || details.status === "failed"
+      ? details.status
+      : "unknown";
+    return {
+      status,
+      occurredAt: typeof row.created_at === "string" ? row.created_at : null,
+      runId: typeof details.run_id === "string" ? details.run_id : null,
+    };
+  };
+  const latestRun = toBackupRun(backupLogsResult.data?.[0]);
+  const lastCompleted = toBackupRun(completedBackupResult.data?.[0]);
+  const projectRef = (() => {
+    try { return new URL(Deno.env.get("SUPABASE_URL")!).hostname.split(".")[0]; } catch { return null; }
+  })();
+  const configuredEnvironment = (Deno.env.get("APP_ENV") ?? Deno.env.get("ENVIRONMENT") ?? "").toLowerCase();
+  const environment = configuredEnvironment === "production" || configuredEnvironment === "sandbox"
+    ? configuredEnvironment
+    : projectRef === "pwxvvimdtmvziynbspgx" ? "production"
+    : projectRef === "hikttmmwxcjmzexxhgda" ? "sandbox"
+    : "unknown";
+
+  return json({
+    checkedAt: new Date().toISOString(),
+    services,
+    operational: {
+      environment,
+      release: Deno.env.get("APP_RELEASE") ?? Deno.env.get("GIT_COMMIT_SHA") ?? null,
+      projectRef,
+      storage: {
+        bucketCount: bucketsResult.error ? null : (bucketsResult.data?.length ?? 0),
+        status: bucketsResult.error ? "unavailable" : "ok",
+      },
+      backup: {
+        latestRun,
+        lastCompleted,
+        status: backupLogsResult.error || completedBackupResult.error ? "unavailable" : latestRun?.status ?? "never",
+      },
+    },
+  });
 });

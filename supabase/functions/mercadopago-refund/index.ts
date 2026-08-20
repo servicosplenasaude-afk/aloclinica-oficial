@@ -90,7 +90,15 @@ Deno.serve(async (req) => {
     const REFUND_TERMINAL = new Set(["refunded", "partially_refunded", "partial_refund", "refunding"]);
     if (REFUND_TERMINAL.has(String(tx.status))) return json({ error: "Já estornado ou em processamento" }, 400);
 
-    const isPartial = amount && Number(amount) > 0 && Math.round(Number(amount) * 100) < Number(tx.amount_cents);
+    const refundableStatuses = new Set(["paid", "approved", "confirmed", "received"]);
+    if (!refundableStatuses.has(String(tx.status))) {
+      return json({ error: "Transação não está em estado reembolsável" }, 409);
+    }
+    const requestedCents = amount == null ? null : Math.round(Number(amount) * 100);
+    if (requestedCents !== null && (!Number.isSafeInteger(requestedCents) || requestedCents <= 0 || requestedCents > Number(tx.amount_cents))) {
+      return json({ error: "Valor de estorno inválido" }, 400);
+    }
+    const isPartial = requestedCents !== null && requestedCents < Number(tx.amount_cents);
 
     // SECURITY: atomically CLAIM the transaction before calling MP. Only one
     // concurrent request can flip a non-refunded row to 'refunding', so a
@@ -109,9 +117,9 @@ Deno.serve(async (req) => {
     // Cria refund. SECURITY: stable idempotency key derived from the MP payment id
     // (+ amount for partial) — never Date.now() — so gateway retries are deduped.
     const refundBody: Record<string, any> = {};
-    if (isPartial) refundBody.amount = Number(amount);
+    if (isPartial) refundBody.amount = requestedCents! / 100;
     const idempotencyKey = isPartial
-      ? `refund-${tx.mp_payment_id}-${Math.round(Number(amount) * 100)}`
+      ? `refund-${tx.mp_payment_id}-${requestedCents}`
       : `refund-${tx.mp_payment_id}-full`;
 
     const refund = await mpRequest<any>(

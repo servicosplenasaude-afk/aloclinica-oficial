@@ -89,10 +89,11 @@ Deno.serve(async (req) => {
       return json({ ok: false, skipped: true, reason: "already_refunded" }, 200);
     }
 
-    const refundAmountCents =
-      refundType === "full"
-        ? tx.amount_cents
-        : Math.min(requestedAmountCents ?? tx.amount_cents, tx.amount_cents);
+    if (refundType === "partial" &&
+      (!Number.isSafeInteger(requestedAmountCents) || requestedAmountCents! <= 0 || requestedAmountCents! >= Number(tx.amount_cents))) {
+      return json({ error: "amount_cents inválido para estorno parcial" }, 400);
+    }
+    const refundAmountCents = refundType === "full" ? Number(tx.amount_cents) : requestedAmountCents!;
 
     // SECURITY: atomically CLAIM the transaction (flip to 'refunding') before
     // calling MP. Prevents a duplicate trigger/cron run from issuing a second
