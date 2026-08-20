@@ -26,6 +26,7 @@ function walk(dir, files = []) {
 
 const expectedPublicFunctions = new Set([
   "mercadopago-webhook",
+  "pagbank-webhook",
   "docuseal-webhook",
   "vidaas-callback",
   "robots-txt",
@@ -73,6 +74,44 @@ for (const match of publicFunctionMatches) {
   }
 }
 
+const reviewedPublicFunctions = new Map([
+  ["mercadopago-webhook", ["x-signature"]],
+  ["pagbank-webhook", ["pagbankVerifyWebhook"]],
+  ["log-failed-login", ["checkRateLimit"]],
+  ["docuseal-webhook", ["DOCUSEAL_WEBHOOK_SECRET", "safeEqual"]],
+  ["mp-oauth-callback", ["mp_oauth_states"]],
+  ["public-api", ["secret_hash", "safeEqual"]],
+  ["doctor-ical-feed", ["ical_token"]],
+  ["robots-txt", []],
+  ["daily-backup", ["isInternalOrService"]],
+  ["scheduled-tasks", ["isInternalOrService"]],
+  ["appointment-confirmed", ["isInternalOrService"]],
+  ["emit-nfse", ["isInternalOrService"]],
+  ["auth-email-hook", ["webhook-signature", "verifySignature"]],
+  ["appointment-reminders", ["isInternalOrService"]],
+  ["lembrete-consultas", ["isInternalOrService"]],
+  ["post-consultation-survey", ["isInternalOrService"]],
+  ["patient-nudges", ["isInternalOrService"]],
+  ["no-show-reminder-tick", ["AUTO_PAYOUT_TICK_SECRET", "safeEqual"]],
+]);
+for (const match of publicFunctionMatches) {
+  const name = match[1];
+  const evidence = reviewedPublicFunctions.get(name);
+  if (!evidence) {
+    add("error", "supabase", `Public function has no reviewed auth model: ${name}`, "supabase/config.toml");
+    continue;
+  }
+  const functionFile = `supabase/functions/${name}/index.ts`;
+  try {
+    const content = read(functionFile);
+    for (const marker of evidence) {
+      if (!content.includes(marker)) add("error", "supabase", `Public function ${name} lacks auth evidence: ${marker}`, functionFile);
+    }
+  } catch {
+    add("error", "supabase", `Configured public function has no implementation: ${name}`, functionFile);
+  }
+}
+
 for (const sensitive of ["assign-role", "admin-reset-password", "mercadopago-charge-saved-card", "withdraw", "lgpd-export-user"]) {
   if (config.includes(`[functions.${sensitive}]\nverify_jwt = false`)) {
     add("error", "supabase", `Sensitive function disables JWT: ${sensitive}`, "supabase/config.toml");
@@ -106,8 +145,28 @@ if (!/location \^~ \/consulta[\s\S]+no-store/.test(nginx)) {
 }
 
 const workflow = read(".github/workflows/deploy.yml");
-for (const required of ["npm run build", "docker compose up -d --force-recreate aloclinica-web", "https://aloclinica.com.br/health"]) {
+for (const required of ["npm run build", "pages deploy dist --project-name aloclinica-production", "https://aloclinica.com.br${path}"]) {
   if (!workflow.includes(required)) add("error", "deploy", `Deploy workflow missing: ${required}`, ".github/workflows/deploy.yml");
+}
+if (workflow.includes("continue-on-error: true")) {
+  add("error", "deploy", "Production deploy must not ignore Edge Function failures.", ".github/workflows/deploy.yml");
+}
+for (const seedFunction of ["seed-test-users", "seed-test-doctors"]) {
+  if (!workflow.includes(`$function_name\" = \"${seedFunction}`)) {
+    add("error", "deploy", `Production deploy must explicitly exclude ${seedFunction}.`, ".github/workflows/deploy.yml");
+  }
+}
+if (workflow.includes("supabase/seeds") || workflow.includes("db seed")) {
+  add("error", "deploy", "Production workflow must not load demo/test seed data.", ".github/workflows/deploy.yml");
+}
+
+const p0Migration = read("supabase/migrations/20260819000100_p0_security_hotfix.sql");
+for (const required of [
+  'DROP POLICY IF EXISTS "Users can view all profiles"',
+  "REVOKE ALL ON FUNCTION public.verify_document_public(text) FROM PUBLIC",
+  "GRANT EXECUTE ON FUNCTION public.check_ai_assistant_rate_limit(text, text, integer, integer) TO service_role",
+]) {
+  if (!p0Migration.includes(required)) add("error", "database", `Missing P0 database hardening: ${required}`, "supabase/migrations/20260819000100_p0_security_hotfix.sql");
 }
 
 const sourceFiles = walk("src").concat(walk("supabase/functions"));

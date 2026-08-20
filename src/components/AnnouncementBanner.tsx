@@ -34,12 +34,8 @@ export function AnnouncementBanner() {
     let cancelled = false;
     const fetchCfg = async () => {
       try {
-        const { data, error } = await db
-          .from("app_settings")
-          .select("value")
-          .eq("key", "global_announcement")
-          .maybeSingle();
-        if (!error && !cancelled) setCfg((data?.value ?? null) as AnnouncementConfig | null);
+        const { data, error } = await (db as any).rpc("get_public_announcement");
+        if (!error && !cancelled) setCfg((data ?? null) as AnnouncementConfig | null);
       } catch {}
     };
     fetchCfg();

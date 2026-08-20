@@ -896,14 +896,13 @@ serve(async (req) => {
       }
     }
 
-    const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") || Deno.env.get("RESEND_API_KEY");
+    // Provider credentials are not interchangeable. This function calls Brevo.
+    const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 
     if (!BREVO_API_KEY) {
-      const body: EmailRequest = await req.json();
-      console.info("[DEV] Email would be sent:", JSON.stringify(body));
       return new Response(
-        JSON.stringify({ success: true, dev: true, message: "Email logged (BREVO_API_KEY not configured)" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Email provider not configured" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -1006,14 +1005,14 @@ serve(async (req) => {
         console.warn("Brevo domain not authenticated — email skipped:", to, "template:", type);
         await logEvent("failed", "domain_not_authenticated");
         return new Response(
-          JSON.stringify({ success: true, skipped: true, reason: "domain_not_authenticated", details: result }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ error: "Email sender domain is not authenticated" }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       console.error("Brevo error:", result);
       await logEvent("failed", JSON.stringify(result).slice(0, 500));
-      return new Response(JSON.stringify({ error: "Failed to send email", details: result }), {
-        status: 500,
+      return new Response(JSON.stringify({ error: "Failed to send email" }), {
+        status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

@@ -8,21 +8,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Workaround: Evolution API server has an invalid TLS certificate.
-// Try HTTPS first, if cert error, retry with HTTP.
-const fetchEvo = async (url: string, opts: RequestInit = {}): Promise<Response> => {
-  try {
-    return await fetch(url, opts);
-  } catch (error: any) {
-    const errStr = String(error);
-    if (errStr.includes("certificate") || errStr.includes("tls") || errStr.includes("CaUsedAsEndEntity")) {
-      console.warn("TLS error, retrying with HTTP:", error);
-      const httpUrl = url.replace(/^https:\/\//, "http://");
-      return await fetch(httpUrl, opts);
-    }
-    throw error;
-  }
-};
+const fetchEvo = (url: string, opts: RequestInit = {}): Promise<Response> =>
+  fetch(url, { ...opts, signal: opts.signal ?? AbortSignal.timeout(15_000) });
 
 interface WhatsAppRequest {
   phone: string;
@@ -64,17 +51,19 @@ serve(async (req) => {
     const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
 
     if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY) {
-      console.info("[DEV] WhatsApp would be sent but Evolution API not configured");
-      const body: WhatsAppRequest = await req.json();
-      console.info("[DEV] Message:", JSON.stringify(body));
       return new Response(
-        JSON.stringify({ success: true, dev: true, message: "WhatsApp logged (Evolution API not configured)" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Evolution API not configured" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // Find first connected instance dynamically
     const baseUrl = EVOLUTION_API_URL.replace(/\/+$/, "");
+    if (!baseUrl.startsWith("https://")) {
+      return new Response(JSON.stringify({ error: "Evolution API must use HTTPS" }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const apiHeaders = { "Content-Type": "application/json", apikey: EVOLUTION_API_KEY };
     
     const instancesRes = await fetchEvo(`${baseUrl}/instance/fetchInstances`, { method: "GET", headers: apiHeaders });
@@ -123,6 +112,11 @@ serve(async (req) => {
     const cleanPhone = phone.replace(/\D/g, "");
     // Add country code if not present
     const fullPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
+    if (!/^55\d{10,11}$/.test(fullPhone)) {
+      return new Response(JSON.stringify({ error: "Invalid Brazilian phone number" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const apiUrl = `${baseUrl}/message/sendText/${instanceName}`;
 

@@ -85,7 +85,7 @@ async function handlePayment(admin: any, paymentId: string) {
   const res = await mpRequest<any>("GET", `/v1/payments/${paymentId}`);
   if (!res.ok) {
     console.error("[mp-webhook] falha ao buscar payment", paymentId, res.data);
-    return;
+    throw new Error(`Mercado Pago payment lookup failed (${res.status})`);
   }
 
   const mpStatus = res.data.status;
@@ -192,7 +192,7 @@ async function handlePayment(admin: any, paymentId: string) {
 
 async function handlePreapproval(admin: any, preapprovalId: string) {
   const res = await mpRequest<any>("GET", `/preapproval/${preapprovalId}`);
-  if (!res.ok) return;
+  if (!res.ok) throw new Error(`Mercado Pago preapproval lookup failed (${res.status})`);
 
   const mpStatus = res.data.status as string; // pending | authorized | paused | cancelled
   const internalStatus =
@@ -222,7 +222,7 @@ async function handlePreapproval(admin: any, preapprovalId: string) {
 async function handleAuthorizedPayment(admin: any, authPaymentId: string) {
   // authorized_payment é a cobrança recorrente disparada pela MP
   const res = await mpRequest<any>("GET", `/authorized_payments/${authPaymentId}`);
-  if (!res.ok) return;
+  if (!res.ok) throw new Error(`Mercado Pago authorized payment lookup failed (${res.status})`);
 
   const preapprovalId = res.data.preapproval_id;
   if (!preapprovalId) return;

@@ -7,6 +7,7 @@
 // quem chama ainda não está autenticado (falhou o login).
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit } from "../_shared/auth.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -17,6 +18,7 @@ const json = (b: unknown, s = 200) =>
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
     const { email, reason } = await req.json().catch(() => ({}));
@@ -24,6 +26,10 @@ serve(async (req) => {
 
     const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || null;
     const ua = (req.headers.get("user-agent") ?? "").slice(0, 400) || null;
+    // This endpoint is intentionally anonymous. Bound writes by the edge-provided
+    // client IP so it cannot be used to flood the audit table.
+    const allowed = await checkRateLimit(ip ?? "unknown", "log-failed-login", 20, 1, true);
+    if (!allowed) return json({ error: "Too many requests" }, 429);
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     await admin.from("failed_login_attempts").insert({

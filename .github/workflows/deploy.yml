@@ -34,6 +34,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          VITE_APP_ENV: production
           # Public key Mercado Pago — pública por design (acessível no bundle JS)
           VITE_MERCADOPAGO_PUBLIC_KEY: APP_USR-b35f421a-132b-4421-8499-cef0b3decf54
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -66,8 +67,6 @@ jobs:
     name: Supabase — Edge Functions
     runs-on: ubuntu-latest
     environment: production
-    continue-on-error: true
-
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -84,7 +83,7 @@ jobs:
           functions=()
           for function_dir in supabase/functions/*; do
             function_name="$(basename "$function_dir")"
-            if [ ! -d "$function_dir" ] || [ "$function_name" = "_shared" ] || [ "$function_name" = "mcp" ]; then
+            if [ ! -d "$function_dir" ] || [ "$function_name" = "_shared" ] || [ "$function_name" = "seed-test-users" ] || [ "$function_name" = "seed-test-doctors" ]; then
               continue
             fi
             functions+=("$function_name")

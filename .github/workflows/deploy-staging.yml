@@ -3,7 +3,7 @@ name: Deploy to Sandbox
 on:
   workflow_dispatch:
   push:
-    branches: [dev]
+    branches: [sandbox]
 
 env:
   CLOUDFLARE_ACCOUNT_ID: 33720391faeb23516de3151780648caf
@@ -39,7 +39,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name aloclinica-sandbox --branch dev
+          command: pages deploy dist --project-name aloclinica-sandbox --branch sandbox
 
       - name: Health check
         shell: bash
@@ -62,7 +62,6 @@ jobs:
     name: Supabase Sandbox - Edge Functions
     runs-on: ubuntu-latest
     environment: staging
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v5
 
@@ -75,7 +74,7 @@ jobs:
           functions=()
           for function_dir in supabase/functions/*; do
             function_name="$(basename "$function_dir")"
-            if [ ! -d "$function_dir" ] || [ "$function_name" = "_shared" ] || [ "$function_name" = "mcp" ]; then
+            if [ ! -d "$function_dir" ] || [ "$function_name" = "_shared" ]; then
               continue
             fi
             functions+=("$function_name")

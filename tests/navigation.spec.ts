@@ -59,14 +59,16 @@ test.describe("Navigation & responsiveness", () => {
   });
 
   test("terms page loads correctly", async ({ page }) => {
-    await page.goto("/termos");
+    await page.goto("/terms");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.locator("body")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /termos de uso/i })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/página não encontrada/i);
   });
 
   test("privacy page loads correctly", async ({ page }) => {
-    await page.goto("/privacidade");
+    await page.goto("/privacy");
     await page.waitForLoadState("domcontentloaded");
-    await expect(page.locator("body")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /política de privacidade/i })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/página não encontrada/i);
   });
 });

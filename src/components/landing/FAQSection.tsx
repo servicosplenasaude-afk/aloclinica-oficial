@@ -21,11 +21,7 @@ const FAQSection = forwardRef<HTMLElement>((_, ref) => {
   const [faqs, setFaqs] = useState<FaqEntry[]>(staticFaqs);
 
   useEffect(() => {
-    db.from("faq_items")
-      .select("question, answer, category")
-      .eq("is_active", true)
-      .order("order_index")
-      .limit(5)
+    (db as any).rpc("get_public_faq_items", { p_limit: 5 })
       .then(({ data }) => {
         if (data && data.length > 0) {
           setFaqs(data.map((d) => ({ q: d.question, a: d.answer, category: d.category ?? "geral" })));

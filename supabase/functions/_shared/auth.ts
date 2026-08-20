@@ -88,6 +88,7 @@ export async function checkRateLimit(
   endpoint: string,
   max: number,
   windowMin: number,
+  failClosed = false,
 ): Promise<boolean> {
   try {
     const sb = createClient(
@@ -102,9 +103,9 @@ export async function checkRateLimit(
       .eq("endpoint", endpoint)
       .gte("window_start", since);
     if ((count ?? 0) >= max) return false;
-    await sb.from("rate_limits").insert({ identifier, endpoint, window_start: new Date().toISOString() });
-    return true;
+    const { error } = await sb.from("rate_limits").insert({ identifier, endpoint, window_start: new Date().toISOString() });
+    return error ? !failClosed : true;
   } catch {
-    return true;
+    return !failClosed;
   }
 }

@@ -9,9 +9,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const VAPID_PUBLIC_KEY =
-  "BN2XiIZnnn-5BADRkd1Yrl4C3UK7pMLDaJLjzxxc3ctWHxMeaW9pZm-IvZv3P-rI0rK6o7-h0GQmmnf5FI2H7OI";
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -40,15 +37,17 @@ serve(async (req) => {
     }
 
     const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY");
-    if (!VAPID_PRIVATE_KEY) {
+    const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY");
+    const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT");
+    if (!VAPID_PRIVATE_KEY || !VAPID_PUBLIC_KEY || !VAPID_SUBJECT) {
       return new Response(
-        JSON.stringify({ error: "VAPID_PRIVATE_KEY not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "VAPID is not configured" }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     webpush.setVapidDetails(
-      "mailto:lopesgustavo4377@gmail.com",
+      VAPID_SUBJECT,
       VAPID_PUBLIC_KEY,
       VAPID_PRIVATE_KEY
     );
