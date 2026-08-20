@@ -160,6 +160,17 @@ if (workflow.includes("supabase/seeds") || workflow.includes("db seed")) {
   add("error", "deploy", "Production workflow must not load demo/test seed data.", ".github/workflows/deploy.yml");
 }
 
+const databaseSafetyWorkflow = read(".github/workflows/database-safety.yml");
+for (const required of [
+  "supabase migration list --linked",
+  "verify-migration-reconciliation.mjs",
+]) {
+  if (!databaseSafetyWorkflow.includes(required)) add("error", "database", `Database safety workflow missing: ${required}`, ".github/workflows/database-safety.yml");
+}
+if (/migration\s+repair/i.test(databaseSafetyWorkflow)) {
+  add("error", "database", "Automated migration repair is forbidden.", ".github/workflows/database-safety.yml");
+}
+
 const p0Migration = read("supabase/migrations/20260819000100_p0_security_hotfix.sql");
 for (const required of [
   'DROP POLICY IF EXISTS "Users can view all profiles"',

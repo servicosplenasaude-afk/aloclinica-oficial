@@ -43,12 +43,12 @@ const DoctorOnDutyPanel = () => {
       todayStart.setHours(0, 0, 0, 0);
       const { data: appts } = await db
         .from("appointments")
-        .select("id, price_at_booking, price")
+        .select("id, price_at_booking")
         .eq("doctor_id", data.id)
         .eq("appointment_type", "urgent_care")
         .gte("scheduled_at", todayStart.toISOString());
       const sessions = appts?.length ?? 0;
-      const revenue = (appts ?? []).reduce((sum: number, a: { price?: number; price_at_booking?: number }) => sum + (Number(a.price_at_booking ?? a.price) || 0) * 0.5, 0);
+      const revenue = (appts ?? []).reduce((sum: number, a: { price_at_booking?: number }) => sum + (Number(a.price_at_booking) || 0) * 0.5, 0);
       setTodayStats({ sessions, revenue });
     }
   };
@@ -93,8 +93,7 @@ const DoctorOnDutyPanel = () => {
       payment_status: "approved",
       appointment_type: "urgent_care",
       // Copia o valor pago (fila) para a consulta — sem isto, "Receita hoje" e o
-      // repasse do plantonista ficavam em R$ 0 (price/price_at_booking nulos).
-      price: entry.price ?? null,
+      // repasse do plantonista ficavam em R$ 0 (price_at_booking nulo).
       price_at_booking: entry.price ?? null,
     }).select("id").single();
 

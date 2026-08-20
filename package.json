@@ -18,6 +18,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "audit:production": "node scripts/production-security-audit.mjs",
+    "audit:integrations": "node scripts/integration-readiness.mjs",
     "health:production": "node scripts/production-health.mjs",
     "load:baseline": "node scripts/load-baseline.mjs",
     "cap:add:android": "cap add android",

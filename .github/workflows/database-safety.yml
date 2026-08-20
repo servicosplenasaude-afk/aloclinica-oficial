@@ -1,0 +1,40 @@
+name: Database Safety Checks
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_PROJECT_REF: pwxvvimdtmvziynbspgx
+
+jobs:
+  reconcile-migrations:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: List linked migrations (read-only)
+        shell: bash
+        run: |
+          set -o pipefail
+          supabase link --project-ref "${SUPABASE_PROJECT_REF}"
+          supabase migration list --linked 2>&1 | tee migration-list.txt
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      - name: Fail on migration divergence
+        run: node scripts/verify-migration-reconciliation.mjs migration-list.txt
+      - name: Publish non-sensitive reconciliation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-reconciliation-${{ github.run_id }}
+          path: migration-list.txt
+          retention-days: 30
+          if-no-files-found: error

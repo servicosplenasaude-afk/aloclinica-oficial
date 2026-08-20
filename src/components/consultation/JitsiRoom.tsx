@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PhoneOff, Clock, Loader2 } from "lucide-react";
+import { PhoneOff, Clock, Loader2, RefreshCw } from "lucide-react";
 import { getJitsiUrl } from "@/lib/jitsi";
 import { db } from "@/integrations/supabase/untyped";
 import {
@@ -27,6 +27,7 @@ const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd }: JitsiRoomProps
   const [elapsed, setElapsed] = useState(0);
   const [meetUrl, setMeetUrl] = useState<string | null>(null);
   const [tokenError, setTokenError] = useState(false);
+  const [tokenAttempt, setTokenAttempt] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => setElapsed((p) => p + 1), 1000);
@@ -38,6 +39,8 @@ const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd }: JitsiRoomProps
   // (comportamento atual) — nunca atrasa/quebra o vídeo por mais de ~2s.
   useEffect(() => {
     let cancelled = false;
+    setTokenError(false);
+    setMeetUrl(null);
     (async () => {
       try {
         const { data, error } = await db.functions.invoke("mirotalk-token", {
@@ -51,7 +54,7 @@ const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd }: JitsiRoomProps
       }
     })();
     return () => { cancelled = true; };
-  }, [appointmentId, roomId, displayName]);
+  }, [appointmentId, roomId, displayName, tokenAttempt]);
 
   const formatTime = (s: number) => {
     const h = Math.floor(s / 3600);
@@ -71,7 +74,7 @@ const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd }: JitsiRoomProps
     <div className="relative w-full h-full flex flex-col" style={{ background: "hsl(220, 25%, 4%)" }}>
       <div className="flex items-center justify-between px-4 py-2 bg-[hsl(220,25%,6%)] border-b border-[hsl(220,15%,10%)] shrink-0" style={{ height: 60 }}>
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-2 h-2 rounded-full bg-[hsl(150,60%,45%)] animate-pulse" />
+          <div className={`w-2 h-2 rounded-full ${tokenError ? "bg-destructive" : "bg-[hsl(150,60%,45%)] animate-pulse"}`} />
           <span className="text-xs text-[hsl(220,15%,55%)] truncate">Sala: {roomId}</span>
         </div>
 
@@ -112,8 +115,14 @@ const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd }: JitsiRoomProps
 
       <div className="flex-1 relative" style={{ height: "calc(100% - 60px)" }}>
         {tokenError ? (
-          <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-destructive">
-            Não foi possível autorizar sua entrada nesta sala. Verifique o horário da consulta e tente novamente.
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-6 text-center">
+            <p className="max-w-md text-sm text-destructive">
+              O serviço de vídeo está indisponível ou não conseguiu autorizar esta sala. Confirme o horário e tente novamente.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => setTokenAttempt((attempt) => attempt + 1)}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Tentar novamente
+            </Button>
           </div>
         ) : meetUrl ? (
           <iframe
