@@ -19,8 +19,10 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { exportToCSV } from "@/lib/csv";
 import { toast } from "sonner";
 import type { AuditLog } from "@/types/domain";
+import { collectServerPages } from "@/lib/admin-pagination";
 
 const PAGE_SIZE = 30;
+const EXPORT_LIMIT = 50_000;
 
 const entityColor: Record<string, string> = {
   patient: "bg-primary/10 text-primary",
@@ -111,19 +113,24 @@ const AdminLogs = () => {
   }, [logs]);
 
   const exportCSV = async () => {
-    // Exporta os filtros atuais (até 1000 linhas)
-    let q = db.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(1000);
-    const periodCfg = PERIODS.find(p => p.value === period);
-    if (periodCfg && periodCfg.hours > 0) {
-      q = q.gte("created_at", new Date(Date.now() - periodCfg.hours * 3600000).toISOString());
-    }
-    if (filterEntity !== "all") q = q.eq("entity_type", filterEntity);
-    if (filterAction !== "all") q = q.ilike("action", `%${filterAction}%`);
-    if (debouncedSearch.trim()) {
-      const term = debouncedSearch.trim();
-      q = q.or(`action.ilike.%${term}%,entity_type.ilike.%${term}%`);
-    }
-    const { data } = await q;
+    const data = await collectServerPages<any>(async (from, to) => {
+      if (from >= EXPORT_LIMIT) return [];
+      let q = db.from("activity_logs").select("*").order("created_at", { ascending: false });
+      const periodCfg = PERIODS.find(p => p.value === period);
+      if (periodCfg && periodCfg.hours > 0) q = q.gte("created_at", new Date(Date.now() - periodCfg.hours * 3600000).toISOString());
+      if (filterEntity !== "all") q = q.eq("entity_type", filterEntity);
+      if (filterAction !== "all") q = q.ilike("action", `%${filterAction}%`);
+      if (debouncedSearch.trim()) {
+        const term = debouncedSearch.trim();
+        q = q.or(`action.ilike.%${term}%,entity_type.ilike.%${term}%`);
+      }
+      const { data: pageData, error } = await q.range(from, Math.min(to, EXPORT_LIMIT - 1));
+      if (error) throw error;
+      return pageData ?? [];
+    }, 500).catch((error) => {
+      toast.error("Falha ao exportar logs", { description: error instanceof Error ? error.message : undefined });
+      return [];
+    });
     if (!data || data.length === 0) {
       toast.error("Nada para exportar");
       return;
@@ -148,6 +155,7 @@ const AdminLogs = () => {
       ],
     );
     toast.success(`${data.length} logs exportados`);
+    if ((total ?? 0) > EXPORT_LIMIT) toast.warning(`Exportação limitada explicitamente aos ${EXPORT_LIMIT.toLocaleString("pt-BR")} eventos mais recentes. Reduza o período para exportar o restante.`);
   };
 
   return (
@@ -165,7 +173,7 @@ const AdminLogs = () => {
                 <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Atualizar
               </Button>
               <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1.5">
-                <Download className="w-4 h-4" /> CSV
+                <Download className="w-4 h-4" /> CSV (máx. 50 mil)
               </Button>
             </>
           }

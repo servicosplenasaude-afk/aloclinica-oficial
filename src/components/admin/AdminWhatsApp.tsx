@@ -150,6 +150,8 @@ const AdminWhatsApp = () => {
   const [savingAutomations, setSavingAutomations] = useState(false);
   const [testPhone, setTestPhone] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
+  const [testPreviewOnly, setTestPreviewOnly] = useState(true);
+  const [testPreview, setTestPreview] = useState<string | null>(null);
   const [integrationError, setIntegrationError] = useState<string | null>(null);
 
   // Load saved automation settings from app_settings
@@ -223,7 +225,8 @@ const AdminWhatsApp = () => {
   };
 
   const sendTestMessage = async (automationKey: string) => {
-    if (!testPhone.trim()) {
+    const normalizedPhone = testPhone.replace(/\D/g, "");
+    if (!testPreviewOnly && (normalizedPhone.length < 10 || normalizedPhone.length > 15)) {
       toast.error("Digite um número de telefone para teste");
       return;
     }
@@ -242,8 +245,20 @@ const AdminWhatsApp = () => {
         .replace(/\{\{return_date\}\}/g, "15/04/2026")
         .replace(/\{\{doctor_id\}\}/g, "doctor-test-id");
 
+      setTestPreview(message);
+      if (testPreviewOnly) {
+        toast.success("Prévia gerada sem enviar mensagem");
+        return;
+      }
+      const approved = await confirm({
+        title: "Enviar mensagem real de teste?",
+        description: `Uma mensagem real será enviada ao número final ••••${normalizedPhone.slice(-4)}. Confirme que o número é controlado e autorizado.`,
+        confirmLabel: "Enviar teste real",
+      });
+      if (!approved) return;
+
       const { data, error } = await db.functions.invoke("send-whatsapp", {
-        body: { phone: testPhone.trim(), message },
+        body: { phone: normalizedPhone, message, category: "notification" },
       });
 
       if (error) throw error;
@@ -259,7 +274,7 @@ const AdminWhatsApp = () => {
     }
   };
 
-  const callApi = async (action: string, instanceName?: string) => {
+  const callApi = useCallback(async (action: string, instanceName?: string) => {
     const { data, error } = await db.functions.invoke("whatsapp-qr", {
       body: { action, instanceName },
     });
@@ -271,7 +286,7 @@ const AdminWhatsApp = () => {
     }
     setIntegrationError(null);
     return data;
-  };
+  }, []);
 
   const fetchInstances = useCallback(async () => {
     try {
@@ -288,7 +303,7 @@ const AdminWhatsApp = () => {
       logError("AdminWhatsApp fetch instances error", err);
       setInstances([]);
     }
-  }, []);
+  }, [callApi]);
 
   useEffect(() => { fetchInstances(); }, [fetchInstances]);
 
@@ -333,7 +348,7 @@ const AdminWhatsApp = () => {
     } finally { setLoading(false); }
   };
 
-  const checkStatus = async (name: string) => {
+  const checkStatus = useCallback(async (name: string) => {
     try {
       const res = await callApi("status", name);
       if (res?.success) {
@@ -344,7 +359,7 @@ const AdminWhatsApp = () => {
       }
     } catch (err) { logError("AdminWhatsApp status check error", err); }
     return null;
-  };
+  }, [callApi]);
 
   useEffect(() => {
     if (!polling || !selectedInstance) return;
@@ -363,7 +378,7 @@ const AdminWhatsApp = () => {
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [polling, selectedInstance]);
+  }, [polling, selectedInstance, callApi, checkStatus, fetchInstances]);
 
   const deleteInstance = async (name: string) => {
     const ok = await confirm({
@@ -428,6 +443,10 @@ const AdminWhatsApp = () => {
                       className="max-w-xs"
                     />
                   </div>
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground pb-2">
+                    <input type="checkbox" checked={testPreviewOnly} onChange={(event) => setTestPreviewOnly(event.target.checked)} />
+                    Somente prévia (padrão seguro)
+                  </label>
                   <Button onClick={saveAutomations} disabled={savingAutomations}>
                     <Settings2 className="w-4 h-4 mr-1" />
                     {savingAutomations ? "Salvando..." : "Salvar Configurações"}
@@ -435,6 +454,15 @@ const AdminWhatsApp = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {testPreview && (
+              <Card className="border-primary/20">
+                <CardContent className="pt-4">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Prévia — nenhuma mensagem enviada</p>
+                  <pre className="text-xs whitespace-pre-wrap font-sans bg-muted/40 rounded-lg p-3">{testPreview}</pre>
+                </CardContent>
+              </Card>
+            )}
 
             {(["appointment", "notification", "marketing"] as const).map((category) => {
               const catAutomations = automations.filter((a) => a.category === category);
@@ -516,11 +544,11 @@ const AdminWhatsApp = () => {
                                     size="sm"
                                     variant="ghost"
                                     className="text-xs"
-                                    disabled={sendingTest || !testPhone.trim()}
+                                    disabled={sendingTest || (!testPreviewOnly && !testPhone.trim())}
                                     onClick={() => sendTestMessage(auto.key)}
                                   >
                                     <Send className="w-3 h-3 mr-1" />
-                                    Enviar Teste
+                                    {testPreviewOnly ? "Gerar Prévia" : "Enviar Teste Real"}
                                   </Button>
                                 </div>
                               )}

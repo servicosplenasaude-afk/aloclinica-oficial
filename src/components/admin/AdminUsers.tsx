@@ -6,16 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { getAdminNav } from "./adminNav";
 import { AdminPageHeader } from "./AdminPageHeader";
 import { AdminLoading, AdminEmpty } from "./AdminStateBlocks";
-import { Search, Shield, Eye, Users as UsersIcon, Download, Bookmark, Trash2, Plus } from "lucide-react";
+import { Search, Shield, Eye, Users as UsersIcon, Download, Bookmark, Trash2, Plus, UserCheck, UserX } from "lucide-react";
 import { exportCSV } from "@/lib/csvExport";
 import { logError } from "@/lib/logger";
 import { adminRoleErrorMessage, setAdminManagedUserRoles } from "@/lib/admin-user-roles";
+import { changeAdminManagedAccountAccess, type AdminAccountAction } from "@/lib/admin-account-access";
 import { useBulkSelection } from "@/hooks/useBulkSelection";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { useSavedFilters } from "@/hooks/useSavedFilters";
@@ -76,6 +78,8 @@ const AdminUsers = () => {
   const [selected, setSelected] = useState<UserWithRoles | null>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [accountAction, setAccountAction] = useState<AdminAccountAction | null>(null);
+  const [accountActionLoading, setAccountActionLoading] = useState(false);
   const [filterName, setFilterName] = useState("");
   const sel = useBulkSelection();
   const savedFilters = useSavedFilters<SavedFilter>("admin_users");
@@ -223,6 +227,21 @@ const AdminUsers = () => {
     savedFilters.save(name, { search, roleFilter });
     setFilterName("");
     toast.success(`Filtro "${name}" salvo`);
+  };
+
+  const confirmAccountAction = async () => {
+    if (!selected || !accountAction) return;
+    setAccountActionLoading(true);
+    try {
+      await changeAdminManagedAccountAccess(selected.user_id, accountAction);
+      toast.success(accountAction === "suspend" ? "Conta suspensa." : "Conta reativada.");
+      setAccountAction(null);
+    } catch (error) {
+      logError("AdminUsers account access update failed", error);
+      toast.error("Não foi possível alterar o acesso. Entre novamente se sua autenticação não for recente.");
+    } finally {
+      setAccountActionLoading(false);
+    }
   };
 
   return (
@@ -486,10 +505,44 @@ const AdminUsers = () => {
                 </Button>
                 <Button variant="outline" onClick={() => setSelected(null)}>Cancelar</Button>
               </div>
+
+              <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 space-y-2">
+                <p className="text-sm font-medium">Controle de acesso à conta</p>
+                <p className="text-xs text-muted-foreground">
+                  A suspensão bloqueia novos logins e renovações. Tokens de acesso já emitidos podem continuar válidos até expirarem; isto não é uma revogação imediata de sessões.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" variant="destructive" onClick={() => setAccountAction("suspend")}>
+                    <UserX className="w-4 h-4 mr-1" /> Suspender conta
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" onClick={() => setAccountAction("reactivate")}>
+                    <UserCheck className="w-4 h-4 mr-1" /> Reativar conta
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={accountAction !== null} onOpenChange={(open) => !open && !accountActionLoading && setAccountAction(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{accountAction === "suspend" ? "Suspender esta conta?" : "Reativar esta conta?"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {accountAction === "suspend"
+                ? "A pessoa não poderá fazer novos logins nem renovar a sessão. Tokens já emitidos podem permanecer válidos até expirarem."
+                : "A pessoa poderá voltar a autenticar e renovar sessões. Esta ação não recupera sessões antigas."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={accountActionLoading}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction disabled={accountActionLoading} onClick={(event) => { event.preventDefault(); void confirmAccountAction(); }}>
+              {accountActionLoading ? "Processando..." : "Confirmar ação"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };

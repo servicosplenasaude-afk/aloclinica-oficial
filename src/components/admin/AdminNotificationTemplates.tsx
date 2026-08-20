@@ -76,6 +76,15 @@ const statusBadge = (s: string) => {
   return <Badge variant="outline" className={`text-[10px] ${map[s] ?? ""}`}>{s}</Badge>;
 };
 
+const maskRecipient = (recipient: string) => {
+  if (recipient.includes("@")) {
+    const [local, domain] = recipient.split("@");
+    return `${local.slice(0, 2)}•••@${domain}`;
+  }
+  const digits = recipient.replace(/\D/g, "");
+  return digits.length >= 4 ? `••••${digits.slice(-4)}` : "Oculto";
+};
+
 const AdminNotificationTemplates = () => {
   const [tpls, setTpls] = useState<Tpl[]>([]);
   const [logs, setLogs] = useState<LogRow[]>([]);
@@ -94,6 +103,11 @@ const AdminNotificationTemplates = () => {
         .order("created_at", { ascending: false })
         .limit(200),
     ]);
+    if (tplRes.error || logRes.error) {
+      toast.error("Não foi possível carregar templates e histórico");
+      setLoading(false);
+      return;
+    }
     setTpls(((tplRes.data ?? []) as any[]).map(t => ({ ...t, variables: t.variables ?? [] })));
     setLogs((logRes.data ?? []) as LogRow[]);
     setLoading(false);
@@ -267,7 +281,7 @@ const AdminNotificationTemplates = () => {
                       <TableCell className="text-xs whitespace-nowrap">{format(new Date(l.created_at), "dd/MM/yy HH:mm")}</TableCell>
                       <TableCell><Badge variant="outline" className="text-[10px]">{l.channel}</Badge></TableCell>
                       <TableCell className="text-xs"><code>{l.template_slug ?? "—"}</code></TableCell>
-                      <TableCell className="text-xs truncate max-w-[180px]">{l.recipient}</TableCell>
+                      <TableCell className="text-xs truncate max-w-[180px]" title="Destinatário mascarado">{maskRecipient(l.recipient)}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{l.provider ?? "—"}</TableCell>
                       <TableCell>{statusBadge(l.status)}{l.error && <p className="text-[10px] text-destructive mt-0.5 truncate max-w-[160px]" title={l.error}>{l.error}</p>}</TableCell>
                     </TableRow>
@@ -343,6 +357,12 @@ const AdminNotificationTemplates = () => {
                 <div className="flex items-center justify-between rounded-lg border p-2.5">
                   <Label className="text-xs">Ativo</Label>
                   <Switch checked={edit.is_active} onCheckedChange={(v) => setEdit({ ...edit, is_active: v })} />
+                </div>
+                <div className="rounded-lg border border-primary/20 bg-muted/30 p-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Prévia segura — não envia</p>
+                  {edit.subject && <p className="text-sm font-semibold mb-1">{edit.subject}</p>}
+                  <p className="text-xs whitespace-pre-wrap">{edit.body_text || "Sem conteúdo em texto puro."}</p>
+                  {edit.variables.length > 0 && <p className="text-[10px] text-amber-700 mt-2">As variáveis permanecem como marcadores nesta prévia.</p>}
                 </div>
               </div>
             )}

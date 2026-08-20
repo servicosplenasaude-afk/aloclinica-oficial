@@ -8,7 +8,7 @@
  *
  * Exports em CSV para anexar a auditorias do CRM / ANPD.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { getAdminNav } from "./adminNav";
@@ -27,8 +27,11 @@ import {
   ShieldCheck, Download, RefreshCw, FileSignature, History,
   Archive, CheckCircle, AlertTriangle,
 } from "lucide-react";
+import { collectServerPages } from "@/lib/admin-pagination";
 
 const adminNav = getAdminNav("compliance");
+const COMPLIANCE_EXPORT_LIMIT = 50_000;
+const COMPLIANCE_VIEW_LIMIT = 5_000;
 
 type Consent = {
   id: string; user_id: string | null; consent_type: string; version: string | null;
@@ -81,34 +84,25 @@ export default function AdminCompliance() {
   const fromISO = useMemo(() => new Date(`${from}T00:00:00`).toISOString(), [from]);
   const toISO = useMemo(() => new Date(`${to}T23:59:59`).toISOString(), [to]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const [c, l, r] = await Promise.all([
-        db.from("consent_logs").select("*")
-          .gte("created_at", fromISO).lte("created_at", toISO)
-          .order("created_at", { ascending: false }).limit(1000),
-        db.from("activity_logs").select("*")
-          .gte("created_at", fromISO).lte("created_at", toISO)
-          .order("created_at", { ascending: false }).limit(1000),
-        db.from("medical_records").select("id,patient_id,doctor_id,appointment_id,record_type,is_draft,locked_at,retention_until,created_at,updated_at")
-          .gte("created_at", fromISO).lte("created_at", toISO)
-          .order("created_at", { ascending: false }).limit(1000),
+        loadComplianceView("consent_logs", "*", fromISO, toISO),
+        loadComplianceView("activity_logs", "*", fromISO, toISO),
+        loadComplianceView("medical_records", "id,patient_id,doctor_id,appointment_id,record_type,is_draft,locked_at,retention_until,created_at,updated_at", fromISO, toISO),
       ]);
-      if (c.error) throw c.error;
-      if (l.error) throw l.error;
-      if (r.error) throw r.error;
-      setConsents((c.data ?? []) as Consent[]);
-      setLogs((l.data ?? []) as Log[]);
-      setRecords((r.data ?? []) as Record[]);
+      setConsents(c as Consent[]);
+      setLogs(l as Log[]);
+      setRecords(r as Record[]);
     } catch (e: any) {
       toast.error("Erro ao carregar dados", { description: e.message });
     } finally {
       setLoading(false);
     }
-  };
+  }, [fromISO, toISO]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => { load(); }, [load]);
 
   // Métricas
   const consentStats = useMemo(() => {
@@ -151,6 +145,7 @@ export default function AdminCompliance() {
             Atualizar
           </Button>
           <div className="ml-auto flex gap-2 text-xs text-muted-foreground">
+            <Badge variant="outline">Visualização: máx. 5.000/aba</Badge>
             <Badge variant="outline">TCLE: {consentStats.tcle}</Badge>
             <Badge variant="outline">Logs: {logs.length}</Badge>
             <Badge variant="outline">Prontuários: {records.length}</Badge>
@@ -178,8 +173,8 @@ export default function AdminCompliance() {
                     Recusados: {consentStats.rejected}
                   </Badge>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => downloadCSV(`tcle_${from}_${to}.csv`, consents)}>
-                  <Download className="w-4 h-4 mr-1" />Exportar CSV
+                <Button size="sm" variant="outline" onClick={async () => downloadCSV(`tcle_${from}_${to}.csv`, await loadComplianceExport("consent_logs", fromISO, toISO))}>
+                  <Download className="w-4 h-4 mr-1" />Exportar CSV (máx. 50 mil)
                 </Button>
               </div>
               <div className="overflow-auto border rounded">
@@ -227,8 +222,8 @@ export default function AdminCompliance() {
                 <p className="text-xs text-muted-foreground">
                   Logs append-only — UPDATE/DELETE bloqueados via trigger (CFM 2.314/2022 Art. 5º)
                 </p>
-                <Button size="sm" variant="outline" onClick={() => downloadCSV(`auditlog_${from}_${to}.csv`, logs)}>
-                  <Download className="w-4 h-4 mr-1" />Exportar CSV
+                <Button size="sm" variant="outline" onClick={async () => downloadCSV(`auditlog_${from}_${to}.csv`, await loadComplianceExport("activity_logs", fromISO, toISO))}>
+                  <Download className="w-4 h-4 mr-1" />Exportar CSV (máx. 50 mil)
                 </Button>
               </div>
               <div className="overflow-auto border rounded">
@@ -288,8 +283,8 @@ export default function AdminCompliance() {
                 <p className="text-xs text-muted-foreground">
                   Retenção mínima de 20 anos — CFM 1.821/2007 Art. 7º
                 </p>
-                <Button size="sm" variant="outline" onClick={() => downloadCSV(`retention_${from}_${to}.csv`, records)}>
-                  <Download className="w-4 h-4 mr-1" />Exportar CSV
+                <Button size="sm" variant="outline" onClick={async () => downloadCSV(`retention_${from}_${to}.csv`, await loadComplianceExport("medical_records", fromISO, toISO))}>
+                  <Download className="w-4 h-4 mr-1" />Exportar CSV (máx. 50 mil)
                 </Button>
               </div>
               <div className="overflow-auto border rounded">
@@ -341,4 +336,28 @@ export default function AdminCompliance() {
       </Tabs>
     </DashboardLayout>
   );
+}
+
+async function loadComplianceExport(table: "consent_logs" | "activity_logs" | "medical_records", fromISO: string, toISO: string) {
+  return collectServerPages<any>(async (from, to) => {
+    if (from >= COMPLIANCE_EXPORT_LIMIT) return [];
+    const { data, error } = await db.from(table).select("*")
+      .gte("created_at", fromISO).lte("created_at", toISO)
+      .order("created_at", { ascending: false })
+      .range(from, Math.min(to, COMPLIANCE_EXPORT_LIMIT - 1));
+    if (error) throw error;
+    return data ?? [];
+  }, 500);
+}
+
+async function loadComplianceView(table: "consent_logs" | "activity_logs" | "medical_records", columns: string, fromISO: string, toISO: string) {
+  return collectServerPages<any>(async (from, to) => {
+    if (from >= COMPLIANCE_VIEW_LIMIT) return [];
+    const { data, error } = await db.from(table).select(columns)
+      .gte("created_at", fromISO).lte("created_at", toISO)
+      .order("created_at", { ascending: false })
+      .range(from, Math.min(to, COMPLIANCE_VIEW_LIMIT - 1));
+    if (error) throw error;
+    return data ?? [];
+  }, 500);
 }

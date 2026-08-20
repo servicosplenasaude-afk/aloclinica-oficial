@@ -490,7 +490,7 @@ function BeneficiariosDialog({ open, onOpenChange, contrato }: { open: boolean; 
                 {list.map((b) => (
                   <TableRow key={b.id}>
                     <TableCell>{b.email}</TableCell><TableCell>{maskCPF(b.cpf)}</TableCell><TableCell>{b.nome}</TableCell>
-                    <TableCell><Button size="sm" variant="ghost" onClick={() => remover(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
+                    <TableCell><Button size="sm" variant="ghost" aria-label={`Remover beneficiário ${b.nome || b.email || "selecionado"}`} onClick={() => remover(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
                   </TableRow>
                 ))}
                 {!list.length && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-4">Nenhum beneficiário</TableCell></TableRow>}
@@ -561,7 +561,7 @@ function VouchersDialog({ open, onOpenChange, contrato }: { open: boolean; onOpe
                   <TableCell className="font-mono">{v.codigo}</TableCell>
                   <TableCell>{v.usos_atuais}/{v.usos_maximos}</TableCell>
                   <TableCell>{v.validade_fim ?? "—"}</TableCell>
-                  <TableCell><Button size="sm" variant="ghost" onClick={() => remover(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
+                  <TableCell><Button size="sm" variant="ghost" aria-label={`Excluir voucher ${v.codigo}`} onClick={() => remover(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
                 </TableRow>
               ))}
               {!list.length && <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-4">Nenhum voucher</TableCell></TableRow>}
@@ -660,8 +660,8 @@ function DocumentosDialog({ open, onOpenChange, contrato }: { open: boolean; onO
                   <TableCell className="text-xs">{d.nome}</TableCell>
                   <TableCell className="text-xs">{d.tamanho_bytes ? `${Math.round(d.tamanho_bytes / 1024)} KB` : "—"}</TableCell>
                   <TableCell className="space-x-1">
-                    <Button size="sm" variant="ghost" onClick={() => baixar(d)}><Download className="h-4 w-4" /></Button>
-                    <Button size="sm" variant="ghost" onClick={() => remover(d)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <Button size="sm" variant="ghost" aria-label={`Baixar documento ${d.nome || "selecionado"}`} onClick={() => baixar(d)}><Download className="h-4 w-4" /></Button>
+                    <Button size="sm" variant="ghost" aria-label={`Excluir documento ${d.nome || "selecionado"}`} onClick={() => remover(d)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </TableCell>
                 </TableRow>
               ))}

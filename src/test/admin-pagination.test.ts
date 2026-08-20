@@ -9,4 +9,14 @@ describe("admin pagination", () => {
     expect(await collectServerPages(fetchPage, 500)).toHaveLength(1_205);
     expect(fetchPage).toHaveBeenCalledTimes(3);
   });
+
+  it("stops when a caller exposes an operational export cap", async () => {
+    const source = Array.from({ length: 60_000 }, (_, id) => id);
+    const cap = 50_000;
+    const result = await collectServerPages(async (from, to) => {
+      if (from >= cap) return [];
+      return source.slice(from, Math.min(to + 1, cap));
+    }, 500);
+    expect(result).toHaveLength(cap);
+  });
 });
