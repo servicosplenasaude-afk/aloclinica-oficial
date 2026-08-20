@@ -57,7 +57,7 @@ const SERVICES: { key: string; label: string; critical: boolean; run: () => Prom
     run: async () => {
       const url = Deno.env.get("EVOLUTION_API_URL");
       const key = Deno.env.get("EVOLUTION_API_KEY");
-      if (!url) return { status: "unconfigured", detail: "EVOLUTION_API_URL não definido" };
+      if (!url) return { status: "unconfigured", detail: "Conexão do WhatsApp não configurada" };
       return reachable(`${trimSlash(url)}/instance/fetchInstances`, {
         headers: key ? { apikey: key } : {}, okStatuses: [200],
       });
@@ -67,7 +67,7 @@ const SERVICES: { key: string; label: string; critical: boolean; run: () => Prom
     key: "email", label: "E-mail (Brevo)", critical: true,
     run: async () => {
       const key = Deno.env.get("BREVO_API_KEY");
-      if (!key) return { status: "unconfigured", detail: "BREVO_API_KEY não definido" };
+      if (!key) return { status: "unconfigured", detail: "Provedor de e-mail não configurado" };
       return reachable("https://api.brevo.com/v3/account", {
         headers: { "api-key": key, accept: "application/json" }, okStatuses: [200],
       });
@@ -77,7 +77,7 @@ const SERVICES: { key: string; label: string; critical: boolean; run: () => Prom
     key: "video", label: "Vídeo (MiroTalk)", critical: true,
     run: async () => {
       const url = Deno.env.get("MIROTALK_URL");
-      if (!url) return { status: "unconfigured", detail: "MIROTALK_URL não definido" };
+      if (!url) return { status: "unconfigured", detail: "Servidor de vídeo não configurado" };
       return reachable(trimSlash(url));
     },
   },
@@ -85,7 +85,7 @@ const SERVICES: { key: string; label: string; critical: boolean; run: () => Prom
     key: "kyc", label: "KYC facial (CompreFace)", critical: true,
     run: async () => {
       const url = Deno.env.get("COMPREFACE_URL");
-      if (!url) return { status: "unconfigured", detail: "COMPREFACE_URL não definido" };
+      if (!url) return { status: "unconfigured", detail: "Servidor de validação facial não configurado" };
       return reachable(trimSlash(url));
     },
   },
@@ -101,7 +101,7 @@ const SERVICES: { key: string; label: string; critical: boolean; run: () => Prom
     key: "nfse", label: "NFS-e (Focus NFe)", critical: false,
     run: async () => {
       const token = Deno.env.get("FOCUS_NFE_TOKEN");
-      if (!token) return { status: "unconfigured", detail: "Aguardando contador (token Focus não definido)" };
+      if (!token) return { status: "unconfigured", detail: "Emissão fiscal aguardando configuração" };
       const amb = (Deno.env.get("FOCUS_NFE_AMBIENTE") ?? "homologacao").toLowerCase();
       const base = amb === "producao" ? "https://api.focusnfe.com.br" : "https://homologacao.focusnfe.com.br";
       return reachable(`${base}/v2/empresas`, {

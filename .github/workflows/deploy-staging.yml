@@ -69,6 +69,11 @@ jobs:
         with:
           version: latest
 
+      - name: Publish operational release metadata
+        run: supabase secrets set APP_ENV=sandbox APP_RELEASE="$GITHUB_SHA" --project-ref "${STAGING_SUPABASE_PROJECT_REF}"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
       - name: Deploy Edge Functions
         run: |
           mapfile -t functions < <(

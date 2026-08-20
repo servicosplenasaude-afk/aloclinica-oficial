@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { getAdminNav } from "@/components/admin/adminNav";
@@ -18,6 +18,7 @@ import { exportToCSV } from "@/lib/csv";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 // UI: standardized empty-state block
 import { AdminEmpty } from "@/components/admin/AdminStateBlocks";
+import { ADMIN_PAGE_SIZE, collectServerPages, pageRange } from "@/lib/admin-pagination";
 
 const STATUSES = ["pending", "ready", "paid", "disputed", "cancelled"] as const;
 type Status = (typeof STATUSES)[number];
@@ -35,6 +36,7 @@ type DateField = "release_at" | "created_at";
 
 const AdminPayouts = () => {
   const [tab, setTab] = useState<Status>("ready");
+  const [page, setPage] = useState(0);
   const [txMap, setTxMap] = useState<Record<string, string>>({});
   // Filtros
   const [search, setSearch] = useState("");
@@ -49,41 +51,43 @@ const AdminPayouts = () => {
   const qc = useQueryClient();
   const confirm = useConfirm();
 
-  const { data: payouts = [], isLoading } = useQuery({
-    queryKey: ["admin-payouts", tab],
+  useEffect(() => setPage(0), [dateField, dateFrom, dateTo, minAmount, maxAmount]);
+
+  const { data: payoutResult, isLoading } = useQuery({
+    queryKey: ["admin-payouts", tab, page, dateField, dateFrom, dateTo, minAmount, maxAmount],
     queryFn: async () => {
-      const { data, error } = await db
+      const { from, to } = pageRange(page);
+      let query = db
         .from("doctor_payouts")
-        .select("id, doctor_id, appointment_id, gross_amount, platform_fee, net_amount, status, release_at, paid_at, pix_key, pix_tx_id, created_at, doctor_profiles!inner(user_id, crm, crm_state, profiles!inner(first_name, last_name, cpf))")
+        .select("id, doctor_id, appointment_id, gross_amount, platform_fee, net_amount, status, release_at, paid_at, pix_key, pix_tx_id, created_at, doctor_profiles!inner(user_id, crm, crm_state, profiles!inner(first_name, last_name, cpf))", { count: "exact" })
         .eq("status", tab)
-        .order("release_at", { ascending: true })
-        .limit(1000);
+        .order("release_at", { ascending: true });
+      if (dateFrom) query = query.gte(dateField, `${dateFrom}T00:00:00`);
+      if (dateTo) query = query.lte(dateField, `${dateTo}T23:59:59.999`);
+      if (minAmount.trim()) query = query.gte("net_amount", Number(minAmount));
+      if (maxAmount.trim()) query = query.lte("net_amount", Number(maxAmount));
+      const { data, error, count } = await query.range(from, to);
       if (error) throw error;
-      return data || [];
+      return { rows: data || [], count: count ?? 0 };
     },
   });
+  const payouts = useMemo(() => payoutResult?.rows ?? [], [payoutResult?.rows]);
+  const payoutCount = payoutResult?.count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(payoutCount / ADMIN_PAGE_SIZE));
 
   const doctorName = (p: any) => {
     const dr = p.doctor_profiles?.profiles;
     return `${dr?.first_name ?? ""} ${dr?.last_name ?? ""}`.trim();
   };
 
-  // Filtro client-side (busca por médico, intervalo de datas e faixa de valor líquido).
+  // Datas e valores já são filtrados no servidor; nome é refinado na página atual.
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const min = minAmount.trim() ? Number(minAmount) : null;
-    const max = maxAmount.trim() ? Number(maxAmount) : null;
     return (payouts as any[]).filter((p) => {
       if (term && !doctorName(p).toLowerCase().includes(term)) return false;
-      const day = p[dateField] ? String(p[dateField]).slice(0, 10) : "";
-      if (dateFrom && (!day || day < dateFrom)) return false;
-      if (dateTo && (!day || day > dateTo)) return false;
-      const net = Number(p.net_amount || 0);
-      if (min != null && net < min) return false;
-      if (max != null && net > max) return false;
       return true;
     });
-  }, [payouts, search, dateField, dateFrom, dateTo, minAmount, maxAmount]);
+  }, [payouts, search]);
 
   const totals = useMemo(
     () =>
@@ -162,9 +166,31 @@ const AdminPayouts = () => {
     );
   };
 
-  const exportBatchCSV = () => {
-    // Exporta a seleção; se nada selecionado, exporta todos os "prontos" do filtro atual.
-    const rows = selectedRows.length ? selectedRows : readyRows;
+  const exportBatchCSV = async () => {
+    let rows = selectedRows;
+    if (rows.length === 0) {
+      try {
+        rows = await collectServerPages<any>(async (from, to) => {
+          let query = db
+            .from("doctor_payouts")
+            .select("id, doctor_id, appointment_id, gross_amount, platform_fee, net_amount, status, release_at, paid_at, pix_key, pix_tx_id, created_at, doctor_profiles!inner(user_id, crm, crm_state, profiles!inner(first_name, last_name, cpf))")
+            .eq("status", "ready")
+            .order("release_at", { ascending: true });
+          if (dateFrom) query = query.gte(dateField, `${dateFrom}T00:00:00`);
+          if (dateTo) query = query.lte(dateField, `${dateTo}T23:59:59.999`);
+          if (minAmount.trim()) query = query.gte("net_amount", Number(minAmount));
+          if (maxAmount.trim()) query = query.lte("net_amount", Number(maxAmount));
+          const { data, error } = await query.range(from, to);
+          if (error) throw error;
+          return (data ?? []) as any[];
+        });
+        const term = search.trim().toLowerCase();
+        if (term) rows = rows.filter((p) => doctorName(p).toLowerCase().includes(term));
+      } catch {
+        toast.error("Não foi possível carregar todos os repasses para exportação");
+        return;
+      }
+    }
     if (rows.length === 0) { toast.error("Nenhum repasse para exportar"); return; }
     exportToCSV(
       `lote_pix_${new Date().toISOString().slice(0, 10)}.csv`,
@@ -207,14 +233,14 @@ const AdminPayouts = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
               <div className="rounded-lg border p-4">
                 <p className="text-xs text-muted-foreground">Repasses ({tab})</p>
-                <p className="text-2xl font-bold">{totals.count}</p>
+                <p className="text-2xl font-bold">{payoutCount}</p>
               </div>
               <div className="rounded-lg border p-4">
-                <p className="text-xs text-muted-foreground">Total bruto</p>
+                <p className="text-xs text-muted-foreground">Bruto nesta página</p>
                 <p className="text-2xl font-bold">R$ {totals.gross.toFixed(2)}</p>
               </div>
               <div className="rounded-lg border p-4 bg-emerald-50/40">
-                <p className="text-xs text-muted-foreground">Total líquido a pagar</p>
+                <p className="text-xs text-muted-foreground">Líquido nesta página</p>
                 <p className="text-2xl font-bold text-emerald-700">R$ {totals.net.toFixed(2)}</p>
               </div>
             </div>
@@ -225,7 +251,7 @@ const AdminPayouts = () => {
                 <Label className="text-xs">Médico</Label>
                 <div className="relative">
                   <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Buscar por nome" className="pl-8" value={search} onChange={(e) => setSearch(e.target.value)} />
+                  <Input placeholder="Buscar nesta página" className="pl-8" value={search} onChange={(e) => setSearch(e.target.value)} />
                 </div>
               </div>
               <div>
@@ -261,7 +287,7 @@ const AdminPayouts = () => {
               )}
             </div>
 
-            <Tabs value={tab} onValueChange={(v) => { setTab(v as Status); setSelected({}); }}>
+            <Tabs value={tab} onValueChange={(v) => { setTab(v as Status); setPage(0); setSelected({}); }}>
               <TabsList className="grid grid-cols-5 w-full">
                 {STATUSES.map((s) => <TabsTrigger key={s} value={s} className="capitalize">{s}</TabsTrigger>)}
               </TabsList>
@@ -335,6 +361,13 @@ const AdminPayouts = () => {
                       </div>
                     );
                   })}
+                <div className="flex items-center justify-between border-t pt-3 mt-3">
+                  <p className="text-xs text-muted-foreground">Página {page + 1} de {totalPages} · {payoutCount} registro(s)</p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" disabled={page === 0 || isLoading} onClick={() => setPage((p) => Math.max(0, p - 1))}>Anterior</Button>
+                    <Button variant="outline" size="sm" disabled={page + 1 >= totalPages || isLoading} onClick={() => setPage((p) => p + 1)}>Próxima</Button>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>

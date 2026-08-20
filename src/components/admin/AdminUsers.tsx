@@ -15,6 +15,7 @@ import { AdminLoading, AdminEmpty } from "./AdminStateBlocks";
 import { Search, Shield, Eye, Users as UsersIcon, Download, Bookmark, Trash2, Plus } from "lucide-react";
 import { exportCSV } from "@/lib/csvExport";
 import { logError } from "@/lib/logger";
+import { adminRoleErrorMessage, setAdminManagedUserRoles } from "@/lib/admin-user-roles";
 import { useBulkSelection } from "@/hooks/useBulkSelection";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { useSavedFilters } from "@/hooks/useSavedFilters";
@@ -118,63 +119,17 @@ const AdminUsers = () => {
   const saveRoles = async () => {
     if (!selected) return;
     setSaving(true);
-
-    const currentRoles = selected.roles as string[];
-    const toAdd = userRoles.filter(r => !currentRoles.includes(r));
-    const toRemove = currentRoles.filter(r => !userRoles.includes(r));
-
-    for (const role of toAdd) {
-      await db.from("user_roles").upsert({ user_id: selected.user_id, role: role as "admin" | "clinic" | "doctor" | "partner" | "patient" | "receptionist" | "support" });
+    try {
+      await setAdminManagedUserRoles(selected.user_id, userRoles);
+      toast.success("Roles atualizadas! ✅");
+      setSelected(null);
+      await fetchUsers();
+    } catch (error) {
+      logError("AdminUsers role update failed", error);
+      toast.error(adminRoleErrorMessage(error));
+    } finally {
+      setSaving(false);
     }
-    for (const role of toRemove) {
-      await db.from("user_roles").delete().eq("user_id", selected.user_id).eq("role", role as "admin" | "clinic" | "doctor" | "partner" | "patient" | "receptionist" | "support");
-    }
-
-    // Auditoria imutável: registra cada grant/revoke em activity_logs (uma linha por operação)
-    if (toAdd.length > 0 || toRemove.length > 0) {
-      try {
-        const { data: authData } = await db.auth.getUser();
-        const actorId = authData?.user?.id ?? null;
-        const auditRows = [
-          ...toAdd.map(role => ({
-            user_id: actorId,
-            action: "user_role.grant",
-            entity_type: "user_role",
-            entity_id: selected.user_id,
-            metadata: {
-              actor_id: actorId,
-              target_user_id: selected.user_id,
-              role,
-              operation: "grant",
-              previous_roles: currentRoles,
-              new_roles: userRoles,
-            },
-          })),
-          ...toRemove.map(role => ({
-            user_id: actorId,
-            action: "user_role.revoke",
-            entity_type: "user_role",
-            entity_id: selected.user_id,
-            metadata: {
-              actor_id: actorId,
-              target_user_id: selected.user_id,
-              role,
-              operation: "revoke",
-              previous_roles: currentRoles,
-              new_roles: userRoles,
-            },
-          })),
-        ];
-        await db.from("activity_logs").insert(auditRows);
-      } catch (e) {
-        logError("AdminUsers audit log write failed", e);
-      }
-    }
-
-    toast.success("Roles atualizadas! ✅");
-    setSaving(false);
-    setSelected(null);
-    fetchUsers();
   };
 
   const filtered = users.filter(u => {
@@ -223,13 +178,16 @@ const AdminUsers = () => {
     if (selectedUsers.length === 0) return;
     const targets = selectedUsers.filter(u => !u.roles.includes(role));
     if (targets.length === 0) { toast.info("Todos já têm essa role"); return; }
-    const rows = targets.map(u => ({ user_id: u.user_id, role: role as any }));
-    const { error } = await db.from("user_roles").upsert(rows);
-    if (error) toast.error("Erro ao aplicar role em lote");
-    else {
+    try {
+      for (const target of targets) {
+        await setAdminManagedUserRoles(target.user_id, [...target.roles, role]);
+      }
       toast.success(`Role "${ROLE_LABELS[role] ?? role}" aplicada a ${targets.length} usuário(s)`);
       sel.clear();
-      fetchUsers();
+      await fetchUsers();
+    } catch (error) {
+      logError("AdminUsers bulk role grant failed", error);
+      toast.error(adminRoleErrorMessage(error));
     }
   };
 
@@ -237,16 +195,16 @@ const AdminUsers = () => {
     if (selectedUsers.length === 0) return;
     const targets = selectedUsers.filter(u => u.roles.includes(role));
     if (targets.length === 0) { toast.info("Nenhum dos selecionados tem essa role"); return; }
-    const ids = targets.map(u => u.user_id);
-    const { error } = await db.from("user_roles")
-      .delete()
-      .in("user_id", ids)
-      .eq("role", role as any);
-    if (error) toast.error("Erro ao remover role em lote");
-    else {
+    try {
+      for (const target of targets) {
+        await setAdminManagedUserRoles(target.user_id, target.roles.filter(currentRole => currentRole !== role));
+      }
       toast.success(`Role removida de ${targets.length} usuário(s)`);
       sel.clear();
-      fetchUsers();
+      await fetchUsers();
+    } catch (error) {
+      logError("AdminUsers bulk role revoke failed", error);
+      toast.error(adminRoleErrorMessage(error));
     }
   };
 

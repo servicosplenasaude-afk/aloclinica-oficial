@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { getAdminNav } from "@/components/admin/adminNav";
@@ -41,9 +41,7 @@ const SystemHealth = () => {
   // Verificação REAL dos serviços externos (WhatsApp, e-mail, vídeo, KYC, pagamentos, NFS-e).
   const health = useServiceHealth();
 
-  useEffect(() => { runChecks(); }, []);
-
-  const fetchDbStats = async () => {
+  const fetchDbStats = useCallback(async () => {
     const [patients, doctors, appts, prescriptions, subs, queue] = await Promise.all([
       db.from("user_roles").select("id", { count: "exact", head: true }).eq("role", "patient"),
       db.from("doctor_profiles").select("id", { count: "exact", head: true }),
@@ -60,11 +58,12 @@ const SystemHealth = () => {
       activeSubscriptions: subs.count ?? 0,
       queueWaiting: queue.count ?? 0,
     });
-  };
+  }, []);
 
-  const runChecks = async () => {
+  const refreshServiceHealth = health.refresh;
+  const runChecks = useCallback(async () => {
     setRunning(true);
-    health.refresh(); // atualiza também a verificação real dos serviços externos
+    void refreshServiceHealth(); // atualiza também a verificação real dos serviços externos
     const results: HealthCheck[] = [];
 
     // 1. Database
@@ -177,8 +176,10 @@ const SystemHealth = () => {
     setChecks(results);
     setLastCheck(new Date());
     setRunning(false);
-    fetchDbStats();
-  };
+    void fetchDbStats();
+  }, [fetchDbStats, refreshServiceHealth]);
+
+  useEffect(() => { void runChecks(); }, [runChecks]);
 
   // Falhas reais dos serviços externos (verificação no servidor) entram no status geral.
   const serverDown = health.summary.down;
@@ -243,7 +244,7 @@ const SystemHealth = () => {
                     {allOk ? "Todos os sistemas operacionais" : `${failCount} serviço(s) com falha`}
                   </h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
-                    Latência média: {avgLatency}ms · Uptime: {allOk ? "100%" : `${Math.round((checks.filter(c => c.status === "ok").length / checks.length) * 100)}%`}
+                    Latência média do núcleo: {avgLatency}ms · Checks do núcleo: {checks.filter(c => c.status === "ok").length}/{checks.length}
                   </p>
                 </div>
               </CardContent>

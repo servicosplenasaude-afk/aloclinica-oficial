@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { getAdminNav } from "@/components/admin/adminNav";
@@ -13,6 +13,7 @@ import { FileText, FileCode, Filter, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { ADMIN_PAGE_SIZE, pageRange } from "@/lib/admin-pagination";
 
 // ── Formatação BRL (pt-BR) ──
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -73,17 +74,19 @@ const AdminNFSe = () => {
   const [rows, setRows] = useState<NFSeRow[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [statusFilter, setStatusFilter] = useState("todos");
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [reprocessingId, setReprocessingId] = useState<string | null>(null);
 
-  useEffect(() => { fetchData(); }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await db
+    const { from, to } = pageRange(page);
+    let query = db
       .from("nfse_invoices")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(1000);
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
+    if (statusFilter !== "todos") query = query.eq("status", statusFilter);
+    const { data, error, count } = await query.range(from, to);
 
     if (error) {
       toast.error("Não foi possível carregar as notas fiscais.");
@@ -93,6 +96,7 @@ const AdminNFSe = () => {
     }
 
     const list = (data ?? []) as NFSeRow[];
+    setTotalCount(count ?? 0);
 
     // ── Nomes dos pacientes (profiles.user_id === patient_id) ──
     const ids = [...new Set(list.map((r) => r.patient_id).filter(Boolean))] as string[];
@@ -110,7 +114,9 @@ const AdminNFSe = () => {
     setNames(nameMap);
     setRows(list);
     setLoading(false);
-  };
+  }, [page, statusFilter]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   // ── Reprocessa / reemite a nota (idempotente por ref) ──
   const reprocess = async (row: NFSeRow) => {
@@ -139,14 +145,12 @@ const AdminNFSe = () => {
     return { total, autorizado, processando, erro, somaAutorizadas };
   }, [rows]);
 
-  const filtered = useMemo(
-    () => (statusFilter === "todos" ? rows : rows.filter((r) => r.status === statusFilter)),
-    [rows, statusFilter]
-  );
+  const filtered = rows;
+  const totalPages = Math.max(1, Math.ceil(totalCount / ADMIN_PAGE_SIZE));
 
   const statItems: BentoItem[] = [
     {
-      label: "Notas emitidas", value: kpis.total, icon: "🧾",
+      label: "Notas nesta página", value: kpis.total, icon: "🧾",
       iconBg: "bg-blue-50 dark:bg-blue-950/30", valueClass: "text-[#1255C8] dark:text-blue-400", accentClass: "bg-blue-500",
       sub: "total no período",
     },
@@ -183,7 +187,7 @@ const AdminNFSe = () => {
           accent="from-amber-500 to-orange-600"
           actions={
             rows.length > 0 ? (
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setPage(0); }}>
                 <SelectTrigger className="w-[190px] h-9">
                   <Filter className="w-4 h-4 mr-1" />
                   <SelectValue />
@@ -318,6 +322,13 @@ const AdminNFSe = () => {
                         })}
                       </tbody>
                     </table>
+                    <div className="flex items-center justify-between border-t px-4 py-3">
+                      <p className="text-xs text-muted-foreground">Página {page + 1} de {totalPages} · {totalCount} nota(s)</p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" disabled={page === 0 || loading} onClick={() => setPage((p) => Math.max(0, p - 1))}>Anterior</Button>
+                        <Button variant="outline" size="sm" disabled={page + 1 >= totalPages || loading} onClick={() => setPage((p) => p + 1)}>Próxima</Button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </CardContent>
