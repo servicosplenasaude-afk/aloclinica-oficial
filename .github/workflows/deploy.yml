@@ -80,11 +80,17 @@ jobs:
         # No global --no-verify-jwt: the CLI honors per-function verify_jwt from
         # supabase/config.toml (JWT required by default; disabled only for webhooks).
         run: |
-          for function_dir in supabase/functions/*; do
-            function_name="$(basename "$function_dir")"
-            if [ ! -d "$function_dir" ] || [ "$function_name" = "_shared" ] || [ "$function_name" = "seed-test-users" ] || [ "$function_name" = "seed-test-doctors" ]; then
-              continue
-            fi
+          mapfile -t functions < <(
+            git diff --name-only HEAD^ HEAD -- 'supabase/functions/**' |
+              awk -F/ '$2 == "functions" && $3 != "_shared" { print $3 }' |
+              grep -vE '^(seed-test-users|seed-test-doctors)$' |
+              sort -u
+          )
+          if [ "${#functions[@]}" -eq 0 ]; then
+            echo "No Edge Functions changed in this commit."
+            exit 0
+          fi
+          for function_name in "${functions[@]}"; do
             supabase functions deploy "$function_name" --project-ref "${SUPABASE_PROJECT_REF}" --use-api
           done
         env:

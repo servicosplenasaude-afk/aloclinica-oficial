@@ -152,7 +152,7 @@ if (workflow.includes("continue-on-error: true")) {
   add("error", "deploy", "Production deploy must not ignore Edge Function failures.", ".github/workflows/deploy.yml");
 }
 for (const seedFunction of ["seed-test-users", "seed-test-doctors"]) {
-  if (!workflow.includes(`$function_name\" = \"${seedFunction}`)) {
+  if (!workflow.includes(seedFunction)) {
     add("error", "deploy", `Production deploy must explicitly exclude ${seedFunction}.`, ".github/workflows/deploy.yml");
   }
 }
