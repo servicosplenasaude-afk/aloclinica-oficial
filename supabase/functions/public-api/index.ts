@@ -1,4 +1,4 @@
-/** AloClínica Partner API v1. Authentication: Authorization: ApiKey <prefix>.<secret>. */
+/** AloClínica Partner API v1. Authentication: Authorization: ApiKey <prefix>.<secret>. Release: 2026-08-23. */
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { safeEqual } from "../_shared/auth.ts";
 

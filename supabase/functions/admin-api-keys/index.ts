@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+// Administrative credential lifecycle for Partner API v1 (2026-08-23).
 import { checkRateLimit, getCaller } from "../_shared/auth.ts";
 
 const allowedScopes = new Set(["catalog:read", "availability:read", "appointments:read", "appointments:write"]);
