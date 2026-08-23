@@ -31,6 +31,7 @@ describe("partner API security contract", () => {
   it("does not expose clinical or contact data in v1 selections", () => {
     expect(edge).not.toMatch(/select\([^)]*(cpf|phone|email|prescriptions|medical_records)/);
     expect(edge).toContain('path === "/v1/openapi.json"');
+    expect(edge).toContain('/public-api(?=\\/|$)');
   });
 
   it("issues and revokes credentials only through recent admin sessions", () => {

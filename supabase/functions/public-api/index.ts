@@ -45,7 +45,9 @@ const openapi = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   const url = new URL(req.url);
-  const path = url.pathname.replace(/^\/functions\/v1\/public-api/, "") || "/";
+  // O runtime hospedado pode entregar /functions/v1/public-api/... ou apenas
+  // /public-api/.... Sempre derive o caminho a partir do nome da função.
+  const path = url.pathname.replace(/^.*\/public-api(?=\/|$)/, "") || "/";
   if (req.method === "GET" && path === "/v1/openapi.json") return json(openapi, 200, { "Cache-Control": "public, max-age=300" });
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
