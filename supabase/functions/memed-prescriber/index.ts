@@ -87,7 +87,7 @@ serve(async (req) => {
       .select("specialties(name)")
       .eq("doctor_id", doctorProfile.id)
       .limit(1);
-    const specialtyName = specialtyRows?.[0]?.specialties?.name;
+    const specialtyName = specialtyRows?.[0]?.specialties?.[0]?.name;
     if (specialtyName) especialidade = specialtyName;
 
     // Try to get existing user from Memed first.
