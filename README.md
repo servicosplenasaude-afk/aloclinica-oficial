@@ -51,6 +51,10 @@ npm run dev            # http://localhost:8080
 
 Outros comandos: `npm run build` (produção) · `npm run lint` · `npm test` (Vitest) · `npm run test:e2e` (Playwright).
 
+> **Instalação completa (todos os serviços, do zero ao ar):** ver
+> [`docs/INSTALACAO_COMPLETA.md`](docs/INSTALACAO_COMPLETA.md) — Supabase, secrets,
+> pagamentos, vídeo/TURN, KYC, e-mail, WhatsApp, NFS-e, DNS/TLS, CI/CD e validação E2E.
+
 ## 🔑 Variáveis de ambiente
 
 **Frontend (build-time, `VITE_*`):** já têm default público embutido (projeto Supabase de produção). Para sobrescrever:
