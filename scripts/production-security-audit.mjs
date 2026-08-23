@@ -80,7 +80,9 @@ const reviewedPublicFunctions = new Map([
   ["log-failed-login", ["checkRateLimit"]],
   ["docuseal-webhook", ["DOCUSEAL_WEBHOOK_SECRET", "safeEqual"]],
   ["mp-oauth-callback", ["mp_oauth_states"]],
-  ["public-api", ["secret_hash", "safeEqual"]],
+  // A comparação do hash ocorre dentro da RPC privada (service_role-only),
+  // para que a Edge Function nunca receba nem registre secret_hash.
+  ["public-api", ["fn_verify_partner_api_key", "rateError"]],
   ["doctor-ical-feed", ["ical_token"]],
   ["robots-txt", []],
   ["daily-backup", ["isInternalOrService"]],
