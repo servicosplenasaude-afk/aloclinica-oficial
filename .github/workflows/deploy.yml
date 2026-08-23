@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      function_names:
+        description: "Edge Functions específicas, separadas por vírgula (vazio = todas)"
+        required: false
+        type: string
 
 env:
   SUPABASE_PROJECT_REF: pwxvvimdtmvziynbspgx
@@ -91,12 +96,22 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-            mapfile -t functions < <(
-              find supabase/functions -mindepth 2 -maxdepth 2 -name index.ts -printf '%h\n' |
-                awk -F/ '$3 != "_shared" { print $3 }' |
-                grep -vE '^(seed-test-users|seed-test-doctors)$' |
-                sort -u
-            )
+            if [ -n "${REQUESTED_FUNCTIONS}" ]; then
+              IFS=',' read -ra functions <<< "${REQUESTED_FUNCTIONS}"
+              for function_name in "${functions[@]}"; do
+                if [[ ! "${function_name}" =~ ^[a-z0-9-]+$ ]] || [ ! -f "supabase/functions/${function_name}/index.ts" ] || [[ "${function_name}" =~ ^seed-test-(users|doctors)$ ]]; then
+                  echo "::error::Invalid or blocked function: ${function_name}"
+                  exit 1
+                fi
+              done
+            else
+              mapfile -t functions < <(
+                find supabase/functions -mindepth 2 -maxdepth 2 -name index.ts -printf '%h\n' |
+                  awk -F/ '$3 != "_shared" { print $3 }' |
+                  grep -vE '^(seed-test-users|seed-test-doctors)$' |
+                  sort -u
+              )
+            fi
           else
             if ! git cat-file -e "${BASE_SHA}^{commit}"; then
               echo "::error::Base commit ${BASE_SHA} unavailable; refusing a false-success deploy."
@@ -119,6 +134,7 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           BASE_SHA: ${{ github.event.before }}
+          REQUESTED_FUNCTIONS: ${{ inputs.function_names }}
 
   notify:
     name: Resultado do Deploy
