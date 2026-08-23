@@ -1,6 +1,7 @@
 /** AloClínica Partner API v1. Authentication: Authorization: ApiKey <prefix>.<secret>. Release: 2026-08-23. */
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { safeEqual } from "../_shared/auth.ts";
+import { checkRateLimit, getCaller } from "../_shared/auth.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -20,6 +21,8 @@ async function sha256(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
 }
+function randomToken(bytes: number) { return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(bytes)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function recentAuth(req: Request, maxAge = 600) { try { const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, ""); const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))); return typeof payload.iat === "number" && Date.now() / 1000 - payload.iat <= maxAge; } catch { return false; } }
 
 const openapi = {
   openapi: "3.1.0",
@@ -49,6 +52,24 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !serviceKey) return json({ error: { code: "service_unavailable", message: "API indisponível" } }, 503);
   const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+
+  if (path === "/v1/admin/keys") {
+    try {
+      const caller = await getCaller(req);
+      if (!caller.user || !caller.isAdmin || !recentAuth(req)) return json({ error: { code: "forbidden", message: "Autenticação administrativa recente obrigatória" } }, 403);
+      if (!(await checkRateLimit(`admin:${caller.user.id}`, "partner-api-keys", 20, 5, true))) return json({ error: { code: "rate_limited", message: "Limite excedido" } }, 429);
+      if (req.method === "GET") { const { data, error } = await sb.from("api_keys").select("id,owner_user_id,label,prefix,scopes,rate_limit_per_min,is_active,last_used_at,created_at,revoked_at").order("created_at", { ascending: false }).limit(200); if (error) throw error; return json({ data: data ?? [] }); }
+      const input = await req.json().catch(() => null) as Record<string, unknown> | null;
+      if (req.method === "POST") {
+        const allowed = new Set(["catalog:read", "availability:read", "appointments:read", "appointments:write"]); const scopes = input?.scopes; const rate = input?.rate_limit_per_min ?? 60;
+        if (typeof input?.owner_user_id !== "string" || typeof input?.label !== "string" || !Array.isArray(scopes) || !scopes.length || scopes.some((s) => typeof s !== "string" || !allowed.has(s)) || !Number.isInteger(rate)) return json({ error: { code: "invalid_request", message: "Dados inválidos" } }, 400);
+        const prefix = randomToken(6).slice(0, 8); const secret = randomToken(32); const { data: id, error } = await sb.rpc("fn_admin_create_partner_api_key", { p_actor_id: caller.user.id, p_owner_user_id: input.owner_user_id, p_label: input.label.trim(), p_prefix: prefix, p_secret: secret, p_scopes: [...new Set(scopes)], p_rate_limit: rate }); if (error) throw error;
+        return json({ data: { id, prefix, api_key: `${prefix}.${secret}`, warning: "Copie agora; o segredo não será exibido novamente." } }, 201);
+      }
+      if (req.method === "DELETE" && typeof input?.id === "string") { const { data, error } = await sb.rpc("fn_admin_revoke_partner_api_key", { p_actor_id: caller.user.id, p_api_key_id: input.id }); if (error) throw error; return data ? json({ data: { id: input.id, revoked: true } }) : json({ error: { code: "not_found", message: "Chave não encontrada" } }, 404); }
+      return json({ error: { code: "method_not_allowed", message: "Método não permitido" } }, 405);
+    } catch (error) { console.error("partner api admin error", error instanceof Error ? error.message : "unknown"); return json({ error: { code: "internal_error", message: "Erro interno" } }, 500); }
+  }
   let apiKeyId: string | null = null;
   let status = 500;
   let body: unknown = { error: { code: "internal_error", message: "Erro interno" } };

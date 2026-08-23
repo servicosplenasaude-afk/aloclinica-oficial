@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 
 const edge = readFileSync(resolve("supabase/functions/public-api/index.ts"), "utf8");
 const migration = readFileSync(resolve("supabase/migrations/20260823133000_partner_api_v1.sql"), "utf8");
-const admin = readFileSync(resolve("supabase/functions/admin-api-keys/index.ts"), "utf8");
+const admin = edge;
 
 describe("partner API security contract", () => {
   it("fails closed and validates secrets through a private RPC", () => {
@@ -38,6 +38,7 @@ describe("partner API security contract", () => {
     expect(admin).toContain("caller.isAdmin");
     expect(admin).toContain("recentAuth(req)");
     expect(admin).toContain("checkRateLimit");
+    expect(admin).toContain('path === "/v1/admin/keys"');
     expect(admin).toContain('sb.rpc("fn_admin_create_partner_api_key"');
     expect(admin).toContain('sb.rpc("fn_admin_revoke_partner_api_key"');
     expect(migration).toContain("partner_api_key.created");

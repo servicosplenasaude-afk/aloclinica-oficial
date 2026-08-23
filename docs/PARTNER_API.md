@@ -10,7 +10,7 @@ Contrato OpenAPI: `GET /v1/openapi.json`. Nunca coloque uma chave de parceiro no
 
 Envie `Authorization: ApiKey <prefixo>.<segredo>`. Chaves de sandbox e produção são independentes, têm escopos explícitos, limite por minuto e podem ser revogadas. O segredo completo é mostrado somente na emissão.
 
-A emissão e a revogação são feitas pela função administrativa `admin-api-keys`, com sessão de administrador emitida há no máximo dez minutos. A resposta de criação contém `api_key` uma única vez; listagens posteriores mostram apenas o prefixo.
+A emissão e a revogação usam `/v1/admin/keys`, com sessão de administrador emitida há no máximo dez minutos. A resposta de criação contém `api_key` uma única vez; listagens posteriores mostram apenas o prefixo.
 
 Escopos da v1:
 
