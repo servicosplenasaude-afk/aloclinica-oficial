@@ -87,7 +87,8 @@ export default defineConfig(({ mode }) => {
         background_color: "#f8fafc",
         display: "standalone",
         display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
-        orientation: "portrait-primary",
+        // A consulta por vídeo também precisa funcionar em paisagem no celular.
+        orientation: "any",
         start_url: "/?source=pwa",
         scope: "/",
         id: "/?source=pwa",
@@ -113,7 +114,7 @@ export default defineConfig(({ mode }) => {
             name: "Cartão Saúde",
             short_name: "Cartão",
             description: "Acesse seu cartão de saúde digital",
-            url: "/dashboard/patient/health-card?role=patient&source=pwa-shortcut",
+            url: "/dashboard/patient/health?role=patient&source=pwa-shortcut",
             icons: [{ src: "/pwa-192x192.png", sizes: "192x192" }],
           },
           {
@@ -130,15 +131,6 @@ export default defineConfig(({ mode }) => {
           { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png" },
           { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "any" },
           { src: "/pwa-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
-        ],
-        screenshots: [
-          {
-            src: "/pwa-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            form_factor: "narrow",
-            label: "AloClínica Telemedicina",
-          },
         ],
       },
     }),

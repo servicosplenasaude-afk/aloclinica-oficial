@@ -6,7 +6,7 @@ import { test, expect } from "@playwright/test";
  * Cobre os caminhos que não exigem autenticação real (smoke + guards):
  * - rotas protegidas redirecionam para login;
  * - a página final da consulta encerrada não vaza em rota pública;
- * - manifest PWA é servido em /manifest.json e o app shell carrega.
+ * - manifest PWA canônico é servido e o app shell carrega.
  *
  * Os caminhos AUTENTICADOS (entrar na sala, IA Clínica, gravar) são exercidos
  * pelo script `scripts/abrir-consulta.mjs` contra a produção, com sessão real
@@ -30,7 +30,7 @@ test.describe("Teleconsulta — guards e infraestrutura", () => {
   });
 
   test("manifest PWA é servido com display standalone e ícones", async ({ request }) => {
-    const res = await request.get("/manifest.json");
+    const res = await request.get("/manifest.webmanifest");
     expect(res.ok()).toBeTruthy();
     const manifest = await res.json();
     expect(manifest.display).toBe("standalone");

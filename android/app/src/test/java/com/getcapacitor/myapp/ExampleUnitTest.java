@@ -1,4 +1,4 @@
-package com.getcapacitor.myapp;
+package br.com.aloclinica.app;
 
 import static org.junit.Assert.*;
 

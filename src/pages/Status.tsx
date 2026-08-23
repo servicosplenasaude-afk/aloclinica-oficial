@@ -25,7 +25,7 @@ const SERVICES: Service[] = [
   {
     id: "frontend",
     label: "Site & app",
-    url: "https://aloclinica.com.br/manifest.json",
+    url: "https://aloclinica.com.br/manifest.webmanifest",
     description: "Aplicação web e PWA (aloclinica.com.br).",
   },
   {
