@@ -166,7 +166,7 @@ export function PingoAssistantChat() {
 
     await performRequest();
     setIsLoading(false);
-  }, [input, isLoading, messages]);
+  }, [hasError, input, isLoading, messages]);
 
   const copyMessage = (idx: number) => {
     navigator.clipboard.writeText(messages[idx]?.content ?? "");
@@ -268,7 +268,7 @@ export function PingoAssistantChat() {
                           <div className="absolute -bottom-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => copyMessage(i)}
-                              className="w-5 h-5 rounded-full bg-background border border-border shadow-sm flex items-center justify-center hover:bg-muted"
+                              className="min-w-11 min-h-11 sm:min-w-8 sm:min-h-8 rounded-full bg-background border border-border shadow-sm flex items-center justify-center hover:bg-muted"
                               title="Copiar"
                             >
                               {copiedIdx === i ? <Check className="w-2.5 h-2.5 text-primary" /> : <Copy className="w-2.5 h-2.5 text-muted-foreground" />}
@@ -357,7 +357,7 @@ export function PingoAssistantChat() {
                     variant="ghost"
                     size="icon"
                     className={cn(
-                      "w-8 h-8 rounded-xl transition-all",
+                      "w-11 h-11 sm:w-8 sm:h-8 rounded-xl transition-all",
                       isListening ? "text-red-500 bg-red-50 animate-pulse" : "text-muted-foreground hover:bg-muted"
                     )}
                     onClick={toggleVoice}
@@ -385,7 +385,7 @@ export function PingoAssistantChat() {
                 {messages.length > 1 && (
                   <button 
                     onClick={() => setMessages([messages[0]])}
-                    className="text-[9px] text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
+                    className="min-h-11 px-2 text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
                   >
                     <Trash2 className="w-2.5 h-2.5" /> Limpar conversa
                   </button>
