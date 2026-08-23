@@ -1,6 +1,6 @@
 import { logError } from "@/lib/logger";
 import pingoAdmin from "@/assets/pingo-admin.png";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getAdminNav } from "./adminNav";
 import { cn } from "@/lib/utils";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
   Stethoscope, Check, X, Mail, Clock, Eye, Send, Copy,
   CheckCircle2, XCircle, Loader2, RefreshCw, Search
@@ -39,24 +40,25 @@ const AdminDoctorApplications = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending");
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 350);
   const [selectedApp, setSelectedApp] = useState<DoctorApplication | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [processing, setProcessing] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   
 
-  const fetchApplications = async () => {
+  const fetchApplications = useCallback(async () => {
     setLoading(true);
     let query = db.from("doctor_applications" as never).select("*").order("created_at", { ascending: false });
     if (filter !== "all") query = query.eq("status", filter);
-    if (search.trim()) query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,crm.ilike.%${search}%`);
+    if (debouncedSearch.trim()) query = query.or(`full_name.ilike.%${debouncedSearch}%,email.ilike.%${debouncedSearch}%,crm.ilike.%${debouncedSearch}%`);
     const { data, error } = await query;
     if (error) logError("AdminDoctorApplications fetch error", error);
     setApplications((data as unknown as DoctorApplication[]) ?? []);
     setLoading(false);
-  };
+  }, [filter, debouncedSearch]);
 
-  useEffect(() => { fetchApplications(); }, [filter, search]);
+  useEffect(() => { fetchApplications(); }, [fetchApplications]);
 
   const handleApprove = async () => {
     if (!selectedApp) return;
@@ -173,7 +175,7 @@ const AdminDoctorApplications = () => {
           </div>
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome, email ou CRM..." className="pl-9 h-10" onKeyDown={e => e.key === "Enter" && fetchApplications()} />
+            <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome, email ou CRM..." className="pl-9 h-10" />
           </div>
         </div>
 

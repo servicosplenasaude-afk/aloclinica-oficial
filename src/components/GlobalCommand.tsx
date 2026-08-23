@@ -102,20 +102,22 @@ const GlobalCommand = ({ role = "patient" }: GlobalCommandProps) => {
   const navigate = useNavigate();
   const { signOut, user, roles } = useAuth();
   const { setTheme, theme } = useTheme();
+  const commandUserId = user?.id;
+  const canSearchClinicalData = roles?.includes("doctor") || roles?.includes("admin") || false;
 
   // Busca dinâmica: appointments/receitas/pacientes (debounce 250ms)
   useEffect(() => {
-    if (!open || query.trim().length < 2 || !user) { setResults([]); return; }
+    if (!open || query.trim().length < 2 || !commandUserId) { setResults([]); return; }
     const handle = setTimeout(async () => {
       setSearching(true);
       try {
         const { db } = await import("@/integrations/supabase/untyped");
         const q = query.trim();
-        const isDoctor = roles?.includes("doctor") || roles?.includes("admin");
+        const isDoctor = canSearchClinicalData;
         const out: DynamicResult[] = [];
 
         // 1) Consultas — médico vê suas; paciente vê as próprias
-        const apptFilter = isDoctor ? { col: "doctor_id", val: user.id } : { col: "patient_id", val: user.id };
+        const apptFilter = isDoctor ? { col: "doctor_id", val: commandUserId } : { col: "patient_id", val: commandUserId };
         const { data: appts } = await db.from("appointments")
           .select("id, scheduled_at, status, patient_id, doctor_id")
           .eq(apptFilter.col, apptFilter.val)
@@ -145,7 +147,7 @@ const GlobalCommand = ({ role = "patient" }: GlobalCommandProps) => {
         // 2) Receitas — pelo diagnóstico
         const { data: rxs } = await db.from("prescriptions")
           .select("id, diagnosis, created_at, patient_id, doctor_id")
-          .eq(isDoctor ? "doctor_id" : "patient_id", user.id)
+          .eq(isDoctor ? "doctor_id" : "patient_id", commandUserId)
           .ilike("diagnosis", `%${q}%`)
           .order("created_at", { ascending: false })
           .limit(5);
@@ -184,7 +186,7 @@ const GlobalCommand = ({ role = "patient" }: GlobalCommandProps) => {
       }
     }, 250);
     return () => clearTimeout(handle);
-  }, [open, query, user?.id, roles?.join(",")]);
+  }, [open, query, commandUserId, canSearchClinicalData]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
