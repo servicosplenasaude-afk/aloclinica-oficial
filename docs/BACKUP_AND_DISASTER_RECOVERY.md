@@ -31,7 +31,13 @@ Saída divergente bloqueia deploy. Investigue o histórico antes de qualquer rep
 2. Restaurar o dump/PITR fornecido pelo provedor.
 3. Aplicar somente migrations locais que a reconciliação identificar como pendentes e que tenham sido revisadas.
 4. Validar RLS com usuários distintos e executar consultas de contagem sem exportar PHI para logs.
-5. Validar checksums do manifest da exportação operacional antes de usar arquivos.
+5. Baixar o `manifest.json` e seus arquivos mantendo a estrutura relativa; validar checksums e contagens sem imprimir PHI:
+
+```bash
+npm run audit:backup -- /caminho/isolado/snapshots/<run-id>/manifest.json
+```
+
+   Uma falha de checksum, contagem ou caminho inseguro invalida o artefato e bloqueia o ensaio.
 6. Destruir o ambiente temporário conforme a política aprovada e guardar apenas evidências sem dados pessoais.
 
 ## Limitações conhecidas

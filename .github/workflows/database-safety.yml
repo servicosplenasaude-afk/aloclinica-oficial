@@ -2,6 +2,12 @@ name: Database Safety Checks
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+      - "scripts/verify-migration-reconciliation.mjs"
+      - ".github/workflows/database-safety.yml"
   schedule:
     - cron: "17 9 * * 1"
 

@@ -12,12 +12,15 @@ export const initSentry = () => {
     dsn: SENTRY_DSN,
     integrations: [
       Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration({ maskAllText: false, blockAllMedia: false }),
+      // Clinical screens may contain health data. Replays must never record
+      // readable text, images, video, or audio from the consultation UI.
+      Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
     ],
     tracesSampleRate: 0.3,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
-    environment: import.meta.env.MODE,
+    environment: import.meta.env.VITE_APP_ENV || import.meta.env.MODE,
+    sendDefaultPii: false,
     beforeSend(event) {
       if (event.exception?.values?.[0]?.value?.includes("ResizeObserver")) return null;
       return event;

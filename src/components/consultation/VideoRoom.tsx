@@ -1618,9 +1618,14 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
 
         {/* Ferramenta SOBRE a chamada — médico não sai do vídeo (continua rodando atrás) */}
         {isDoctor && toolOverlay && (
-          <div className={`absolute z-[60] flex flex-col bg-[hsl(220,20%,8%)] ${isMobile ? "inset-0" : "inset-y-0 right-0 w-[58%] border-l border-[hsl(220,15%,18%)] shadow-2xl"}`}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clinical-tool-overlay-title"
+            className={`absolute z-[60] flex flex-col bg-[hsl(220,20%,8%)] ${isMobile ? "inset-0" : "inset-y-0 right-0 w-[58%] border-l border-[hsl(220,15%,18%)] shadow-2xl"}`}
+          >
             <div className="flex items-center justify-between px-4 py-2 shrink-0 bg-[hsl(220,15%,12%)] border-b border-[hsl(220,15%,18%)]">
-              <span className="text-sm font-semibold text-white">{toolOverlay.title}</span>
+              <span id="clinical-tool-overlay-title" className="text-sm font-semibold text-white">{toolOverlay.title}</span>
               <div className="flex items-center gap-3">
                 <span className="text-[11px] text-emerald-400 font-medium hidden sm:inline">● Chamada ativa</span>
                 <button
@@ -1730,6 +1735,9 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
           {showBottomSheet && (
             <>
               <motion.div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="consultation-mobile-panel-title"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -1770,7 +1778,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                        showAI ? <Sparkles className="w-4 h-4 text-primary" /> :
                        <UserRound className="w-4 h-4 text-[hsl(220,15%,55%)]" />}
                     </div>
-                    <p className="text-sm font-semibold text-white">
+                    <p id="consultation-mobile-panel-title" className="text-sm font-semibold text-white">
                       {showChat ? "Chat" : showNotes ? "Prontuário" : showAI ? "IA Clínica" : isDoctor ? "Paciente" : "Médico"}
                     </p>
                   </div>
@@ -1817,8 +1825,8 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
       {/* Overlay de atalhos de teclado (médico). Abre com `?` */}
       {showShortcuts && isDoctor && (
         <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowShortcuts(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-2xl bg-[hsl(220,25%,8%)] border border-[hsl(220,15%,16%)] shadow-2xl p-5">
-            <p className="text-sm font-semibold text-white mb-3">Atalhos de teclado</p>
+          <div role="dialog" aria-modal="true" aria-labelledby="consultation-shortcuts-title" onClick={(e) => e.stopPropagation()} className="w-full max-w-sm rounded-2xl bg-[hsl(220,25%,8%)] border border-[hsl(220,15%,16%)] shadow-2xl p-5">
+            <p id="consultation-shortcuts-title" className="text-sm font-semibold text-white mb-3">Atalhos de teclado</p>
             <div className="space-y-1.5 text-xs text-[hsl(220,15%,75%)]">
               {[
                 ["M", "Mutar / ativar microfone"],
