@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getBackupState, shortRelease, type OperationalHealth } from "@/lib/admin-system-health";
+import { getBackupState, getSystemPresentationState, shortRelease, type OperationalHealth } from "@/lib/admin-system-health";
 
 const base = (overrides: Partial<OperationalHealth["backup"]> = {}): OperationalHealth => ({
   environment: "production", release: "abcdef1234567890", projectRef: "project",
@@ -28,5 +28,27 @@ describe("admin system health", () => {
   it("does not expose a full release identifier in the UI", () => {
     expect(shortRelease("abcdef1234567890")).toBe("abcdef123456");
     expect(shortRelease(null)).toBe("Não informado");
+  });
+});
+
+describe("system presentation state", () => {
+  const healthy = { running: false, coreTotal: 5, coreErrors: 0, externalDown: 0, unconfigured: 0, backupState: "healthy" as const };
+
+  it("does not report operational before the first diagnosis", () => {
+    expect(getSystemPresentationState({ ...healthy, coreTotal: 0 })).toBe("checking");
+  });
+
+  it("distinguishes pending configuration from failure", () => {
+    expect(getSystemPresentationState({ ...healthy, unconfigured: 1 })).toBe("warning");
+    expect(getSystemPresentationState({ ...healthy, backupState: "unavailable" })).toBe("warning");
+  });
+
+  it("prioritizes critical failures", () => {
+    expect(getSystemPresentationState({ ...healthy, externalDown: 1, unconfigured: 2 })).toBe("error");
+    expect(getSystemPresentationState({ ...healthy, backupState: "stale" })).toBe("error");
+  });
+
+  it("only reports operational when every known gate is healthy", () => {
+    expect(getSystemPresentationState(healthy)).toBe("operational");
   });
 });

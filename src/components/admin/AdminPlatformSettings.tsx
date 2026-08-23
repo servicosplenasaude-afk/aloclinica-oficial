@@ -20,6 +20,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   Settings, Save, RefreshCw, AlertTriangle, Globe, FileText, Megaphone,
@@ -40,6 +44,10 @@ const defaultRobots: Robots = { content: "User-agent: *\nAllow: /\nSitemap: http
 
 const AdminPlatformSettings = () => {
   const [maint, setMaint] = useState<Maint>(defaultMaint);
+  const [savedMaint, setSavedMaint] = useState<Maint>(defaultMaint);
+  const [confirmMaintenance, setConfirmMaintenance] = useState(false);
+  const [checkingMaintenanceImpact, setCheckingMaintenanceImpact] = useState(false);
+  const [activeConsultations, setActiveConsultations] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState<Announcement>(defaultAnnouncement);
   const [seo, setSeo] = useState<Seo>(defaultSeo);
   const [robots, setRobots] = useState<Robots>(defaultRobots);
@@ -58,7 +66,9 @@ const AdminPlatformSettings = () => {
       return;
     }
     const map = Object.fromEntries((data ?? []).map((r: any) => [r.key, r.value]));
-    setMaint({ ...defaultMaint, ...(map.maintenance_mode ?? {}) });
+    const loadedMaint = { ...defaultMaint, ...(map.maintenance_mode ?? {}) };
+    setMaint(loadedMaint);
+    setSavedMaint(loadedMaint);
     setAnnouncement({ ...defaultAnnouncement, ...(map.global_announcement ?? {}) });
     setSeo({ ...defaultSeo, ...(map.seo ?? {}) });
     setRobots({ ...defaultRobots, ...(map.robots_txt ?? {}) });
@@ -74,10 +84,52 @@ const AdminPlatformSettings = () => {
       .upsert({ key, value }, { onConflict: "key" });
     if (error) {
       toast.error("Erro ao salvar", { description: error.message });
+      setSaving(null);
+      return false;
     } else {
       toast.success("Configuração salva");
     }
     setSaving(null);
+    return true;
+  };
+
+  const maintenanceDirty = JSON.stringify(maint) !== JSON.stringify(savedMaint);
+  const invalidExpectedBack = Boolean(maint.expected_back_at && Date.parse(maint.expected_back_at) <= Date.now());
+
+  useEffect(() => {
+    if (!maintenanceDirty) return undefined;
+    const warnBeforeLeave = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warnBeforeLeave);
+    return () => window.removeEventListener("beforeunload", warnBeforeLeave);
+  }, [maintenanceDirty]);
+
+  const persistMaintenance = async () => {
+    if (invalidExpectedBack) {
+      toast.error("A previsão precisa estar no futuro");
+      return false;
+    }
+    const saved = await saveKey("maintenance_mode", maint);
+    if (saved) setSavedMaint(maint);
+    return saved;
+  };
+
+  const requestMaintenanceSave = async () => {
+    if (maint.enabled && !savedMaint.enabled) {
+      setCheckingMaintenanceImpact(true);
+      const { count, error } = await db
+        .from("appointments")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "in_progress");
+      setCheckingMaintenanceImpact(false);
+      if (error) {
+        toast.error("Não foi possível verificar consultas em andamento", { description: "A ativação foi bloqueada por segurança. Tente novamente." });
+        return;
+      }
+      setActiveConsultations(count ?? 0);
+      setConfirmMaintenance(true);
+      return;
+    }
+    void persistMaintenance();
   };
 
   return (
@@ -97,7 +149,7 @@ const AdminPlatformSettings = () => {
         />
 
         <Tabs defaultValue="maintenance">
-          <TabsList>
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:inline-grid sm:w-auto sm:grid-cols-4">
             <TabsTrigger value="maintenance" className="gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5" /> Manutenção
               {maint.enabled && <span className="text-[10px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded-full">ON</span>}
@@ -115,23 +167,33 @@ const AdminPlatformSettings = () => {
           </TabsList>
 
           <TabsContent value="maintenance" className="mt-4">
-            <Card>
+            <Card className={maint.enabled ? "border-amber-400/60 shadow-sm" : undefined}>
               <CardHeader>
-                <CardTitle className="text-base">Modo manutenção</CardTitle>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="text-base">Modo manutenção</CardTitle>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {maintenanceDirty && <span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[11px] font-bold text-sky-700 dark:text-sky-300">ALTERAÇÕES NÃO SALVAS</span>}
+                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${maint.enabled ? "bg-amber-500 text-amber-950" : "bg-muted text-muted-foreground"}`}>
+                      {maint.enabled ? (savedMaint.enabled ? "MANUTENÇÃO ATIVA" : "ATIVO APÓS SALVAR") : "SITE DISPONÍVEL"}
+                    </span>
+                  </div>
+                </div>
                 <CardDescription>
-                  Quando ativado, todos os usuários veem um banner amarelo no topo do site.
-                  Admins continuam navegando normalmente se "Permitir admins" estiver ligado.
+                  Quando ativado, pacientes e médicos deixam de acessar a plataforma e veem uma tela de manutenção.
+                  Admins continuam navegando somente se a permissão abaixo estiver ligada.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg border p-4">
+              <CardContent className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div className="space-y-4">
+                <div className={`flex items-center justify-between gap-4 rounded-xl border p-4 ${maint.enabled ? "border-amber-400/60 bg-amber-500/10" : "bg-muted/20"}`}>
                   <div>
                     <Label className="text-base">Ativar modo manutenção</Label>
-                    <p className="text-xs text-muted-foreground">Mostra banner global pra todos.</p>
+                    <p id="maintenance-impact" className="mt-1 text-xs leading-relaxed text-muted-foreground">Bloqueia o acesso de pacientes e médicos depois que você salvar.</p>
                   </div>
                   <Switch
                     checked={maint.enabled}
                     onCheckedChange={(v) => setMaint({ ...maint, enabled: v })}
+                    aria-describedby="maintenance-impact"
                   />
                 </div>
 
@@ -142,7 +204,9 @@ const AdminPlatformSettings = () => {
                     onChange={(e) => setMaint({ ...maint, message: e.target.value })}
                     placeholder="Ex: Estamos atualizando o sistema. Voltamos em breve!"
                     rows={3}
+                    maxLength={280}
                   />
+                  <p className="text-right text-[11px] tabular-nums text-muted-foreground">{maint.message.length}/280</p>
                 </div>
 
                 <div className="space-y-1.5">
@@ -151,23 +215,50 @@ const AdminPlatformSettings = () => {
                     type="datetime-local"
                     value={maint.expected_back_at?.slice(0, 16) ?? ""}
                     onChange={(e) => setMaint({ ...maint, expected_back_at: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                    aria-invalid={invalidExpectedBack}
+                    className={invalidExpectedBack ? "border-destructive focus-visible:ring-destructive" : undefined}
                   />
+                  {invalidExpectedBack && <p role="alert" className="text-xs text-destructive">Escolha uma data e hora futuras.</p>}
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/30">
-                  <Label className="font-normal text-sm">Permitir que admins continuem usando</Label>
+                <div className="flex items-center justify-between gap-4 rounded-xl border bg-muted/30 p-4">
+                  <div>
+                    <Label className="text-sm">Permitir acesso administrativo</Label>
+                    <p className="mt-1 text-xs text-muted-foreground">Recomendado para acompanhar o incidente e desativar a manutenção.</p>
+                  </div>
                   <Switch
                     checked={maint.allow_admin}
                     onCheckedChange={(v) => setMaint({ ...maint, allow_admin: v })}
                   />
                 </div>
 
-                <div className="flex justify-end">
-                  <Button onClick={() => saveKey("maintenance_mode", maint)} disabled={saving === "maintenance_mode"} className="gap-2">
-                    {saving === "maintenance_mode" ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Salvar manutenção
+                <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-muted-foreground">A alteração pode levar até 60 segundos para aparecer.</p>
+                  <Button onClick={() => void requestMaintenanceSave()} disabled={saving === "maintenance_mode" || checkingMaintenanceImpact || loading || !maintenanceDirty || invalidExpectedBack} className="min-h-11 gap-2">
+                    {saving === "maintenance_mode" || checkingMaintenanceImpact ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    {checkingMaintenanceImpact ? "Verificando impacto..." : maint.enabled ? "Salvar e ativar" : "Salvar configuração"}
                   </Button>
                 </div>
+                </div>
+
+                <aside className="rounded-2xl border bg-muted/20 p-4 lg:sticky lg:top-4 lg:self-start" aria-label="Prévia da tela de manutenção">
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Prévia para usuários</p>
+                  <div className="mt-4 rounded-2xl border bg-background p-5 text-center shadow-sm">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+                      <Settings className="h-5 w-5 text-primary" aria-hidden="true" />
+                    </div>
+                    <p className="mt-4 text-sm font-bold text-foreground">Estamos em manutenção</p>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      {maint.message.trim() || "Estamos fazendo uma manutenção para melhorar sua experiência. Voltamos em instantes."}
+                    </p>
+                    {maint.expected_back_at && (
+                      <p className="mt-3 rounded-full bg-muted px-3 py-1.5 text-[11px] font-medium text-foreground">
+                        Retorno previsto: {new Date(maint.expected_back_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                      </p>
+                    )}
+                  </div>
+                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">Use uma mensagem curta, diga o impacto e informe uma previsão realista.</p>
+                </aside>
               </CardContent>
             </Card>
           </TabsContent>
@@ -280,6 +371,36 @@ const AdminPlatformSettings = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <AlertDialog open={confirmMaintenance} onOpenChange={(open) => saving !== "maintenance_mode" && setConfirmMaintenance(open)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ativar modo manutenção?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <span className="block">Pacientes e médicos perderão o acesso à plataforma em até 60 segundos.</span>
+              {activeConsultations === 0 ? (
+                <span className="block font-medium text-success">Verificação concluída: nenhuma consulta está em andamento.</span>
+              ) : (
+                <span className="block font-semibold text-destructive">Atenção: {activeConsultations} consulta(s) estão em andamento e podem ser interrompidas.</span>
+              )}
+              <span className="block">Confirme que a equipe foi avisada e que existe um plano de retorno.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving === "maintenance_mode"}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={saving === "maintenance_mode"}
+              className="bg-amber-600 text-white hover:bg-amber-700"
+              onClick={(event) => {
+                event.preventDefault();
+                void persistMaintenance().then((saved) => saved && setConfirmMaintenance(false));
+              }}
+            >
+              {saving === "maintenance_mode" ? "Ativando..." : activeConsultations ? "Ativar mesmo assim" : "Confirmar e ativar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };

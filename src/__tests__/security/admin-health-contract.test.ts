@@ -25,4 +25,21 @@ describe("admin health contracts", () => {
     expect(production).toContain('APP_ENV=production APP_RELEASE="$GITHUB_SHA"');
     expect(sandbox).toContain('APP_ENV=sandbox APP_RELEASE="$GITHUB_SHA"');
   });
+
+  it("checks active consultations before opening the maintenance confirmation", () => {
+    const source = read("src/components/admin/AdminPlatformSettings.tsx");
+    const consultationQuery = source.indexOf('.eq("status", "in_progress")');
+    const failClosed = source.indexOf('toast.error("Não foi possível verificar consultas em andamento"');
+    const confirmation = source.indexOf("setConfirmMaintenance(true)");
+    expect(consultationQuery).toBeGreaterThan(-1);
+    expect(failClosed).toBeGreaterThan(consultationQuery);
+    expect(confirmation).toBeGreaterThan(failClosed);
+  });
+
+  it("requires explicit confirmation before activating maintenance", () => {
+    const source = read("src/components/admin/AdminPlatformSettings.tsx");
+    expect(source).toContain("Ativar modo manutenção?");
+    expect(source).toContain("Ativar mesmo assim");
+    expect(source).toContain("persistMaintenance().then((saved) => saved && setConfirmMaintenance(false))");
+  });
 });

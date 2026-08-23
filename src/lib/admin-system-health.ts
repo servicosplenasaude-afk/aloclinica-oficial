@@ -1,4 +1,5 @@
 export type BackupState = "healthy" | "stale" | "failed" | "never" | "unavailable";
+export type SystemPresentationState = "checking" | "operational" | "warning" | "error";
 
 export interface OperationalHealth {
   environment: "production" | "sandbox" | "unknown";
@@ -29,3 +30,16 @@ export function shortRelease(release: string | null | undefined): string {
   return release.length > 12 ? release.slice(0, 12) : release;
 }
 
+export function getSystemPresentationState(input: {
+  running: boolean;
+  coreTotal: number;
+  coreErrors: number;
+  externalDown: number;
+  unconfigured: number;
+  backupState: BackupState;
+}): SystemPresentationState {
+  if (input.running || input.coreTotal === 0) return "checking";
+  if (input.coreErrors > 0 || input.externalDown > 0 || ["failed", "never", "stale"].includes(input.backupState)) return "error";
+  if (input.unconfigured > 0 || input.backupState === "unavailable") return "warning";
+  return "operational";
+}

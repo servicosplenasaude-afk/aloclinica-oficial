@@ -1,16 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { getAdminNav } from "@/components/admin/adminNav";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, XCircle, Clock, Database, Bot, Globe, Server, Users, FileText, Calendar, HardDrive, Shield, Video, MessageCircle, CreditCard, Mail, Plug, GitCommitHorizontal, Archive } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { RefreshCw, CheckCircle2, XCircle, Clock, Database, Bot, Globe, Server, Users, FileText, Calendar, HardDrive, Shield, Video, MessageCircle, CreditCard, Mail, Plug, GitCommitHorizontal, Archive, Activity, ArrowUpRight, Settings2, TriangleAlert, Copy, Download, Gauge, CircleOff } from "lucide-react";
 import { format } from "date-fns";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { SUPABASE_FUNCTIONS_URL, SUPABASE_PUBLISHABLE_KEY } from "@/lib/supabase-config";
 import { useServiceHealth } from "@/hooks/use-service-health";
-import { getBackupState, shortRelease } from "@/lib/admin-system-health";
+import { getBackupState, getSystemPresentationState, shortRelease } from "@/lib/admin-system-health";
+import { buildHealthReport, filterDiagnostics, healthReportText, type DiagnosticFilter, type DiagnosticItem } from "@/lib/admin-health-report";
+import { toast } from "sonner";
 
 interface HealthCheck {
   name: string;
@@ -38,8 +42,11 @@ const SystemHealth = () => {
   const [dbStats, setDbStats] = useState<DbStats | null>(null);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
   const [running, setRunning] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [serviceFilter, setServiceFilter] = useState<DiagnosticFilter>("all");
+  const [dbStatsError, setDbStatsError] = useState(false);
   // Verificação REAL dos serviços externos (WhatsApp, e-mail, vídeo, KYC, pagamentos, NFS-e).
-  const health = useServiceHealth();
+  const health = useServiceHealth({ poll: autoRefresh });
 
   const fetchDbStats = useCallback(async () => {
     const [patients, doctors, appts, prescriptions, subs, queue] = await Promise.all([
@@ -50,6 +57,12 @@ const SystemHealth = () => {
       db.from("subscriptions").select("id", { count: "exact", head: true }).eq("status", "active"),
       db.from("on_demand_queue").select("id", { count: "exact", head: true }).eq("status", "waiting"),
     ]);
+    const failed = [patients, doctors, appts, prescriptions, subs, queue].some((result) => Boolean(result.error));
+    setDbStatsError(failed);
+    if (failed) {
+      setDbStats(null);
+      return;
+    }
     setDbStats({
       patients: patients.count ?? 0,
       doctors: doctors.count ?? 0,
@@ -180,15 +193,30 @@ const SystemHealth = () => {
   }, [fetchDbStats, refreshServiceHealth]);
 
   useEffect(() => { void runChecks(); }, [runChecks]);
+  useEffect(() => {
+    if (!autoRefresh) return undefined;
+    const timer = window.setInterval(() => void runChecks(), 2 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [autoRefresh, runChecks]);
 
   // Falhas reais dos serviços externos (verificação no servidor) entram no status geral.
   const serverDown = health.summary.down;
   const operational = health.data?.operational;
   const backupState = getBackupState(operational);
   const backupFailed = backupState === "failed" || backupState === "never" || backupState === "stale";
-  const allOk = checks.length > 0 && checks.every(c => c.status === "ok") && serverDown === 0 && !backupFailed;
-  const hasErrors = checks.some(c => c.status === "error") || serverDown > 0 || backupFailed;
-  const failCount = checks.filter(c => c.status === "error").length + serverDown + (backupFailed ? 1 : 0);
+  const coreErrors = checks.filter(c => c.status === "error").length;
+  const systemState = getSystemPresentationState({
+    running,
+    coreTotal: checks.length,
+    coreErrors,
+    externalDown: serverDown,
+    unconfigured: health.summary.unconfigured,
+    backupState,
+  });
+  const hasWarnings = systemState === "warning";
+  const allOk = systemState === "operational";
+  const hasErrors = systemState === "error";
+  const failCount = coreErrors + serverDown + (backupFailed ? 1 : 0);
   const avgLatency = checks.length > 0 ? Math.round(checks.reduce((sum, c) => sum + (c.latency ?? 0), 0) / checks.length) : 0;
 
   const dbStatCards = dbStats ? [
@@ -208,47 +236,182 @@ const SystemHealth = () => {
     unavailable: { label: "Status indisponível", badge: "INDISPONÍVEL", tone: "text-muted-foreground", variant: "secondary" as const },
   })[backupState];
 
+  const diagnostics = useMemo<DiagnosticItem[]>(() => {
+    const core: DiagnosticItem[] = checks.map((check, index) => ({
+      key: `core-${index}`,
+      label: check.name,
+      status: check.status === "error" ? "error" : check.status,
+      detail: check.message,
+      latencyMs: check.latency,
+      critical: true,
+      source: "core",
+    }));
+    const external: DiagnosticItem[] = health.services.map((service) => ({
+      key: service.key,
+      label: service.label,
+      status: service.status,
+      detail: service.detail,
+      latencyMs: service.latencyMs,
+      critical: service.critical,
+      source: "external",
+    }));
+    const backup: DiagnosticItem = {
+      key: "backup",
+      label: "Backup operacional",
+      status: backupState === "healthy" ? "ok" : backupState === "unavailable" ? "unconfigured" : "error",
+      detail: backupPresentation.label,
+      critical: true,
+      source: "backup",
+    };
+    return [...core, ...external, backup];
+  }, [backupPresentation.label, backupState, checks, health.services]);
+
+  const filteredDiagnostics = filterDiagnostics(diagnostics, serviceFilter);
+  const report = useMemo(() => buildHealthReport({
+    checkedAt: (lastCheck ?? health.lastRun ?? new Date()).toISOString(),
+    environment: operational?.environment ?? "unknown",
+    release: shortRelease(operational?.release),
+    items: diagnostics,
+  }), [diagnostics, health.lastRun, lastCheck, operational?.environment, operational?.release]);
+
+  const copyReport = async () => {
+    try {
+      await navigator.clipboard.writeText(healthReportText(report));
+      toast.success("Diagnóstico copiado");
+    } catch {
+      toast.error("Não foi possível copiar o diagnóstico");
+    }
+  };
+
+  const downloadReport = () => {
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `aloclinica-diagnostico-${new Date().toISOString().replace(/:/g, "-")}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <DashboardLayout title="Administração" nav={getAdminNav("health")}>
-      <motion.div variants={container} initial="hidden" animate="show" className="max-w-4xl space-y-6">
-        <motion.div variants={fadeUp} className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground tabular-nums">Saúde do Sistema</h1>
-            <p className="text-sm text-muted-foreground">Diagnóstico em tempo real · {checks.filter(c => c.status === "ok").length}/{checks.length} serviços ok</p>
+      <motion.div variants={container} initial="hidden" animate="show" className="max-w-6xl space-y-6 pb-24 md:pb-8">
+        <motion.header variants={fadeUp} className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary" aria-hidden="true">
+                <Activity className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-xl font-bold text-foreground sm:text-2xl">Operação da plataforma</h1>
+                  <Badge variant={hasErrors ? "destructive" : allOk ? "default" : "secondary"}>
+                    {running ? "Verificando" : hasErrors ? "Requer atenção" : hasWarnings ? "Configuração parcial" : allOk ? "Operacional" : "Aguardando diagnóstico"}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  Monitore serviços, recuperação e capacidade. Para interromper o acesso público, use o modo manutenção.
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground" aria-live="polite">
+                  {lastCheck ? `Última verificação em ${format(lastCheck, "dd/MM/yyyy 'às' HH:mm:ss")}` : "A primeira verificação será executada automaticamente."}
+                </p>
+              </div>
+            </div>
+            <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto">
+              <Button asChild variant="outline" className="min-h-11 justify-center rounded-xl">
+                <Link to="/dashboard/admin/platform-settings">
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  Configurar manutenção
+                </Link>
+              </Button>
+              <Button className="min-h-11 rounded-xl" onClick={runChecks} disabled={running}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${running ? "animate-spin" : ""}`} />
+                {running ? "Verificando..." : "Verificar agora"}
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-3 pb-24 md:pb-8">
-            {lastCheck && (
-              <span className="text-xs text-muted-foreground">
-                {format(lastCheck, "HH:mm:ss")}
-              </span>
-            )}
-            <Button size="sm" variant="outline" className="rounded-xl" onClick={runChecks} disabled={running}>
-              <RefreshCw className={`w-4 h-4 mr-1.5 ${running ? "animate-spin" : ""}`} />
-              {running ? "Verificando..." : "Verificar"}
-            </Button>
+        </motion.header>
+
+        <motion.section variants={fadeUp} aria-label="Resumo operacional" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            { label: "Operacionais", value: report.totals.operational, helper: `de ${report.totals.total}`, icon: CheckCircle2, tone: "text-success bg-success/10" },
+            { label: "Requerem atenção", value: report.totals.attention, helper: "falha confirmada", icon: TriangleAlert, tone: report.totals.attention ? "text-destructive bg-destructive/10" : "text-muted-foreground bg-muted" },
+            { label: "Não configurados", value: report.totals.unconfigured, helper: "integrações", icon: CircleOff, tone: "text-amber-600 bg-amber-500/10" },
+            { label: "Latência do núcleo", value: `${avgLatency}ms`, helper: `${checks.length} verificações`, icon: Gauge, tone: "text-primary bg-primary/10" },
+          ].map((metric) => (
+            <Card key={metric.label} className="border-border/60">
+              <CardContent className="p-4 sm:p-5">
+                <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${metric.tone}`}><metric.icon className="h-4 w-4" aria-hidden="true" /></div>
+                <p className="text-2xl font-bold tabular-nums text-foreground">{metric.value}</p>
+                <p className="mt-1 text-xs font-medium text-foreground">{metric.label}</p>
+                <p className="text-[11px] text-muted-foreground">{metric.helper}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </motion.section>
+
+        <motion.section variants={fadeUp} className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar serviços">
+            {([
+              ["all", `Todos (${diagnostics.length})`],
+              ["attention", `Atenção (${report.totals.attention})`],
+              ["unconfigured", `Não configurados (${report.totals.unconfigured})`],
+            ] as const).map(([value, label]) => (
+              <Button key={value} size="sm" variant={serviceFilter === value ? "default" : "ghost"} className="min-h-10 rounded-xl" onClick={() => setServiceFilter(value)}>
+                {label}
+              </Button>
+            ))}
           </div>
-        </motion.div>
+          <div className="flex flex-wrap items-center gap-2 border-t pt-3 sm:border-l sm:border-t-0 sm:pl-3 sm:pt-0">
+            <label className="flex min-h-10 items-center gap-2 rounded-xl px-2 text-xs font-medium text-muted-foreground">
+              <Switch checked={autoRefresh} onCheckedChange={setAutoRefresh} aria-label="Atualização automática" />
+              Autoatualizar
+            </label>
+            <Button size="sm" variant="outline" className="min-h-10 rounded-xl" onClick={copyReport}><Copy className="mr-2 h-4 w-4" />Copiar</Button>
+            <Button size="sm" variant="outline" className="min-h-10 rounded-xl" onClick={downloadReport}><Download className="mr-2 h-4 w-4" />JSON</Button>
+          </div>
+        </motion.section>
 
         {/* Overall status */}
         {checks.length > 0 && (
           <motion.div variants={fadeUp}>
-            <Card className={`border-2 ${allOk ? "border-success/30 bg-success/5" : hasErrors ? "border-destructive/30 bg-destructive/5" : "border-border"}`}>
-              <CardContent className="p-6 flex items-center gap-5">
+            <Card role="status" aria-live="polite" className={`border-2 ${allOk ? "border-success/30 bg-success/5" : hasErrors ? "border-destructive/30 bg-destructive/5" : "border-amber-400/40 bg-amber-500/5"}`}>
+              <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
                 {allOk ? (
                   <CheckCircle2 className="w-14 h-14 text-success shrink-0" />
-                ) : (
+                ) : hasErrors ? (
                   <XCircle className="w-14 h-14 text-destructive shrink-0" />
+                ) : (
+                  <TriangleAlert className="w-14 h-14 text-amber-600 shrink-0" />
                 )}
-                <div>
+                <div className="min-w-0 flex-1">
                   <h2 className="text-lg font-bold text-foreground">
-                    {allOk ? "Todos os sistemas operacionais" : `${failCount} serviço(s) com falha`}
+                    {allOk ? "Todos os sistemas operacionais" : hasErrors ? `${failCount} serviço(s) com falha` : "Serviços operacionais com configuração pendente"}
                   </h2>
                   <p className="text-sm text-muted-foreground mt-0.5">
                     Latência média do núcleo: {avgLatency}ms · Checks do núcleo: {checks.filter(c => c.status === "ok").length}/{checks.length}
                   </p>
                 </div>
+                <Button asChild variant="ghost" className="min-h-11 justify-start sm:justify-center">
+                  <Link to="/status" target="_blank" rel="noreferrer">
+                    Ver página pública <ArrowUpRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
+          </motion.div>
+        )}
+
+        {hasErrors && (
+          <motion.div variants={fadeUp} role="alert" className="flex flex-col gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center">
+            <TriangleAlert className="h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">Ação operacional recomendada</p>
+              <p className="text-sm text-muted-foreground">Confirme o serviço afetado abaixo. Se houver impacto ao atendimento, ative o modo manutenção e informe uma previsão de retorno.</p>
+            </div>
+            <Button asChild variant="destructive" className="min-h-11 shrink-0 rounded-xl">
+              <Link to="/dashboard/admin/platform-settings">Abrir manutenção</Link>
+            </Button>
           </motion.div>
         )}
 
@@ -316,7 +479,7 @@ const SystemHealth = () => {
               <p className="text-xs text-destructive px-1">Não foi possível verificar: {health.error}</p>
             ) : (
               <div className="grid sm:grid-cols-2 gap-3">
-                {health.services.map((s) => {
+                {health.services.filter((service) => serviceFilter === "all" || (serviceFilter === "attention" && service.status === "down") || (serviceFilter === "unconfigured" && service.status === "unconfigured")).map((s) => {
                   const icon = ({
                     database: <Database className="w-5 h-5" />, whatsapp: <MessageCircle className="w-5 h-5" />,
                     email: <Mail className="w-5 h-5" />, video: <Video className="w-5 h-5" />,
@@ -339,9 +502,10 @@ const SystemHealth = () => {
                                 {s.status === "ok" ? "ATIVO" : s.status === "down" ? "FALHA" : "NÃO CONFIG."}
                               </Badge>
                             </div>
-                            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                               {s.detail}{s.latencyMs ? ` • ${s.latencyMs}ms` : ""}
                             </p>
+                            {s.critical && <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Serviço crítico</p>}
                           </div>
                         </div>
                       </CardContent>
@@ -365,7 +529,7 @@ const SystemHealth = () => {
           { key: "vps", label: "🖥️ Servidores VPS", icon: <Server className="w-4 h-4" /> },
           { key: "integration", label: "🔌 Edge Functions (deploy)", icon: <Plug className="w-4 h-4" /> },
         ] as const).map((section) => {
-          const items = checks.filter((c) => (c.group ?? "core") === section.key);
+          const items = checks.filter((c) => (c.group ?? "core") === section.key && (serviceFilter === "all" || (serviceFilter === "attention" && c.status === "error")));
           if (items.length === 0) return null;
           const okCount = items.filter((c) => c.status === "ok").length;
           return (
@@ -395,7 +559,7 @@ const SystemHealth = () => {
                               {check.status === "ok" ? "ATIVO" : "FALHA"}
                             </Badge>
                           </div>
-                          <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{check.message}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{check.message}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -405,6 +569,14 @@ const SystemHealth = () => {
             </motion.div>
           );
         })}
+
+        {filteredDiagnostics.length === 0 && !running && (
+          <motion.div variants={fadeUp} className="rounded-2xl border border-dashed border-border p-8 text-center">
+            <CheckCircle2 className="mx-auto h-8 w-8 text-success" aria-hidden="true" />
+            <p className="mt-3 text-sm font-semibold text-foreground">Nenhum serviço neste filtro</p>
+            <p className="mt-1 text-xs text-muted-foreground">Altere o filtro para consultar o inventário completo.</p>
+          </motion.div>
+        )}
 
         {/* DB Stats */}
         {dbStats && (
@@ -422,6 +594,18 @@ const SystemHealth = () => {
               ))}
             </div>
           </motion.div>
+        )}
+
+        {dbStatsError && (
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CardContent className="flex items-start gap-3 p-4" role="alert">
+              <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Estatísticas indisponíveis</p>
+                <p className="mt-1 text-xs text-muted-foreground">Os serviços foram verificados, mas não foi possível carregar as contagens do banco. Tente novamente.</p>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {checks.length === 0 && !running && (
