@@ -15,8 +15,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: data.body,
-    icon: "/favicon.png",
-    badge: "/favicon.png",
+    icon: "/favicon-v2.png",
+    badge: "/favicon-v2.png",
     vibrate: [200, 100, 200],
     tag: "aloclinica-notification",
     renotify: true,

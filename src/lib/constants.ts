@@ -84,5 +84,5 @@ export const FEATURES = {
 } as const;
 
 // ─── Assets ───────────────────────────────────────────────────────────────────
-export const PINGO_LOGO_URL = "/pwa-512x512.png";
+export const PINGO_LOGO_URL = "/pwa-512x512-v2.png";
 

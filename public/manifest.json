@@ -13,19 +13,19 @@
   "categories": ["medical", "health", "lifestyle"],
   "icons": [
     {
-      "src": "/pwa-192x192.png",
+      "src": "/pwa-192x192-v2.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-512x512.png",
+      "src": "/pwa-512x512-v2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/pwa-512x512.png",
+      "src": "/pwa-512x512-v2.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
@@ -36,31 +36,31 @@
       "name": "Agendar consulta",
       "short_name": "Agendar",
       "url": "/agendar",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192-v2.png", "sizes": "192x192" }]
     },
     {
       "name": "Minhas consultas",
       "short_name": "Consultas",
       "url": "/dashboard/appointments",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192-v2.png", "sizes": "192x192" }]
     },
     {
       "name": "Plantão 24h",
       "short_name": "Plantão",
       "url": "/dashboard/doctor/on-duty?role=doctor",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192-v2.png", "sizes": "192x192" }]
     },
     {
       "name": "Sala de Espera",
       "short_name": "Sala",
       "url": "/dashboard/doctor/waiting-room?role=doctor",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192-v2.png", "sizes": "192x192" }]
     },
     {
       "name": "Próxima consulta",
       "short_name": "Consulta",
       "url": "/dashboard/doctor/consultations?role=doctor",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192-v2.png", "sizes": "192x192" }]
     }
   ]
 }

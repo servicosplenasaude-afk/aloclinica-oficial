@@ -9,7 +9,7 @@ interface SEOHeadProps {
 }
 
 const SITE_NAME = "AloClínica";
-const DEFAULT_OG_IMAGE = "https://aloclinica.com.br/pwa-512x512.png";
+const DEFAULT_OG_IMAGE = "https://aloclinica.com.br/pwa-512x512-v2.png";
 // Produção; canonical/og:url devem apontar pra ela pra Google nao indexar preview
 const BASE_URL = "https://aloclinica.com.br";
 
