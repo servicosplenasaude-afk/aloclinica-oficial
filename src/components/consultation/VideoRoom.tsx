@@ -73,6 +73,7 @@ const VideoRoom = () => {
   const [jitsiRoomId, setJitsiRoomId] = useState<string | null>(null);
   const [showSummary, setShowSummary] = useState(false);
   const [showMobileTools, setShowMobileTools] = useState(false);
+  const [showCompactDesktopTools, setShowCompactDesktopTools] = useState(false);
 
   // Alergias / condições crônicas do paciente — faixa de alerta sempre visível p/ o médico
   const [patientAlerts, setPatientAlerts] = useState<{ allergies: string[]; chronic: string[] } | null>(null);
@@ -1446,7 +1447,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
 
       {/* Desktop toolbar — below top bar, above video */}
       {!isMobile && (
-        <div className="flex items-center justify-start xl:justify-center gap-1.5 px-5 py-2 bg-[hsl(220,25%,6%)] border-b border-[hsl(220,15%,10%)] shrink-0 overflow-x-auto overscroll-x-contain">
+        <div className="relative flex items-center justify-center gap-1.5 px-3 py-2 bg-[hsl(220,25%,6%)] border-b border-[hsl(220,15%,10%)] shrink-0">
           {/* Media controls */}
           <ToolbarBtn
             active={mediaState.isMuted}
@@ -1478,18 +1479,10 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                 label="Prontuário"
                 onClick={() => openPanel("notes")}
               />
-              <ToolbarBtn
-                active={showAI}
-                icon={<Sparkles className="w-3.5 h-3.5" />}
-                label="IA Clínica"
-                onClick={() => openPanel("ai")}
-              />
-              <ToolbarBtn
-                active={splitMode}
-                icon={splitMode ? <PanelLeftClose className="w-3.5 h-3.5" /> : <PanelLeft className="w-3.5 h-3.5" />}
-                label="Split"
-                onClick={() => setSplitMode(!splitMode)}
-              />
+              <div className="hidden xl:flex items-center gap-1.5">
+                <ToolbarBtn active={showAI} icon={<Sparkles className="w-3.5 h-3.5" />} label="IA Clínica" onClick={() => openPanel("ai")} />
+                <ToolbarBtn active={splitMode} icon={splitMode ? <PanelLeftClose className="w-3.5 h-3.5" /> : <PanelLeft className="w-3.5 h-3.5" />} label="Split" onClick={() => setSplitMode(!splitMode)} />
+              </div>
             </>
           )}
           <ToolbarBtn
@@ -1499,7 +1492,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
             onClick={() => openPanel("info")}
           />
           {isDoctor && (
-            <>
+            <div className="hidden xl:flex items-center gap-1.5">
               <div className="w-px h-6 bg-[hsl(220,15%,15%)] mx-1" />
               <ToolbarBtn
                 icon={<Pill className="w-3.5 h-3.5" />}
@@ -1559,7 +1552,29 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                   }
                 }}
               />
-            </>
+            </div>
+          )}
+          {isDoctor && (
+            <div className="xl:hidden">
+              <ToolbarBtn active={showCompactDesktopTools} icon={<MoreHorizontal className="w-3.5 h-3.5" />} label="Ferramentas" onClick={() => setShowCompactDesktopTools((value) => !value)} />
+              <AnimatePresence>
+                {showCompactDesktopTools && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: reduceMotion ? 0 : 0.18 }}
+                    className="absolute right-3 top-full z-50 mt-2 grid w-[min(28rem,calc(100vw-1.5rem))] grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-[hsl(220,25%,8%)/0.98] p-3 shadow-2xl backdrop-blur-xl"
+                    role="menu" aria-label="Ferramentas médicas"
+                  >
+                    <ToolbarBtn active={showAI} icon={<Sparkles className="w-4 h-4" />} label="IA clínica" onClick={() => openPanel("ai")} />
+                    <ToolbarBtn active={splitMode} icon={<PanelLeft className="w-4 h-4" />} label="Prontuário split" onClick={() => { setSplitMode(!splitMode); setShowCompactDesktopTools(false); }} />
+                    <ToolbarBtn icon={<Pill className="w-4 h-4" />} label="Receita" onClick={() => { setShowCompactDesktopTools(false); setToolOverlay({ url: `/dashboard/prescribe/${appointmentId}?embed=1`, title: "Receita / Prescrição" }); }} />
+                    <ToolbarBtn icon={<FileBadge className="w-4 h-4" />} label="Atestado" onClick={() => { setShowCompactDesktopTools(false); setToolOverlay({ url: `/dashboard/certificates?embed=1&appointment=${appointmentId}`, title: "Atestado / Declaração" }); }} />
+                    <ToolbarBtn icon={<Stethoscope className="w-4 h-4" />} label="Exames" onClick={() => { setShowCompactDesktopTools(false); setToolOverlay({ url: `/dashboard/exam-request?embed=1&appointment=${appointmentId}`, title: "Pedido de Exames" }); }} />
+                    <ToolbarBtn icon={<Camera className="w-4 h-4" />} label="Capturar" onClick={() => { handleSnapshot(); setShowCompactDesktopTools(false); }} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
         </div>
       )}
