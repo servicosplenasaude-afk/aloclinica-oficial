@@ -26,6 +26,10 @@ describe("production integration safety contracts", () => {
     expect(source).toContain('Deno.env.get("VAPID_PRIVATE_KEY")');
     expect(source).toContain('Deno.env.get("VAPID_SUBJECT")');
     expect(source).not.toContain("lopesgustavo4377@gmail.com");
+    expect(source).toContain('appointment_id');
+    expect(source).toContain('participants.includes(caller.user!.id)');
+    expect(source).toContain('in_app: true');
+    expect(source.indexOf('.from("notifications").insert')).toBeLessThan(source.indexOf('const VAPID_PRIVATE_KEY'));
   });
 
   it("keeps payment webhooks authenticated and reconciled", () => {

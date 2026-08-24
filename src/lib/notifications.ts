@@ -70,9 +70,9 @@ const sendEmail = (type: string, to: string, data: Record<string, string>) =>
     .invoke("send-email", { body: { type, to, data } })
     .catch(err => logError("sendEmail failed", err, { type }));
 
-const sendPush = (user_id: string, title: string, message: string, link?: string) =>
+const sendPush = (user_id: string, title: string, message: string, link?: string, appointment_id?: string) =>
   db.functions
-    .invoke("send-push-notification", { body: { user_id, title, message, link } })
+    .invoke("send-push-notification", { body: { user_id, title, message, link, appointment_id } })
     .catch(err => logError("sendPush failed", err, { user_id }));
 
 const insertNotification = (
@@ -290,10 +290,7 @@ export const notifyConsultationStarted = async (
           `📹 *${doctorName} está na sala!*\n\nOlá ${patientName}, seu médico já está aguardando na sala de consulta.\n\n🔗 Acesse agora: ${consultationUrl}\n\nEntre o mais rápido possível! 💚`,
           { userId: appt.patient_id, category: "consultation" });
       }
-      sendPush(appt.patient_id, `📹 ${doctorName} está na sala!`, "Seu médico já está aguardando. Acesse agora!", link);
-      insertNotification(appt.patient_id, `📹 ${doctorName} está na sala!`,
-        "Seu médico já está aguardando na sala de consulta virtual. Acesse agora!",
-        "consultation", link);
+      sendPush(appt.patient_id, `📹 ${doctorName} está na sala!`, "Seu médico já está aguardando. Acesse agora!", link, appointmentId);
     }
 
     if (appt.guest_patient_id) {
@@ -542,10 +539,7 @@ export const notifyConsultationCompleted = async (
         { userId: appt.patient_id, category: "consultation" });
     }
     sendPush(appt.patient_id, "🎉 Consulta Finalizada",
-      `Avalie sua consulta com ${doctorName}!`, rateLink);
-    insertNotification(appt.patient_id, "🎉 Consulta Finalizada",
-      `Sua consulta com ${doctorName} foi concluída. Avalie sua experiência!`,
-      "consultation", rateLink);
+      `Avalie sua consulta com ${doctorName}!`, rateLink, appointmentId);
   } catch (err) {
     logError("notifyConsultationCompleted failed", err, { appointmentId });
   }

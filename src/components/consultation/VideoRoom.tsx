@@ -662,14 +662,14 @@ const VideoRoom = () => {
 
     if (otherUserId) {
       const { data: profile } = await db
-        .from("profiles").select("first_name, last_name").eq("user_id", otherUserId).single();
+        .from("profiles").select("first_name, last_name").eq("user_id", otherUserId).maybeSingle();
       if (profile) setOtherPartyName(`${profile.first_name} ${profile.last_name}`);
     } else if (otherDoctorId) {
       const { data: doc } = await db
         .from("doctor_profiles").select("user_id").eq("id", otherDoctorId).single();
       if (doc) {
         const { data: profile } = await db
-          .from("profiles").select("first_name, last_name").eq("user_id", doc.user_id).single();
+          .from("profiles").select("first_name, last_name").eq("user_id", doc.user_id).maybeSingle();
         if (profile) setOtherPartyName(`Dr(a). ${profile.first_name} ${profile.last_name}`);
       }
     }

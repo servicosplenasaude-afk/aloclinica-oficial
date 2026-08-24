@@ -36,23 +36,7 @@ serve(async (req) => {
       }
     }
 
-    const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY");
-    const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY");
-    const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT");
-    if (!VAPID_PRIVATE_KEY || !VAPID_PUBLIC_KEY || !VAPID_SUBJECT) {
-      return new Response(
-        JSON.stringify({ error: "VAPID is not configured" }),
-        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    webpush.setVapidDetails(
-      VAPID_SUBJECT,
-      VAPID_PUBLIC_KEY,
-      VAPID_PRIVATE_KEY
-    );
-
-    const { user_id, title, message, link } = await req.json();
+    const { user_id, title, message, link, appointment_id, type = "push" } = await req.json();
 
     if (!user_id || !title || !message) {
       return new Response(
@@ -61,20 +45,49 @@ serve(async (req) => {
       );
     }
 
-    // SEGURANÇA (C5): um usuário comum só pode notificar a si mesmo. Enviar push
-    // para terceiros é restrito a chamadas internas/serviço e a administradores
-    // (broadcast). Sem isto, qualquer usuário logado notificava qualquer user_id.
-    if (!internal && caller && !caller.isAdmin && user_id !== caller.user!.id) {
-      return new Response(
-        JSON.stringify({ error: "Sem permissão para notificar este usuário." }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Usuários comuns podem notificar a si mesmos ou o outro participante de uma
+    // consulta da qual realmente fazem parte. O appointment é validado no servidor.
+    if (!internal && caller && !caller.isAdmin && user_id !== caller.user!.id) {
+      if (!appointment_id) {
+        return new Response(JSON.stringify({ error: "Sem permissão para notificar este usuário." }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: appointment } = await supabase
+        .from("appointments")
+        .select("patient_id, doctor_id")
+        .eq("id", appointment_id)
+        .maybeSingle();
+      const { data: doctor } = appointment?.doctor_id
+        ? await supabase.from("doctor_profiles").select("user_id").eq("id", appointment.doctor_id).maybeSingle()
+        : { data: null };
+      const participants = [appointment?.patient_id, doctor?.user_id].filter(Boolean);
+      if (!participants.includes(caller.user!.id) || !participants.includes(user_id)) {
+        return new Response(JSON.stringify({ error: "Sem permissão para esta consulta." }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    const { error: notificationError } = await supabase.from("notifications").insert({
+      user_id, title, message, link, type,
+    });
+    if (notificationError) throw notificationError;
+
+    const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY");
+    const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY");
+    const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT");
+    if (!VAPID_PRIVATE_KEY || !VAPID_PUBLIC_KEY || !VAPID_SUBJECT) {
+      return new Response(JSON.stringify({ success: true, sent: 0, in_app: true, reason: "Push não configurado" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
     const { data: subscriptions, error: subError } = await supabase
       .from("push_subscriptions")
@@ -93,8 +106,8 @@ serve(async (req) => {
       title,
       body: message,
       url: link || "/",
-      icon: "/favicon.png",
-      badge: "/favicon.png",
+      icon: "/favicon-v2.png",
+      badge: "/favicon-v2.png",
     });
 
     let sent = 0;
@@ -125,15 +138,6 @@ serve(async (req) => {
         }
       }
     }
-
-    // Also create in-app notification
-    await supabase.from("notifications").insert({
-      user_id,
-      title,
-      message,
-      link,
-      type: "push",
-    });
 
     return new Response(
       JSON.stringify({ success: true, sent, failed }),
