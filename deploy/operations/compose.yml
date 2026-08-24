@@ -1,0 +1,137 @@
+name: aloclinica-operations
+
+services:
+  docker-socket-proxy:
+    image: ${SOCKET_PROXY_IMAGE}
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      EVENTS: 1
+      IMAGES: 1
+      INFO: 1
+      NETWORKS: 1
+      PING: 1
+      POST: 0
+      SERVICES: 0
+      SWARM: 0
+      SYSTEM: 0
+      VOLUMES: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [operations-internal]
+    read_only: true
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  uptime-kuma:
+    image: ${UPTIME_KUMA_IMAGE}
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:3001:3001
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks: [operations-internal, operations-egress]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    healthcheck:
+      test: [CMD, node, extra/healthcheck.js]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  alloy:
+    image: ${ALLOY_IMAGE}
+    profiles: [telemetry]
+    restart: unless-stopped
+    command: [run, --server.http.listen-addr=0.0.0.0:12345, --storage.path=/var/lib/alloy/data, /etc/alloy/config.alloy]
+    environment:
+      GRAFANA_LOKI_URL: ${GRAFANA_LOKI_URL}
+      GRAFANA_LOKI_USERNAME: ${GRAFANA_LOKI_USERNAME}
+      GRAFANA_LOKI_PASSWORD: ${GRAFANA_LOKI_PASSWORD}
+      GRAFANA_PROMETHEUS_URL: ${GRAFANA_PROMETHEUS_URL}
+      GRAFANA_PROMETHEUS_USERNAME: ${GRAFANA_PROMETHEUS_USERNAME}
+      GRAFANA_PROMETHEUS_PASSWORD: ${GRAFANA_PROMETHEUS_PASSWORD}
+      DOCKER_HOST: tcp://docker-socket-proxy:2375
+    ports:
+      - 127.0.0.1:12345:12345
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy/data
+    depends_on: [docker-socket-proxy]
+    networks: [operations-internal, operations-egress]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  crowdsec:
+    image: ${CROWDSEC_IMAGE}
+    restart: unless-stopped
+    environment:
+      COLLECTIONS: crowdsecurity/linux crowdsecurity/sshd crowdsecurity/traefik crowdsecurity/base-http-scenarios
+      ENROLL_KEY: ${CROWDSEC_ENROLL_KEY:-}
+      ENROLL_INSTANCE_NAME: ${CROWDSEC_ENROLL_INSTANCE:-aloclinica-production}
+      TZ: ${OPERATIONS_TIMEZONE}
+    volumes:
+      - crowdsec-data:/var/lib/crowdsec/data
+      - crowdsec-config:/etc/crowdsec
+      - ./crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - /var/log:/var/log/host:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks: [operations-internal, operations-egress]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  diun:
+    image: ${DIUN_IMAGE}
+    profiles: [updates]
+    restart: unless-stopped
+    command: serve
+    environment:
+      TZ: ${OPERATIONS_TIMEZONE}
+      LOG_LEVEL: info
+      LOG_JSON: 'true'
+      DIUN_WATCH_SCHEDULE: ${DIUN_WATCH_SCHEDULE}
+      DIUN_WATCH_WORKERS: 10
+      DIUN_PROVIDERS_DOCKER: 'true'
+      DIUN_PROVIDERS_DOCKER_ENDPOINT: tcp://docker-socket-proxy:2375
+      DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT: 'true'
+      DIUN_NOTIF_WEBHOOK_ENDPOINT: ${DIUN_WEBHOOK_ENDPOINT:-}
+      DIUN_NOTIF_WEBHOOK_METHOD: POST
+    volumes:
+      - diun-data:/data
+    depends_on: [docker-socket-proxy]
+    networks: [operations-internal, operations-egress]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  restic:
+    image: ${RESTIC_IMAGE}
+    profiles: [tools]
+    environment:
+      RESTIC_REPOSITORY: ${RESTIC_REPOSITORY}
+      RESTIC_PASSWORD_FILE: /run/secrets/restic-password
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    volumes:
+      - ${RESTIC_PASSWORD_HOST_FILE}:/run/secrets/restic-password:ro
+      - /etc/easypanel:/backup/etc-easypanel:ro
+      - /etc/traefik:/backup/etc-traefik:ro
+      - /opt/aloclinica:/backup/opt-aloclinica:ro
+      - /var/lib/docker/volumes:/backup/docker-volumes:ro
+      - /opt/aloclinica-backup-staging:/backup/database-dumps:ro
+    networks: [operations-egress]
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+networks:
+  operations-internal:
+    internal: true
+  operations-egress:
+
+volumes:
+  uptime-kuma-data:
+  alloy-data:
+  crowdsec-data:
+  crowdsec-config:
+  diun-data:

@@ -22,24 +22,24 @@ import { useDebounce } from "@/hooks/use-debounce";
 import LazyAvatar from "@/components/ui/lazy-avatar";
 
 /* ─── Pingo specialty images ─── */
-import pingoClinicoGeral from "@/assets/pingo-clinico-geral.jpg";
-import pingoCardiologista from "@/assets/pingo-cardiologista.jpg";
-import pingoDermatologista from "@/assets/pingo-dermatologista.jpg";
-import pingoPediatra from "@/assets/pingo-pediatra.jpg";
-import pingoPsiquiatra from "@/assets/pingo-psiquiatra.jpg";
-import pingoNeurologista from "@/assets/pingo-neurologista.jpg";
-import pingoGastro from "@/assets/pingo-gastro.png";
-import pingoEndocrino from "@/assets/pingo-endocrino.png";
-import pingoUrologista from "@/assets/pingo-urologista.jpg";
-import pingoGinecologista from "@/assets/pingo-ginecologista.jpg";
-import pingoOrtopedista from "@/assets/pingo-ortopedista.jpg";
-import pingoNutricionista from "@/assets/pingo-nutricionista.jpg";
-import pingoPneumologista from "@/assets/pingo-pneumologista.jpg";
-import pingoOtorrino from "@/assets/pingo-otorrino.jpg";
-import pingoReumatologista from "@/assets/pingo-reumatologista.jpg";
-import pingoInfectologista from "@/assets/pingo-infectologista.jpg";
-import pingoAlergologista from "@/assets/pingo-alergologista.jpg";
-import pingoFonoaudiologo from "@/assets/pingo-fonoaudiologo.jpg";
+import pingoClinicoGeral from "@/assets/specialties/pingo-clinico-geral.webp";
+import pingoCardiologista from "@/assets/specialties/pingo-cardiologia.webp";
+import pingoDermatologista from "@/assets/specialties/pingo-dermatologia.webp";
+import pingoPediatra from "@/assets/specialties/pingo-pediatria.webp";
+import pingoPsiquiatra from "@/assets/specialties/pingo-psicologia.webp";
+import pingoNeurologista from "@/assets/specialties/pingo-neurologia.webp";
+import pingoGastro from "@/assets/specialties/pingo-gastroenterologia.webp";
+import pingoEndocrino from "@/assets/specialties/pingo-endocrinologia.webp";
+import pingoUrologista from "@/assets/specialties/pingo-urologia.webp";
+import pingoGinecologista from "@/assets/specialties/pingo-ginecologia.webp";
+import pingoOrtopedista from "@/assets/specialties/pingo-ortopedia.webp";
+import pingoNutricionista from "@/assets/specialties/pingo-nutricao.webp";
+import pingoPneumologista from "@/assets/specialties/pingo-pneumologia.webp";
+import pingoOtorrino from "@/assets/specialties/pingo-otorrinolaringologia.webp";
+import pingoReumatologista from "@/assets/specialties/pingo-reumatologia.webp";
+import pingoInfectologista from "@/assets/specialties/pingo-infectologia.webp";
+import pingoAlergologista from "@/assets/specialties/pingo-alergologia.webp";
+import pingoFonoaudiologo from "@/assets/specialties/pingo-fonoaudiologia.webp";
 
 /* ─── Specialty catalogue ─── */
 const specialties = [

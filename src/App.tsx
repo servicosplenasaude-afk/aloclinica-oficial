@@ -28,6 +28,7 @@ import SandboxBanner from "@/components/SandboxBanner";
 import { isSandbox } from "@/lib/app-environment";
 
 const Auth = lazy(() => import("./pages/Auth"));
+const OAuthCallback = lazy(() => import("./pages/OAuthCallback"));
 
 // Lazy-loaded overlay components
 const OfflineIndicator = lazy(() => import("./components/OfflineIndicator"));
@@ -165,6 +166,7 @@ const AnimatedRoutes = () => {
       <Route path="/" element={<NativeHomeGate />} />
       <Route path="/p/:slug" element={<Index />} />
       <Route path="/auth" element={<Navigate to="/paciente" replace />} />
+      <Route path="/auth/callback" element={<OAuthCallback />} />
       <Route path="/paciente" element={<AuthPaciente />} />
       <Route path="/paciente/cadastro" element={<SignupPatient />} />
       <Route path="/medico" element={<AuthMedico />} />

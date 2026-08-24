@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { Lock, Check, ArrowLeft, Video, ShieldCheck, Zap } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import PasswordStrength from "@/components/ui/password-strength";
-import mascotImg from "@/assets/mascot-wave.png";
+import mascotImg from "@/assets/states/pingo-redefinir-senha.webp";
 
 const benefits = [
   { icon: Video, text: "Videochamada HD criptografada" },

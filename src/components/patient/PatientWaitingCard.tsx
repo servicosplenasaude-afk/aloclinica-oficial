@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Video, Users, Lightbulb } from "lucide-react";
 import { db } from "@/integrations/supabase/untyped";
 import { useNavigate } from "react-router-dom";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-espera-paciente.webp";
 import WaitingAnamnesis from "./WaitingAnamnesis";
 
 interface Props {

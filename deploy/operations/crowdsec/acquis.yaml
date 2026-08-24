@@ -1,0 +1,10 @@
+filenames:
+  - /var/log/host/auth.log
+  - /var/log/host/syslog
+labels:
+  type: syslog
+---
+filenames:
+  - /var/lib/docker/containers/*/*-json.log
+labels:
+  type: docker

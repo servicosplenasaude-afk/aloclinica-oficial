@@ -14,7 +14,7 @@ import { getAdminNav } from "@/components/admin/adminNav";
 import { getReceptionNav } from "@/components/reception/receptionNav";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-configuracoes.webp";
 
 const roleLabels: Record<string, string> = {
   patient: "Paciente", doctor: "Médico", admin: "Administração",

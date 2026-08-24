@@ -1,5 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from "react";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-erro-recuperacao.webp";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Home } from "lucide-react";
 import { logError } from "@/lib/logger";

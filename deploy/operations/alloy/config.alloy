@@ -1,0 +1,56 @@
+discovery.docker "containers" {
+  host = env("DOCKER_HOST")
+}
+
+discovery.relabel "container_logs" {
+  targets = discovery.docker.containers.targets
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex = "/(.*)"
+    target_label = "service_name"
+  }
+}
+
+loki.source.docker "containers" {
+  host = env("DOCKER_HOST")
+  targets = discovery.docker.containers.targets
+  relabel_rules = discovery.relabel.container_logs.rules
+  forward_to = [loki.write.external.receiver]
+}
+
+loki.write "external" {
+  endpoint {
+    url = env("GRAFANA_LOKI_URL")
+    basic_auth {
+      username = env("GRAFANA_LOKI_USERNAME")
+      password = env("GRAFANA_LOKI_PASSWORD")
+    }
+  }
+}
+
+prometheus.exporter.unix "host" { }
+prometheus.scrape "host" {
+  targets = prometheus.exporter.unix.host.targets
+  scrape_interval = "30s"
+  forward_to = [prometheus.remote_write.external.receiver]
+}
+
+prometheus.exporter.cadvisor "containers" {
+  docker_host = env("DOCKER_HOST")
+  storage_duration = "5m"
+}
+prometheus.scrape "containers" {
+  targets = prometheus.exporter.cadvisor.containers.targets
+  scrape_interval = "30s"
+  forward_to = [prometheus.remote_write.external.receiver]
+}
+
+prometheus.remote_write "external" {
+  endpoint {
+    url = env("GRAFANA_PROMETHEUS_URL")
+    basic_auth {
+      username = env("GRAFANA_PROMETHEUS_USERNAME")
+      password = env("GRAFANA_PROMETHEUS_PASSWORD")
+    }
+  }
+}

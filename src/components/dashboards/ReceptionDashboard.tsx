@@ -25,7 +25,7 @@ import { ActionPills } from "./ActionPills";
 import { PingoBannerCard } from "@/components/mascot/PingoBannerCard";
 import { PremiumHero } from "./PremiumHero";
 import { TimelineSchedule, ScheduleItem } from "./TimelineSchedule";
-import pingoReception from "@/assets/pingo-reception.jpg";
+import pingoReception from "@/assets/states/pingo-dashboard-recepcao.webp";
 
 const statusLabel: Record<string, string> = {
   scheduled: "Agendada", waiting: "Na sala", in_progress: "Em consulta",

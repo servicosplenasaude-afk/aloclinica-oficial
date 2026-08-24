@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import SEOHead from "@/components/SEOHead";
 import { PINGO_LOGO_URL } from "@/lib/constants";
-import mascotWelcome from "@/assets/mascot-welcome.png";
+import mascotWelcome from "@/assets/states/pingo-acesso-seguro.webp";
 import { AuthField, AuthPasswordField, AuthSubmitButton } from "@/components/auth/AuthFields";
 import { translateAuthError } from "@/lib/authErrors";
 import { reportFailedLogin } from "@/lib/security";

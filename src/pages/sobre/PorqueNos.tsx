@@ -17,7 +17,7 @@ import {
 import Header from "@/components/landing/Header";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import heroTeleconsulta from "@/assets/hero-teleconsulta.png";
+import heroTeleconsulta from "@/assets/visual-system/pingo-porque-nos.webp";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));
 

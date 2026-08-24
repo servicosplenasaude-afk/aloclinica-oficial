@@ -17,7 +17,7 @@ import { PremiumHero } from "./PremiumHero";
 import { PrescriptionFinder } from "./PrescriptionFinder";
 import { AlertBox } from "./AlertBox";
 import RoleOnboarding from "@/components/onboarding/RoleOnboarding";
-import pingoPartner from "@/assets/pingo-partner.jpg";
+import pingoPartner from "@/assets/states/pingo-dashboard-parceiro.webp";
 
 const getPartnerNav = (active: string) => [
   { label: "Visão Geral", href: "/dashboard?role=partner", icon: <TrendingUp className="w-4 h-4" />, active: active === "overview", group: "Principal" },

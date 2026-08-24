@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import pingoSupport from "@/assets/pingo-support.jpg";
+import pingoSupport from "@/assets/states/pingo-suporte-paciente.webp";
 import { db } from "@/integrations/supabase/untyped";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";

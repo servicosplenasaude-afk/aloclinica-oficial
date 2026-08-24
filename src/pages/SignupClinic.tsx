@@ -1,7 +1,7 @@
 /**
  * SignupClinic — Cadastro de clínica/empresa com layout split-screen unificado.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "@/integrations/supabase/untyped";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
 } from "@/lib/form-validators";
 import { toastError } from "@/lib/errorMessages";
 import pingoClinic from "@/assets/pingo-clinica-medica.jpg";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 
 interface FormData {
   company_name: string;
@@ -66,6 +67,18 @@ export default function SignupClinic() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<FormData>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [oauthUserId, setOAuthUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("oauth") !== "complete") return;
+    void db.auth.getSession().then(({ data: sessionData }: any) => {
+      const user = sessionData?.session?.user;
+      if (!user || user.app_metadata?.provider !== "google") return;
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || "";
+      setOAuthUserId(user.id);
+      setData((current) => ({ ...current, email: user.email || current.email, representative_name: fullName || current.representative_name }));
+    });
+  }, []);
 
   const set = <K extends keyof FormData>(k: K, v: FormData[K]) => {
     setData((p) => ({ ...p, [k]: v }));
@@ -79,9 +92,11 @@ export default function SignupClinic() {
     if (!validarEmail(data.email)) e.email = "Email inválido";
     if (!validarTelefone(data.phone)) e.phone = "Telefone inválido";
     if (!validarNome(data.representative_name)) e.representative_name = "Informe nome e sobrenome";
+    if (!oauthUserId) {
     const pv = validarSenha(data.password);
     if (!pv.isValid) e.password = pv.feedback.join(", ");
     if (data.password !== data.password_confirm) e.password_confirm = "Senhas não conferem";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -95,6 +110,8 @@ export default function SignupClinic() {
     setLoading(true);
     try {
       const parts = data.representative_name.trim().split(/\s+/);
+      let authedUserId = oauthUserId;
+      if (!authedUserId) {
       const { data: auth, error } = await db.auth.signUp({
         email: data.email,
         password: data.password,
@@ -116,11 +133,13 @@ export default function SignupClinic() {
       }
 
       const { data: sessionData } = await db.auth.getSession();
-      const authedUserId = sessionData?.session?.user?.id;
+      authedUserId = sessionData?.session?.user?.id || null;
       if (!authedUserId || authedUserId !== auth.user.id) {
         throw new Error("Sessão não confirmada. Faça login para finalizar o cadastro.");
       }
 
+      }
+      if (!authedUserId) throw new Error("Sessão não confirmada");
       const { error: cErr } = await (db as any).from("clinic_profiles").insert({
         user_id: authedUserId,
         name: data.company_name,
@@ -164,6 +183,8 @@ export default function SignupClinic() {
     >
       <AuthHeading title="Cadastrar clínica" subtitle="Vamos preparar seu ambiente em poucos passos" />
 
+      {!oauthUserId && <SocialAuthButtons flow="signup" role="clinic" redirectTo="/clinica/cadastro" showApple={false} />}
+
       <form onSubmit={submit} className="space-y-4" noValidate>
         <AuthField
           label="Nome da empresa"
@@ -186,6 +207,7 @@ export default function SignupClinic() {
           type="email"
           value={data.email}
           onChange={(e) => set("email", e.target.value)}
+          readOnly={Boolean(oauthUserId)}
           placeholder="contato@clinica.com"
           autoComplete="email"
           required
@@ -203,6 +225,7 @@ export default function SignupClinic() {
           hint={errors.representative_name && <p className="text-[12px] text-destructive">{errors.representative_name}</p>}
         />
 
+        {!oauthUserId && <>
         <AuthPasswordField
           label="Senha"
           icon={Lock}
@@ -226,6 +249,8 @@ export default function SignupClinic() {
           required
           strength={errors.password_confirm && <p className="text-[12px] text-destructive mt-1.5">{errors.password_confirm}</p>}
         />
+
+        </>}
 
         <AuthSubmitButton
           loading={loading}

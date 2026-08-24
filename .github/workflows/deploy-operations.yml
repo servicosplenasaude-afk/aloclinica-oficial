@@ -1,0 +1,74 @@
+name: Deploy VPS Operations
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-vps-operations
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run audit:operations
+      - run: |
+          cp deploy/operations/.env.example deploy/operations/.env
+          mkdir -p /tmp/aloclinica-secrets
+          printf 'validation-only\n' >/tmp/aloclinica-secrets/restic-password
+          sed -i 's|RESTIC_PASSWORD_HOST_FILE=.*|RESTIC_PASSWORD_HOST_FILE=/tmp/aloclinica-secrets/restic-password|' deploy/operations/.env
+          docker compose --env-file deploy/operations/.env -f deploy/operations/compose.yml --profile telemetry --profile updates --profile tools config --quiet
+      - run: bash -n deploy/operations/scripts/*.sh
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_OPERATIONS_SSH_KEY }}
+          SSH_HOST_KEY: ${{ secrets.VPS_OPERATIONS_HOST_KEY }}
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" >~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_HOST_KEY" >~/.ssh/known_hosts
+          chmod 0600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+      - name: Build release bundle
+        run: tar -czf /tmp/aloclinica-operations.tar.gz -C deploy/operations .
+      - name: Materialize protected configuration
+        env:
+          OPERATIONS_ENV_B64: ${{ secrets.VPS_OPERATIONS_ENV_B64 }}
+          RESTIC_PASSWORD_B64: ${{ secrets.VPS_RESTIC_PASSWORD_B64 }}
+        run: |
+          printf '%s' "$OPERATIONS_ENV_B64" | base64 --decode >/tmp/operations.env
+          printf '%s' "$RESTIC_PASSWORD_B64" | base64 --decode >/tmp/restic-password
+          chmod 0600 /tmp/operations.env /tmp/restic-password
+      - name: Upload and deploy
+        env:
+          VPS_HOST: ${{ secrets.VPS_OPERATIONS_HOST }}
+          VPS_USER: ${{ secrets.VPS_OPERATIONS_USER }}
+        run: |
+          test -n "$VPS_HOST"
+          test -n "$VPS_USER"
+          scp -o BatchMode=yes /tmp/aloclinica-operations.tar.gz /tmp/operations.env /tmp/restic-password "$VPS_USER@$VPS_HOST:/tmp/"
+          ssh -o BatchMode=yes "$VPS_USER@$VPS_HOST" "sudo RELEASE_ID=${GITHUB_SHA} /usr/local/libexec/aloclinica-operations-deploy /tmp/aloclinica-operations.tar.gz /tmp/operations.env /tmp/restic-password"
+      - name: Remove temporary remote secrets
+        if: always()
+        env:
+          VPS_HOST: ${{ secrets.VPS_OPERATIONS_HOST }}
+          VPS_USER: ${{ secrets.VPS_OPERATIONS_USER }}
+        run: |
+          if [ -n "$VPS_HOST" ] && [ -n "$VPS_USER" ]; then
+            ssh -o BatchMode=yes "$VPS_USER@$VPS_HOST" 'rm -f /tmp/aloclinica-operations.tar.gz /tmp/operations.env /tmp/restic-password' || true
+          fi

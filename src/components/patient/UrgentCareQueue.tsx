@@ -20,7 +20,7 @@ import { logError } from "@/lib/logger";
 import { validateCard } from "@/lib/card-utils";
 import { useSavedCards } from "@/components/billing/useSavedCards";
 import SavedCardCheckout, { chargeSavedCard } from "@/components/billing/SavedCardCheckout";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-urgencia.webp";
 import ConsentDialog from "@/components/legal/ConsentDialog";
 
 type PaymentMethod = "pix" | "card" | "boleto";

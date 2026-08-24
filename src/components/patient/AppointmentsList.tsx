@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import mascotWelcome from "@/assets/mascot-welcome.png";
-import mascotReading from "@/assets/mascot-reading.png";
+import mascotWelcome from "@/assets/states/pingo-agenda-paciente.webp";
+import mascotReading from "@/assets/states/pingo-agenda-vazia.webp";
 import { db } from "@/integrations/supabase/untyped";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";

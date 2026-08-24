@@ -1,0 +1,11 @@
+[Unit]
+Description=Run AloClinica VPS host audit daily
+
+[Timer]
+OnCalendar=*-*-* 06:10:00 America/Sao_Paulo
+Persistent=true
+RandomizedDelaySec=10m
+Unit=aloclinica-host-readiness.service
+
+[Install]
+WantedBy=timers.target

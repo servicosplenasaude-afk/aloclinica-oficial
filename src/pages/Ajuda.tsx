@@ -22,7 +22,7 @@ import SEOHead from "@/components/SEOHead";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import pingoSupport from "@/assets/pingo-support.jpg";
+import pingoSupport from "@/assets/states/pingo-central-ajuda.webp";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));
 

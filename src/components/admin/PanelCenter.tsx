@@ -23,7 +23,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useServiceHealth } from "@/hooks/use-service-health";
-import pingoAdmin from "@/assets/pingo-admin.png";
+import pingoAdmin from "@/assets/states/pingo-central-admin.webp";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartTooltip, Cell, AreaChart, Area } from "recharts";
 
 

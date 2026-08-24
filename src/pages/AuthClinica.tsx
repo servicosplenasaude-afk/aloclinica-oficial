@@ -10,13 +10,14 @@ import {
 import TermsConsentCheckbox from "@/components/auth/TermsConsentCheckbox";
 import { registerConsent } from "@/lib/consent";
 import PasswordStrength from "@/components/ui/password-strength";
-import pingoReception from "@/assets/pingo-reception.jpg";
+import pingoReception from "@/assets/states/pingo-acesso-clinica.webp";
 import AuthShell from "@/components/auth/AuthShell";
 import { AuthField, AuthPasswordField, AuthSubmitButton, AuthHeading } from "@/components/auth/AuthFields";
 import { translateAuthError } from "@/lib/authErrors";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 
 type Step = "welcome" | "register" | "login";
 
@@ -324,6 +325,7 @@ const AuthClinica = () => {
                 Entrar
               </AuthSubmitButton>
             </div>
+            <SocialAuthButtons flow="login" role="clinic" redirectTo="/dashboard?role=clinic" showApple={false} />
             <div className="flex items-center justify-center gap-2 text-[12px] text-muted-foreground pt-1">
               <CheckCircle2 className="w-3.5 h-3.5 text-[hsl(42,85%,45%)]" aria-hidden="true" />
               Conexão segura e conformidade LGPD

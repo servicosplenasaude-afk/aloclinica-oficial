@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import mascotWave from "@/assets/mascot-wave.png";
-import mascotThumbsup from "@/assets/mascot-thumbsup.png";
-import mascotReading from "@/assets/mascot-reading.png";
+import mascotWave from "@/assets/states/pingo-saude-paciente.webp";
+import mascotThumbsup from "@/assets/states/pingo-progresso-saude.webp";
+import mascotReading from "@/assets/states/pingo-prontuario-paciente.webp";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/integrations/supabase/untyped";
 import { formatSoapNotes } from "@/lib/soap";

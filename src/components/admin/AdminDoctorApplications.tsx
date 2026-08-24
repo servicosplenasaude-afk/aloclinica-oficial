@@ -1,5 +1,5 @@
 import { logError } from "@/lib/logger";
-import pingoAdmin from "@/assets/pingo-admin.png";
+import pingoAdmin from "@/assets/states/pingo-admin-candidaturas.webp";
 import { useState, useEffect, useCallback } from "react";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";

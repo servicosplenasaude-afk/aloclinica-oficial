@@ -34,9 +34,7 @@ test.describe("UI quality checks", () => {
     await page.goto("/");
     await page.waitForLoadState("domcontentloaded");
     // Should have at least a heading
-    const headings = page.locator("h1, h2");
-    const count = await headings.count();
-    expect(count).toBeGreaterThan(0);
+    await expect(page.locator("h1, h2").first()).toBeVisible();
   });
 
   test("dark mode toggle does not break layout", async ({ page }) => {

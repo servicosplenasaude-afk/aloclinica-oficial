@@ -11,6 +11,7 @@ import {
   Sparkles, Stethoscope, FileText, ArrowRight,
 } from "lucide-react";
 import AuthShell from "@/components/auth/AuthShell";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import {
   AuthField, AuthPasswordField, AuthSubmitButton, AuthHeading,
 } from "@/components/auth/AuthFields";
@@ -20,7 +21,7 @@ import {
   validarSenha, validarDataNascimento,
 } from "@/lib/form-validators";
 import { toastError } from "@/lib/errorMessages";
-import mascotWelcome from "@/assets/mascot-welcome.png";
+import mascotWelcome from "@/assets/states/pingo-cadastro-paciente.webp";
 import { suggestEmailFix } from "@/lib/brValidators";
 import { Checkbox } from "@/components/ui/checkbox";
 import { logConsents } from "@/lib/consent";
@@ -199,6 +200,8 @@ export default function SignupPatient() {
       ]}
     >
       <AuthHeading title="Criar conta" subtitle="Preencha seus dados para começar" />
+
+      <SocialAuthButtons flow="signup" role="patient" redirectTo="/dashboard?role=patient" showApple={false} />
 
       <form onSubmit={submit} className="space-y-4" noValidate>
         <AuthField

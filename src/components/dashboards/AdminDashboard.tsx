@@ -25,7 +25,7 @@ import { PingoBannerCard } from "@/components/mascot/PingoBannerCard";
 import { PremiumHero } from "./PremiumHero";
 import { AlertBox } from "./AlertBox";
 import SectionErrorBoundary from "@/components/ui/section-error-boundary";
-import pingoAdmin from "@/assets/pingo-admin.png";
+import pingoAdmin from "@/assets/states/pingo-dashboard-admin.webp";
 
 const panelOptions = [
   { label: "Paciente", role: "patient", icon: "👤", description: "Ver como paciente" },

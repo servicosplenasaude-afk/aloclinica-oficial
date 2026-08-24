@@ -11,7 +11,7 @@ import { formatDistanceToNow, isToday, isYesterday, isThisWeek } from "date-fns"
 import { ptBR } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-notificacoes.webp";
 import NotificationPreferences from "@/components/notifications/NotificationPreferences";
 
 interface Notification {

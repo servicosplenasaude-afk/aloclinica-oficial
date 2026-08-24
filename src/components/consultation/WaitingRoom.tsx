@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertTriangle, Loader2, CreditCard, FileSignature, ShieldCheck, ArrowRight, MessageCircle } from "lucide-react";
-import mascotImg from "@/assets/mascot-wave.png";
+import mascotImg from "@/assets/states/pingo-sala-espera.webp";
 
 export type CheckState = "ok" | "blocked" | "pending";
 

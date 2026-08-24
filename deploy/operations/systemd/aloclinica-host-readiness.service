@@ -1,0 +1,14 @@
+[Unit]
+Description=AloClinica VPS host readiness audit
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/aloclinica-operations/scripts/host-readiness.sh
+User=root
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true

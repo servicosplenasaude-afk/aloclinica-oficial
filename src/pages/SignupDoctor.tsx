@@ -2,7 +2,7 @@
  * SignupDoctor — Wizard de 2 etapas: dados + validação de CRM e upload de documentos.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "@/integrations/supabase/untyped";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,8 @@ import {
 } from "@phosphor-icons/react";
 import { toastError } from "@/lib/errorMessages";
 import { suggestEmailFix } from "@/lib/brValidators";
-import doctorSignup from "@/assets/doctor-signup-1.png";
+import doctorSignup from "@/assets/states/pingo-cadastro-medico.webp";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 
 interface FormData {
   email: string;
@@ -137,6 +138,22 @@ export default function SignupDoctor() {
   const [docs, setDocs] = useState<DocsState>({ crm_doc: null, id_doc: null, selfie_doc: null });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [specialtyOther, setSpecialtyOther] = useState(false);
+  const [oauthUserId, setOAuthUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("oauth") !== "complete") return;
+    void db.auth.getSession().then(({ data }: any) => {
+      const user = data?.session?.user;
+      if (!user || user.app_metadata?.provider !== "google") return;
+      const fullName = user.user_metadata?.full_name || user.user_metadata?.name || "";
+      setOAuthUserId(user.id);
+      setFormData((current) => ({
+        ...current,
+        email: user.email || current.email,
+        full_name: fullName || current.full_name,
+      }));
+    });
+  }, []);
 
   type CrmStatus = "idle" | "checking" | "ok" | "warn" | "fail";
   const [crmStatus, setCrmStatus] = useState<CrmStatus>("idle");
@@ -232,9 +249,11 @@ export default function SignupDoctor() {
     (Object.keys(DOC_LABELS) as DocKey[]).forEach((k) => {
       if (!docs[k]) e[k] = "Documento obrigatório";
     });
+    if (!oauthUserId) {
     const pw = validarSenha(formData.password);
     if (!pw.isValid) e.password = pw.feedback.join(", ");
     if (formData.password !== formData.password_confirm) e.password_confirm = "As senhas não conferem";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -248,6 +267,8 @@ export default function SignupDoctor() {
     try {
       const parts = formData.full_name.trim().split(/\s+/);
 
+      let uid = oauthUserId;
+      if (!uid) {
       const { data: authData, error: authError } = await db.auth.signUp({
         email: formData.email.trim(),
         password: formData.password,
@@ -270,12 +291,15 @@ export default function SignupDoctor() {
         await db.auth.signInWithPassword({ email: formData.email.trim(), password: formData.password });
       }
       const { data: sessionData } = await db.auth.getSession();
-      const uid = sessionData?.session?.user?.id;
+      uid = sessionData?.session?.user?.id || null;
       if (!uid || uid !== user.id) {
         throw new Error("Sessão não confirmada. Confirme seu email e faça login para completar o cadastro.");
       }
 
       // A especialidade clínica vai para doctor_specialties (linkada à tabela specialties).
+      }
+
+      if (!uid) throw new Error("Sessão não confirmada");
       const docType = "telemedicina";
 
       const { data: dpRow, error: dpErr } = await (db as any)
@@ -434,6 +458,11 @@ export default function SignupDoctor() {
             </motion.div>
 
             <Stepper step={step} />
+            {step === 1 && !oauthUserId && (
+              <div className="mb-6">
+                <SocialAuthButtons flow="signup" role="doctor" redirectTo="/medico/cadastro" showApple={false} />
+              </div>
+            )}
 
             <AnimatePresence mode="wait">
               {step === 1 && (
@@ -456,6 +485,7 @@ export default function SignupDoctor() {
                         id="email" name="email" type="email"
                         placeholder="seu@email.com"
                         value={formData.email} onChange={handleInput}
+                        readOnly={Boolean(oauthUserId)}
                         className={errors.email ? "border-destructive" : ""}
                         autoComplete="email"
                       />
@@ -694,6 +724,7 @@ export default function SignupDoctor() {
                     </div>
                   </section>
 
+                  {!oauthUserId ? (
                   <section className="space-y-4 p-5 sm:p-6 rounded-2xl border border-border bg-card">
                     <header className="flex items-center gap-2.5 pb-1">
                       <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -761,6 +792,12 @@ export default function SignupDoctor() {
                       {errors.password_confirm && <p className="text-xs text-destructive">{errors.password_confirm}</p>}
                     </div>
                   </section>
+                  ) : (
+                    <section className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5 text-sm text-foreground">
+                      <div className="flex items-center gap-2 font-bold"><CheckCircle className="h-5 w-5 text-emerald-600" weight="fill" /> Conta Google conectada</div>
+                      <p className="mt-2 text-xs text-muted-foreground">Você usará o Google para entrar. Não é necessário criar outra senha.</p>
+                    </section>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

@@ -27,7 +27,7 @@ import { lazy, Suspense } from "react";
 import heroMedicos1 from "@/assets/hero-medicos.png";
 import heroMedicos2 from "@/assets/hero-medicos-2.png";
 import heroMedicos3 from "@/assets/hero-medicos-3.png";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-acesso-medico.webp";
 import bannerMedicoCta from "@/assets/banner-medico-cta.jpg";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));
@@ -797,7 +797,7 @@ const AuthMedico = () => {
                     <Button type="submit" className="w-full bg-gradient-to-r from-secondary to-primary text-primary-foreground h-12 shadow-lg" size="lg" disabled={loading}>
                       {loading ? <motion.span animate={{ opacity: [1, 0.5, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} className="flex items-center gap-2"><Sparkles className="w-4 h-4 animate-spin" /> Entrando...</motion.span> : "Entrar"}
                     </Button>
-                    <SocialAuthButtons redirectTo="/dashboard?role=doctor" compact />
+                    <SocialAuthButtons flow="login" role="doctor" redirectTo="/dashboard?role=doctor" compact />
                     <p className="text-center text-sm text-muted-foreground"><Link to="/forgot-password" className="text-primary hover:underline">Esqueci minha senha</Link></p>
                     <p className="text-center text-sm text-muted-foreground"><button type="button" onClick={() => setStep("welcome")} className="text-primary font-semibold hover:underline">← Voltar</button></p>
                   </form>

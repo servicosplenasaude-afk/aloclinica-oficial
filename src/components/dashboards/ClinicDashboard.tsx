@@ -24,7 +24,7 @@ import { PingoBannerCard } from "@/components/mascot/PingoBannerCard";
 import { PremiumHero } from "./PremiumHero";
 import { DoctorRanking } from "./DoctorRanking";
 import RoleOnboarding from "@/components/onboarding/RoleOnboarding";
-import pingoAdmin from "@/assets/pingo-admin.png";
+import pingoAdmin from "@/assets/states/pingo-dashboard-clinica.webp";
 
 const CHART_COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--accent))", "hsl(var(--warning))", "hsl(var(--destructive))"];
 

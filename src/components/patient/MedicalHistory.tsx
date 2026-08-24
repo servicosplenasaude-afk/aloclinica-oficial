@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import mascotReading from "@/assets/mascot-reading.png";
+import mascotReading from "@/assets/states/pingo-historico-medico.webp";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { db } from "@/integrations/supabase/untyped";

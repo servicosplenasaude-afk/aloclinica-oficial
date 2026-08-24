@@ -26,7 +26,7 @@ import { ActionPills } from "./ActionPills";
 import { PingoBannerCard } from "@/components/mascot/PingoBannerCard";
 import { PremiumHero } from "./PremiumHero";
 import RoleOnboarding from "@/components/onboarding/RoleOnboarding";
-import pingoSupport from "@/assets/pingo-support.jpg";
+import pingoSupport from "@/assets/states/pingo-dashboard-suporte.webp";
 
 const getSupportNav = (active: string) => [
   { label: "Helpdesk", href: "/dashboard?role=support", icon: <Activity className="w-4 h-4" />, active: active === "overview", group: "Principal" },

@@ -22,7 +22,7 @@ import { useDoctorStats } from "@/hooks/useDoctorDashboard";
 import { db } from "@/integrations/supabase/untyped";
 import { logError } from "@/lib/logger";
 import { cn } from "@/lib/utils";
-import mascotWelcome from "@/assets/mascot-welcome.png";
+import mascotWelcome from "@/assets/states/pingo-painel-medico.webp";
 
 interface DoctorAppt {
   id: string;

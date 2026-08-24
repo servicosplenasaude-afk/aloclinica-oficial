@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/landing/Header";
 import SEOHead from "@/components/SEOHead";
-import teleconsultaHero from "@/assets/hero-teleconsulta.png";
+import teleconsultaHero from "@/assets/visual-system/pingo-servicos.webp";
 import dashboardRef from "@/assets/ref-dashboard-1.png";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));

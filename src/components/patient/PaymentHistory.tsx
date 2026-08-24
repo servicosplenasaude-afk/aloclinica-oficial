@@ -12,7 +12,7 @@ import { getPatientNav } from "./patientNav";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import NfseLink from "./NfseLink";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-pagamentos.webp";
 import type { Json } from "@/integrations/supabase/types";
 
 interface SubscriptionEntry {

@@ -8,7 +8,7 @@ import Header from "@/components/landing/Header";
 import SEOHead from "@/components/SEOHead";
 import { PINGO_SPECIALTIES } from "@/constants/specialties-assets";
 import pingoMedicoTeleconsulta from "@/assets/pingo-medico-teleconsulta.jpg";
-import pingoVideocall from "@/assets/pingo-videocall.png";
+import pingoVideocall from "@/assets/visual-system/pingo-especialidades.webp";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));
 

@@ -12,7 +12,7 @@ import SEOHead from "@/components/SEOHead";
 import Header from "@/components/landing/Header";
 import { lazy, Suspense, useState } from "react";
 import heroTeleconsultaPhone from "@/assets/hero-teleconsulta-phone.png";
-import doctorTeleconsulta from "@/assets/doctor-teleconsulta.png";
+import doctorTeleconsulta from "@/assets/visual-system/pingo-teleconsulta.webp";
 import { cn } from "@/lib/utils";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));

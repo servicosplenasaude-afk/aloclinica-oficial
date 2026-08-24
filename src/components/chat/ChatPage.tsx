@@ -12,7 +12,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { getDoctorNav } from "@/components/doctor/doctorNav";
 import { getPatientNav } from "@/components/patient/patientNav";
 import { motion, AnimatePresence } from "framer-motion";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-chat-paciente.webp";
 import AppointmentChat from "./AppointmentChat";
 
 interface ChatConversation {

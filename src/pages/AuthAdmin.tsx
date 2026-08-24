@@ -6,7 +6,7 @@ import {
   Mail, Lock, Shield, ShieldCheck, BarChart3, Building2, Users,
   ScrollText, type LucideIcon,
 } from "lucide-react";
-import pingoAdmin from "@/assets/pingo-admin.png";
+import pingoAdmin from "@/assets/states/pingo-acesso-admin.webp";
 import AuthShell from "@/components/auth/AuthShell";
 import { AuthField, AuthPasswordField, AuthSubmitButton, AuthHeading } from "@/components/auth/AuthFields";
 import { translateAuthError } from "@/lib/authErrors";

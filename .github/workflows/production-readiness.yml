@@ -3,7 +3,15 @@ name: Production Readiness
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: production-external-monitor
+  cancel-in-progress: false
 
 jobs:
   readiness:
@@ -18,16 +26,53 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund --prefer-offline
+        run: npm ci --no-audit --no-fund --prefer-offline
 
       - name: Static production audit
         run: npm run audit:production
 
       - name: Public health check
-        run: npm run health:production -- --json
+        id: health
+        continue-on-error: true
+        run: npm run --silent health:production -- --json > production-health.json
         env:
           PROD_SITE_URL: https://aloclinica.com.br
           SUPABASE_PROJECT_REF: pwxvvimdtmvziynbspgx
+
+      - name: Preserve health evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-health-${{ github.run_id }}
+          path: production-health.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Open incident on critical failure
+        if: steps.health.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title='[Operations] Falha crítica no monitor externo'
+          existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
+          if [ -z "$existing" ]; then
+            gh issue create --title "$title" --body "O monitor externo detectou uma falha crítica. Evidências: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Nenhum secret foi incluído no relatório."
+          fi
+
+      - name: Close recovered incident
+        if: steps.health.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title='[Operations] Falha crítica no monitor externo'
+          existing="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            gh issue close "$existing" --comment "Serviços recuperados e validados pelo monitor externo: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+          fi
+
+      - name: Enforce health result
+        if: steps.health.outcome == 'failure'
+        run: exit 1
 
       - name: Build
         if: ${{ github.event_name == 'workflow_dispatch' }}

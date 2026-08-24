@@ -1,0 +1,6 @@
+# Uma linha por PostgreSQL executado em Docker:
+# container|usuario|banco
+#
+# Substitua pelos nomes reais vistos em `docker ps`:
+# compreface-postgres|postgres|compreface
+# evolution-postgres|postgres|evolution

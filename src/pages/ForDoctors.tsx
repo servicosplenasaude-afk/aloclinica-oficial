@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/landing/Header";
 import SEOHead from "@/components/SEOHead";
 
-import doctorTeleconsulta from "@/assets/doctor-teleconsulta.png";
+import doctorTeleconsulta from "@/assets/visual-system/pingo-para-medicos.webp";
 import doctorFerramentas from "@/assets/doctor-ferramentas.png";
 import doctorRenda from "@/assets/doctor-renda.png";
 

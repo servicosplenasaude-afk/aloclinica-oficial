@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily AloClinica offsite backup
+
+[Timer]
+OnCalendar=*-*-* 03:20:00 America/Sao_Paulo
+RandomizedDelaySec=20m
+Persistent=true
+Unit=aloclinica-backup.service
+
+[Install]
+WantedBy=timers.target

@@ -46,8 +46,8 @@ import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import { PINGO_LOGO_URL } from "@/lib/constants";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 const logo = PINGO_LOGO_URL;
-import mascotWave from "@/assets/mascot-wave.png";
-import mascotThumbsup from "@/assets/mascot-thumbsup.png";
+import mascotWave from "@/assets/states/pingo-boas-vindas-paciente.webp";
+import mascotThumbsup from "@/assets/states/pingo-acesso-paciente.webp";
 
 const benefits = [
   { icon: VideoCamera, text: "Videochamada HD criptografada" },
@@ -591,7 +591,7 @@ const AuthPaciente = () => {
             </Button>
           </motion.form>
 
-          <SocialAuthButtons redirectTo="/dashboard?role=patient" />
+          <SocialAuthButtons flow="login" role="patient" redirectTo="/dashboard?role=patient" />
 
           {/* Trust row */}
           <div className="flex items-center justify-center gap-6 mt-8">

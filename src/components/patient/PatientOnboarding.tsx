@@ -14,7 +14,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/integrations/supabase/untyped";
 import { toast } from "sonner";
-import mascotWelcome from "@/assets/mascot-welcome.png";
+import mascotWelcome from "@/assets/states/pingo-onboarding-paciente.webp";
 import { formatMask } from "@/hooks/use-mask";
 import { validarCPF } from "@/lib/form-validators";
 import { IS_DEV } from "@/lib/constants";

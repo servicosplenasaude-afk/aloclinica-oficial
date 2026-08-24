@@ -5,7 +5,7 @@ import { Heart, Target, Eye, ArrowRight, Users, Sparkle } from "@phosphor-icons/
 import Header from "@/components/landing/Header";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import heroDoctor from "@/assets/hero-doctor.png";
+import heroDoctor from "@/assets/visual-system/pingo-sobre-missao.webp";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));
 

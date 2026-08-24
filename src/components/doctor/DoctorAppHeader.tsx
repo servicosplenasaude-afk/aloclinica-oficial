@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
-import doctorAppHero from "@/assets/doctor-app-command-center.png";
-import mascotWelcome from "@/assets/mascot-welcome.png";
+import doctorAppHero from "@/assets/states/pingo-comando-medico.webp";
+import mascotWelcome from "@/assets/states/pingo-boas-vindas-medico.webp";
 
 interface DoctorAppHeaderProps {
   eyebrow: string;

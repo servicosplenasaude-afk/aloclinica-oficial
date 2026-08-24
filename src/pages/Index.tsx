@@ -22,8 +22,8 @@ import { ArrowRight, Building2, CalendarCheck, Stethoscope, Video } from "lucide
 import { useHomeBlocks } from "@/lib/site-blocks";
 import { motion } from "framer-motion";
 import doctorTeleconsultaAsset from "@/assets/medica-pingo-teleconsulta.webp";
-import pingoCalendar from "@/assets/pingo-calendar.jpg";
-import pingoVideocall from "@/assets/pingo-videocall.png";
+import pingoCalendar from "@/assets/visual-system/pingo-calendario-home.webp";
+import pingoVideocall from "@/assets/visual-system/pingo-home-video.webp";
 import pingoPrescription from "@/assets/pingo-prescription.jpg";
 
 const Index = forwardRef<HTMLDivElement>((_, ref) => {

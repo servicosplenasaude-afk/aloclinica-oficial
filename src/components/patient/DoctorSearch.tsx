@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-busca-medico.webp";
 import { db } from "@/integrations/supabase/untyped";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { Input } from "@/components/ui/input";

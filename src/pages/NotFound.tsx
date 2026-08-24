@@ -5,7 +5,7 @@ import { Home, ArrowLeft, Stethoscope, User, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
 import { motion } from "framer-motion";
-import mascotImg from "@/assets/mascot-reading.png";
+import mascotImg from "@/assets/states/pingo-pagina-nao-encontrada.webp";
 
 const suggestions = [
   { label: "Página inicial", path: "/", icon: Home },

@@ -10,7 +10,7 @@ import {
   PhoneCall, ChevronDown, Wifi, Shield, Speaker
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import mascotImg from "@/assets/mascot-wave.png";
+import mascotImg from "@/assets/states/pingo-pre-chamada.webp";
 import { format, differenceInSeconds } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import PreConsultationForm from "@/components/patient/PreConsultationForm";

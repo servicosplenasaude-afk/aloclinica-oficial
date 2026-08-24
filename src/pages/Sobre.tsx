@@ -10,7 +10,7 @@ import PublicPageEnhancer from "@/components/landing/PublicPageEnhancer";
 import heroDoctor from "@/assets/hero-doctor.png";
 import heroTeleconsulta from "@/assets/hero-teleconsulta.png";
 import heroSeguranca from "@/assets/doctor-seguranca.png";
-import pingoVideocall from "@/assets/pingo-videocall.png";
+import pingoVideocall from "@/assets/visual-system/pingo-sobre.webp";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));
 

@@ -4,7 +4,7 @@ import { ShieldCheck, Lightning, Receipt, UsersFour, SealCheck, ArrowRight } fro
 import { Link } from "react-router-dom";
 
 import familyImg from "@/assets/pingo-king-familia.jpg";
-import doctorAppImg from "@/assets/doctor-phone-teleconsulta.png";
+import doctorAppImg from "@/assets/states/pingo-beneficios-medico.webp";
 import multiplatformImg from "@/assets/devices-mascot.jpg";
 import familyPlanImg from "@/assets/pingo-mini-familia.png";
 import medicalRecordsImg from "@/assets/pingo-medico-ferramentas.jpg";

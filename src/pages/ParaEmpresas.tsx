@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent } from "@/components/ui/card";
 import { db } from "@/integrations/supabase/untyped";
-import pingoEmpresa from "@/assets/pingo-medico-ferramentas.jpg";
+import pingoEmpresa from "@/assets/states/pingo-ferramentas-empresa.webp";
 
 const Footer = lazy(() => import("@/components/landing/Footer"));
 

@@ -1,0 +1,15 @@
+[Unit]
+Description=AloClinica encrypted offsite backup
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/aloclinica-operations
+ExecStart=/opt/aloclinica-operations/scripts/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=true
+NoNewPrivileges=true

@@ -11,7 +11,7 @@ import {
   ChartLineUp,
 } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
-import doctorPingoImg from "@/assets/doctor-phone-teleconsulta.png";
+import doctorPingoImg from "@/assets/states/pingo-teleconsulta-medico.webp";
 import doctorAvatar1 from "@/assets/doctor-premium-1.png";
 import doctorAvatar2 from "@/assets/doctor-premium-2.png";
 import doctorAvatar3 from "@/assets/doctor-signup-1.png";

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import mascotWave from "@/assets/mascot-wave.png";
+import mascotWave from "@/assets/states/pingo-consultas-medico.webp";
 import { useNavigate } from "react-router-dom";
 import { db } from "@/integrations/supabase/untyped";
 import { useAuth } from "@/contexts/AuthContext";

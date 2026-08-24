@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import mascotThumbsup from "@/assets/mascot-thumbsup.png";
+import mascotThumbsup from "@/assets/states/pingo-consultas-ao-vivo.webp";
 import DashboardLayout from "@/components/dashboards/DashboardLayout";
 import { getAdminNav } from "./adminNav";
 import { AdminPageHeader } from "./AdminPageHeader";

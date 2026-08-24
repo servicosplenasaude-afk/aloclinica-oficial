@@ -26,8 +26,8 @@ import {
   UserRoundCheck,
   Users,
 } from "lucide-react";
-import doctorAppHero from "@/assets/doctor-app-command-center.png";
-import mascotWelcome from "@/assets/mascot-welcome.png";
+import doctorAppHero from "@/assets/states/pingo-comando-pacientes.webp";
+import mascotWelcome from "@/assets/states/pingo-pacientes-medico.webp";
 
 interface Patient {
   user_id: string;

@@ -43,7 +43,7 @@ export const DEFAULT_APP_BANNERS: AppPromoBanner[] = [
     eyebrow: "Médicos",
     cta_label: "Ver agenda",
     cta_href: "/dashboard/doctor/calendar?role=doctor",
-    image_url: "/images/app-promo-telemedicine.png",
+    image_url: "/images/app-promo-doctor-agenda.webp",
     audience: "doctor",
     placement: "global",
     enabled: true,
