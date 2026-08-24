@@ -20,10 +20,11 @@ interface JitsiRoomProps {
   roomId: string;
   displayName: string;
   onEnd: () => void;
+  onUnavailable?: () => void;
   /** true = médico (host/apresentador da sala MiroTalk). */
 }
 
-const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd }: JitsiRoomProps) => {
+const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd, onUnavailable }: JitsiRoomProps) => {
   const [elapsed, setElapsed] = useState(0);
   const [meetUrl, setMeetUrl] = useState<string | null>(null);
   const [tokenError, setTokenError] = useState(false);
@@ -123,6 +124,11 @@ const JitsiRoom = ({ appointmentId, roomId, displayName, onEnd }: JitsiRoomProps
               <RefreshCw className="mr-2 h-4 w-4" />
               Tentar novamente
             </Button>
+            {onUnavailable && (
+              <Button size="sm" onClick={onUnavailable}>
+                Usar conexão direta
+              </Button>
+            )}
           </div>
         ) : meetUrl ? (
           <iframe

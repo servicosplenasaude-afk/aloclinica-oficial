@@ -13,7 +13,7 @@ import {
    UserRound, Pill, PhoneOff, Mic, MicOff, Video, VideoOff, Shield, UserPlus,
   MoreVertical, Maximize2, Minimize2, Copy, Share2, FileBadge, Paperclip, Image,
   Sparkles, Loader2, Stethoscope, ClipboardList, SwitchCamera, CheckCircle2,
-  PictureInPicture2, Camera, Disc, Download
+  PictureInPicture2, Camera, Disc, Download, MoreHorizontal
 } from "lucide-react";
 import ConsentTCLE from "./ConsentTCLE";
 import AIClinicalPanel from "./AIClinicalPanel";
@@ -35,7 +35,7 @@ import { ConsultationChatPanel } from "./ConsultationChatPanel";
 import { useSOAPNotes, type SOAPNotes } from "@/hooks/useSOAPNotes";
  import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatMessage {
@@ -54,6 +54,7 @@ const VideoRoom = () => {
   const navigate = useNavigate();
   
   const isMobile = useIsMobile();
+  const reduceMotion = useReducedMotion();
 
   const [appointment, setAppointment] = useState<AppointmentRow | null>(null);
   const [otherPartyName, setOtherPartyName] = useState("");
@@ -71,6 +72,7 @@ const VideoRoom = () => {
   const [useJitsi, setUseJitsi] = useState(false);
   const [jitsiRoomId, setJitsiRoomId] = useState<string | null>(null);
   const [showSummary, setShowSummary] = useState(false);
+  const [showMobileTools, setShowMobileTools] = useState(false);
 
   // Alergias / condições crônicas do paciente — faixa de alerta sempre visível p/ o médico
   const [patientAlerts, setPatientAlerts] = useState<{ allergies: string[]; chronic: string[] } | null>(null);
@@ -138,16 +140,17 @@ const VideoRoom = () => {
   }, [appointmentId]);
 
   // Sync panel state helpers
-   const openPanel = (panel: "chat" | "notes" | "info" | "referral" | "ai") => {
-    setActivePanel(prev => prev === panel ? null : panel);
-    setShowChat(panel === "chat" ? !showChat : false);
-    setShowNotes(panel === "notes" ? !showNotes : false);
-     setShowInfo(panel === "info" ? !showInfo : false);
-     setShowAI(panel === "ai" ? !showAI : false);
-     if (panel === "referral") {
-       // Reset others if we had separate booleans, but here we use activePanel mostly
-     }
-  };
+  const openPanel = useCallback((panel: "chat" | "notes" | "info" | "referral" | "ai") => {
+    setActivePanel((current) => {
+      const next = current === panel ? null : panel;
+      setShowChat(next === "chat");
+      setShowNotes(next === "notes");
+      setShowInfo(next === "info");
+      setShowAI(next === "ai");
+      return next;
+    });
+    setShowMobileTools(false);
+  }, []);
 
   const closeAllPanels = () => {
     setActivePanel(null);
@@ -178,7 +181,7 @@ const VideoRoom = () => {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [isDoctor, showChat, showNotes, showInfo, showAI]);
+  }, [isDoctor, openPanel]);
 
   const [showShortcuts, setShowShortcuts] = useState(false);
 
@@ -1321,7 +1324,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
     active?: boolean; icon: React.ReactNode; label: string; badge?: number; onClick: () => void;
   }) => (
     <button
-      className={`relative flex shrink-0 items-center justify-center gap-1.5 min-w-[44px] min-h-[44px] px-3 py-2 rounded-xl text-xs font-medium transition-colors duration-200 motion-reduce:transition-none ${
+      className={`relative flex shrink-0 items-center justify-center min-w-[44px] min-h-[44px] rounded-xl font-medium transition-colors duration-200 motion-reduce:transition-none ${isMobile ? "w-full flex-col gap-0.5 px-1 py-1.5 text-[10px]" : "gap-1.5 px-3 py-2 text-xs"} ${
         active
           ? "bg-primary/15 text-primary border border-primary/25 shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
           : "text-[hsl(220,15%,55%)] hover:text-white hover:bg-[hsl(220,20%,12%)] active:bg-[hsl(220,20%,16%)] border border-transparent"
@@ -1331,7 +1334,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
       aria-pressed={active}
     >
       {icon}
-      {!isMobile && <span aria-hidden="true">{label}</span>}
+      <span aria-hidden="true" className="max-w-full truncate">{label}</span>
       {badge && badge > 0 && (
         <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center font-bold shadow-lg animate-pulse" aria-hidden="true">
           {badge}
@@ -1594,6 +1597,15 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                 roomId={jitsiRoomId}
                 displayName={currentUserName}
                 onEnd={endCall}
+                onUnavailable={() => {
+                  autoFallbackDoneRef.current = true;
+                  setUseJitsi(false);
+                  setJitsiRoomId(null);
+                  localStorage.setItem(`jitsi_${appointmentId}`, "false");
+                  toast.info("Conexão direta ativada", {
+                    description: "O servidor alternativo não respondeu. Continuaremos pela conexão P2P.",
+                  });
+                }}
               />
             ) : (
               <VideoConsultation
@@ -1672,7 +1684,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 360, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 350, damping: 35 }}
+              transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 350, damping: 35 }}
               className="border-l border-[hsl(220,15%,10%)] bg-[hsl(220,25%,6%)] flex flex-col overflow-hidden"
             >
               <div className="p-4 border-b border-[hsl(220,15%,10%)] flex items-center justify-between shrink-0">
@@ -1748,7 +1760,7 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
-                transition={{ type: "spring", stiffness: 400, damping: 35 }}
+                transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 400, damping: 35 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={{ top: 0, bottom: 0.4 }}
@@ -1849,10 +1861,10 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
         </div>
       )}
 
-      {/* Mobile bottom toolbar — fixed at bottom */}
+      {/* Mobile toolbar: cinco ações primárias, sem rolagem horizontal. */}
       {isMobile && (
         <div
-          className="shrink-0 flex items-center justify-start gap-1 px-2 py-2 bg-[hsl(220,25%,6%)] border-t border-[hsl(220,15%,10%)] overflow-x-auto overscroll-x-contain"
+          className="relative shrink-0 grid grid-cols-5 gap-1 px-2 py-2 bg-[hsl(220,25%,6%)] border-t border-[hsl(220,15%,10%)]"
           style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)" }}
         >
           <ToolbarBtn
@@ -1868,46 +1880,45 @@ SOAP atual: S=${soap.notes.subjective}, O=${soap.notes.objective}, A=${soap.note
             onClick={() => videoRef.current?.toggleVideo()}
           />
           <ToolbarBtn
-            icon={<SwitchCamera className="w-5 h-5" />}
-            label="Flip"
-            onClick={() => videoRef.current?.switchCamera()}
-          />
-          <ToolbarBtn
             active={showChat}
             icon={<MessageSquare className="w-5 h-5" />}
             label="Chat"
             badge={showChat ? 0 : unreadCount}
             onClick={() => openPanel("chat")}
           />
-          {isDoctor && (
-            <ToolbarBtn
-              active={showNotes}
-              icon={<FileText className="w-5 h-5" />}
-              label="SOAP"
-              onClick={() => openPanel("notes")}
-            />
-          )}
-          {isDoctor && (
-            <ToolbarBtn
-              active={showAI}
-              icon={<Sparkles className="w-5 h-5" />}
-              label="IA"
-              onClick={() => openPanel("ai")}
-            />
-          )}
           <ToolbarBtn
             active={showInfo}
             icon={<UserRound className="w-5 h-5" />}
             label="Info"
             onClick={() => openPanel("info")}
           />
-          {isDoctor && (
-            <ToolbarBtn
-              icon={<Pill className="w-5 h-5" />}
-              label="Rx"
-              onClick={() => setToolOverlay({ url: `/dashboard/prescribe/${appointmentId}?embed=1`, title: "Receita / Prescrição" })}
-            />
-          )}
+          <ToolbarBtn
+            active={showMobileTools}
+            icon={<MoreHorizontal className="w-5 h-5" />}
+            label="Mais"
+            onClick={() => setShowMobileTools((value) => !value)}
+          />
+
+          <AnimatePresence>
+            {showMobileTools && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: reduceMotion ? 0 : 0.18 }}
+                className="absolute bottom-full inset-x-2 mb-2 grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-[hsl(220,25%,8%)/0.98] p-3 shadow-2xl backdrop-blur-xl"
+                role="menu"
+                aria-label="Mais ferramentas da consulta"
+              >
+                <ToolbarBtn icon={<SwitchCamera className="w-5 h-5" />} label="Trocar câmera" onClick={() => videoRef.current?.switchCamera()} />
+                {isDoctor && <ToolbarBtn active={showNotes} icon={<FileText className="w-5 h-5" />} label="Prontuário" onClick={() => openPanel("notes")} />}
+                {isDoctor && <ToolbarBtn active={showAI} icon={<Sparkles className="w-5 h-5" />} label="IA clínica" onClick={() => openPanel("ai")} />}
+                {isDoctor && <ToolbarBtn icon={<Pill className="w-5 h-5" />} label="Receita" onClick={() => { setShowMobileTools(false); setToolOverlay({ url: `/dashboard/prescribe/${appointmentId}?embed=1`, title: "Receita / Prescrição" }); }} />}
+                {isDoctor && <ToolbarBtn icon={<FileBadge className="w-5 h-5" />} label="Atestado" onClick={() => { setShowMobileTools(false); setToolOverlay({ url: `/dashboard/certificates?embed=1&appointment=${appointmentId}`, title: "Atestado / Declaração" }); }} />}
+                {isDoctor && <ToolbarBtn icon={<Stethoscope className="w-5 h-5" />} label="Exames" onClick={() => { setShowMobileTools(false); setToolOverlay({ url: `/dashboard/exam-request?embed=1&appointment=${appointmentId}`, title: "Pedido de Exames" }); }} />}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </div>

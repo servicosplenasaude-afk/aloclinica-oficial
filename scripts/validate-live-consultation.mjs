@@ -3,13 +3,15 @@ import { mkdir } from "node:fs/promises";
 
 const baseURL = process.env.E2E_BASE_URL || "https://sandbox.aloclinica.com.br";
 const appointmentId = process.env.E2E_APPOINTMENT_ID;
+const headed = process.env.E2E_HEADED === "1";
+const keepOpen = process.env.E2E_KEEP_OPEN === "1";
 if (!appointmentId) throw new Error("E2E_APPOINTMENT_ID is required");
 
 const outputDir = "test-results/live-consultation";
 await mkdir(outputDir, { recursive: true });
 
 const browser = await chromium.launch({
-  headless: true,
+  headless: !headed,
   args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
 });
 
@@ -82,6 +84,10 @@ const enterRoom = async (page, patient = false) => {
     throw new Error(`requirements blocked at ${page.url()}: ${text}`, { cause: error });
   }
   await continueButton.click();
+  const directFallback = page.getByRole("button", { name: /usar conex[aã]o direta/i });
+  if (await directFallback.waitFor({ state: "visible", timeout: 8_000 }).then(() => true).catch(() => false)) {
+    await directFallback.click();
+  }
   const roomStatus = page.getByText(/aguardando outro participante|p2p ativo|conectad[oa]|conectando/i).first();
   if (await roomStatus.waitFor({ state: "visible", timeout: 8_000 }).then(() => true).catch(() => false)) return;
   const enter = page.getByRole("button", { name: /entrar (na consulta|mesmo assim)/i });
@@ -122,6 +128,10 @@ try {
     doctorHorizontalOverflow: await doctor.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth),
   };
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+  if (keepOpen) {
+    process.stdout.write("Consulta aberta. Feche as janelas do navegador para encerrar.\n");
+    await new Promise((resolve) => browser.on("disconnected", resolve));
+  }
   await patientContext.close();
   await doctorContext.close();
 } finally {
