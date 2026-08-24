@@ -1,3 +1,4 @@
+-- Aplicação automatizada: primeiro sandbox, depois produção.
 -- Completa apenas cadastros OAuth Google recentes e somente para papéis públicos
 -- de auto-registro. Contas antigas e papéis privilegiados não podem ser alterados.
 CREATE OR REPLACE FUNCTION public.complete_google_oauth_signup(p_role text)

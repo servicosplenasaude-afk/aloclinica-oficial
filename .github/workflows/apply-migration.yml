@@ -1,6 +1,12 @@
 name: Apply one migration
 
 on:
+  push:
+    branches:
+      - sandbox
+      - main
+    paths:
+      - supabase/migrations/*.sql
   workflow_dispatch:
     inputs:
       target:
@@ -26,23 +32,28 @@ concurrency:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.target == 'production' && 'production' || 'staging' }}
+    environment: ${{ github.ref_name == 'main' && 'production' || (inputs.target == 'production' && 'production' || 'staging') }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Apply migration through Supabase Management API
         env:
           SBP_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          MIGRATION: ${{ inputs.migration_file }}
+          REQUESTED_MIGRATION: ${{ inputs.migration_file }}
           TARGET: ${{ inputs.target }}
+          EVENT_BEFORE: ${{ github.event.before }}
         run: |
           set -Eeuo pipefail
-          case "$MIGRATION" in
-            supabase/migrations/*.sql) ;;
-            *) echo "Migration path is not allowed" >&2; exit 2 ;;
-          esac
-          test -f "$MIGRATION" || { echo "Migration file not found" >&2; exit 2; }
           test -n "$SBP_TOKEN" || { echo "Supabase access token is unavailable" >&2; exit 2; }
+
+          if [ "$GITHUB_EVENT_NAME" = push ]; then
+            if [ "$GITHUB_REF_NAME" = sandbox ]; then TARGET=sandbox; else TARGET=production; fi
+            mapfile -t migrations < <(git diff --name-only --diff-filter=AM "$EVENT_BEFORE" "$GITHUB_SHA" -- 'supabase/migrations/*.sql' | sort)
+          else
+            migrations=("$REQUESTED_MIGRATION")
+          fi
 
           if [ "$TARGET" = sandbox ]; then
             SUPABASE_PROJECT_REF=hikttmmwxcjmzexxhgda
@@ -53,20 +64,27 @@ jobs:
             exit 2
           fi
 
-          jq -Rs '{query: .}' "$MIGRATION" >/tmp/payload.json
-          HTTP_CODE="$(curl --silent --show-error --write-out '%{http_code}' --output /tmp/response.txt \
-            --request POST \
-            --header "Authorization: Bearer $SBP_TOKEN" \
-            --header 'Content-Type: application/json' \
-            --user-agent 'aloclinica-migration/2.0' \
-            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/database/query" \
-            --data-binary @/tmp/payload.json)"
-          echo "Supabase migration response: HTTP $HTTP_CODE"
-          if [ "$HTTP_CODE" != 200 ] && [ "$HTTP_CODE" != 201 ]; then
-            echo "Migration failed; response body is intentionally not printed" >&2
-            exit 1
-          fi
-
+          test "${#migrations[@]}" -gt 0 || { echo "No migrations selected"; exit 0; }
           echo '## Migration applied' >>"$GITHUB_STEP_SUMMARY"
           echo "- Target: \`$TARGET\`" >>"$GITHUB_STEP_SUMMARY"
-          echo "- File: \`$MIGRATION\`" >>"$GITHUB_STEP_SUMMARY"
+          for MIGRATION in "${migrations[@]}"; do
+            case "$MIGRATION" in
+              supabase/migrations/*.sql) ;;
+              *) echo "Migration path is not allowed" >&2; exit 2 ;;
+            esac
+            test -f "$MIGRATION" || { echo "Migration file not found" >&2; exit 2; }
+            jq -Rs '{query: .}' "$MIGRATION" >/tmp/payload.json
+            HTTP_CODE="$(curl --silent --show-error --write-out '%{http_code}' --output /tmp/response.txt \
+              --request POST \
+              --header "Authorization: Bearer $SBP_TOKEN" \
+              --header 'Content-Type: application/json' \
+              --user-agent 'aloclinica-migration/2.0' \
+              "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/database/query" \
+              --data-binary @/tmp/payload.json)"
+            echo "$MIGRATION: HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" != 200 ] && [ "$HTTP_CODE" != 201 ]; then
+              echo "Migration failed; response body is intentionally not printed" >&2
+              exit 1
+            fi
+            echo "- File: \`$MIGRATION\`" >>"$GITHUB_STEP_SUMMARY"
+          done
