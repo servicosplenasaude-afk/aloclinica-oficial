@@ -47,7 +47,7 @@ import { db } from "@/integrations/supabase/untyped";
 
 const renderAuth = () =>
   render(
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <BrowserRouter>
       <Auth />
     </BrowserRouter>
   );

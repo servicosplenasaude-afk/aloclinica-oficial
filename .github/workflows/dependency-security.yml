@@ -1,0 +1,40 @@
+name: Dependency Security
+
+on:
+  push:
+    branches: [main, sandbox]
+    paths:
+      - package.json
+      - package-lock.json
+      - .github/workflows/dependency-security.yml
+  pull_request:
+    paths:
+      - package.json
+      - package-lock.json
+      - .github/workflows/dependency-security.yml
+  schedule:
+    - cron: "17 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Reproducible install
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=moderate
+      - name: Verify lockfile remains unchanged
+        run: git diff --exit-code -- package-lock.json

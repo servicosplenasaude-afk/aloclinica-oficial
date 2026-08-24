@@ -34,7 +34,7 @@ describe("Header", () => {
 
   it("renderiza logo e principais itens de menu", () => {
     render(
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter>
         <I18nProvider>
           <Header />
         </I18nProvider>
@@ -49,7 +49,7 @@ describe("Header", () => {
 
 describe("StatsSection", () => {
   it("renders stat labels", () => {
-    render(<BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}><StatsSection /></BrowserRouter>);
+    render(<BrowserRouter><StatsSection /></BrowserRouter>);
     // Rótulos honestos (conteúdo CFM) definidos em StatsSection.fallbackStats
     expect(screen.getByText("Atendimento")).toBeInTheDocument();
     expect(screen.getByText("Médicos verificados")).toBeInTheDocument();

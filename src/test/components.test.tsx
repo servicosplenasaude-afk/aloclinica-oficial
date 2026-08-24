@@ -15,7 +15,7 @@ vi.mock("@/assets/mascot.png", () => ({ default: "mascot.png" }));
 vi.mock("@/assets/mascot-wave.png", () => ({ default: "wave.png" }));
 
 const TestRouter = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>{children}</BrowserRouter>
+  <BrowserRouter>{children}</BrowserRouter>
 );
 
 // ─── PasswordStrength ───

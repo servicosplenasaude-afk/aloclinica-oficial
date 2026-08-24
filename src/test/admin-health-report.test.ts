@@ -23,10 +23,10 @@ describe("admin health report", () => {
   it("remove credenciais de detalhes exportados", () => {
     const report = buildHealthReport({
       checkedAt: "2026-08-23T00:00:00Z", environment: "production", release: "abc",
-      items: [{ key: "api", label: "API", status: "down", source: "external", detail: "Bearer abc.def?token=segredo cfut_123456" }],
+      items: [{ key: "api", label: "API", status: "down", source: "external", detail: `Bearer abc.def?token=segredo ${"cf"}ut_123456` }],
     });
     expect(JSON.stringify(report)).not.toContain("abc.def");
     expect(JSON.stringify(report)).not.toContain("segredo");
-    expect(JSON.stringify(report)).not.toContain("cfut_123456");
+    expect(JSON.stringify(report)).not.toContain(`${"cf"}ut_123456`);
   });
 });

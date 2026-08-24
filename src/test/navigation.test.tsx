@@ -115,7 +115,7 @@ describe("Route Navigation", () => {
   it("renders NotFound for unknown routes", async () => {
     const NotFound = (await import("@/pages/NotFound")).default;
     render(
-      <MemoryRouter initialEntries={["/rota-inexistente"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={["/rota-inexistente"]}>
         <NotFound />
       </MemoryRouter>
     );
@@ -125,7 +125,7 @@ describe("Route Navigation", () => {
   it("renderiza a página Auth com cards de seleção de perfil", async () => {
     const Auth = (await import("@/pages/Auth")).default;
     render(
-      <MemoryRouter initialEntries={["/paciente"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={["/paciente"]}>
         <Auth />
       </MemoryRouter>
     );

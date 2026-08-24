@@ -19,7 +19,6 @@ function renderGuard(roles: readonly string[]) {
   return render(
     <MemoryRouter
       initialEntries={["/dashboard/admin/users"]}
-      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
       <Routes>
         <Route

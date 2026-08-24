@@ -40,7 +40,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 describe("ProtectedRoute", () => {
   it("redireciona usuário não autenticado para a página de login do paciente (default)", async () => {
     render(
-      <MemoryRouter initialEntries={["/dashboard"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={["/dashboard"]}>
         <AuthProvider>
           <Routes>
             <Route path="/dashboard" element={
@@ -64,7 +64,7 @@ describe("ProtectedRoute", () => {
 
   it("redireciona para /admin quando requiredRole é admin e usuário não está autenticado", async () => {
     render(
-      <MemoryRouter initialEntries={["/admin/painel"]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <MemoryRouter initialEntries={["/admin/painel"]}>
         <AuthProvider>
           <Routes>
             <Route path="/admin/painel" element={

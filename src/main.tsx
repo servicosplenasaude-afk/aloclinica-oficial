@@ -112,7 +112,21 @@ try {
   if (isChunkError(err)) { recover(); }
   else {
     logError("[boot] Fatal mount error", err);
-    root.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif"><div style="text-align:center"><h2>Erro ao carregar</h2><p>Recarregue a página.</p><button onclick="location.reload()" style="padding:8px 16px;margin-top:12px;cursor:pointer;border-radius:6px;border:1px solid #ccc">Recarregar</button></div></div>';
+    const shell = document.createElement("div");
+    shell.className = "flex min-h-screen items-center justify-center font-sans";
+    const content = document.createElement("div");
+    content.className = "text-center";
+    const title = document.createElement("h2");
+    title.textContent = "Erro ao carregar";
+    const message = document.createElement("p");
+    message.textContent = "Recarregue a página.";
+    const reload = document.createElement("button");
+    reload.type = "button";
+    reload.className = "mt-3 cursor-pointer rounded-md border px-4 py-2";
+    reload.textContent = "Recarregar";
+    reload.addEventListener("click", () => window.location.reload());
+    content.append(title, message, reload);
+    shell.append(content);
+    root.replaceChildren(shell);
   }
 }
