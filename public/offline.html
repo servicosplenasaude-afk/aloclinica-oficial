@@ -54,12 +54,13 @@
         <li>Tente novamente em alguns segundos</li>
       </ul>
     </div>
-    <button class="btn" onclick="location.reload()" aria-label="Tentar reconectar">
+    <button class="btn" id="retry-connection" type="button" aria-label="Tentar reconectar">
       🔄 Tentar Novamente
     </button>
     <p class="status" id="connection-status">Verificando conexão...</p>
   </main>
-  <script>
+  <script src="/offline.js" defer></script>
+  <!--
     const el = document.getElementById('connection-status');
     function check() {
       if (navigator.onLine) {
@@ -73,6 +74,6 @@
     window.addEventListener('online', check);
     setInterval(check, 5000);
     check();
-  </script>
+  -->
 </body>
 </html>
