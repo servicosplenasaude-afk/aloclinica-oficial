@@ -25,6 +25,12 @@ node scripts/verify-migration-reconciliation.mjs migration-list.txt
 
 Saída divergente bloqueia deploy. Investigue o histórico antes de qualquer repair; repair requer aprovação humana, backup confirmado e registro de mudança.
 
+Quando houver linhagens diferentes, o workflow exporta somente o esquema `public`,
+sem linhas de dados, verifica se não há valores com formato de credencial e publica
+o dump por sete dias. O hash e as contagens em `remote-schema-summary.json` permitem
+confirmar que a análise e o baseline foram feitos sobre a mesma versão. O dump não
+autoriza `migration repair`: primeiro ele deve ser comparado com um banco isolado.
+
 ## Ensaio de restore
 
 1. Criar projeto Supabase temporário e isolado, sem integrações/webhooks de produção.
