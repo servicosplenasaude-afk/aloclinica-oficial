@@ -7,6 +7,7 @@ on:
     paths:
       - "supabase/migrations/**"
       - "scripts/verify-migration-reconciliation.mjs"
+      - "scripts/summarize-schema-dump.mjs"
       - ".github/workflows/database-safety.yml"
   schedule:
     - cron: "17 9 * * 1"
