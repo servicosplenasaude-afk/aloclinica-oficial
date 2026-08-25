@@ -72,17 +72,17 @@ análise.
   atualizar GitHub/Cloudflare/Supabase, validar deploy e somente então revogar o
   anterior.
 
-### SEC-107 — Valor com formato de credencial no esquema remoto — aberto
+### SEC-107 — JWT no esquema remoto — classificado e mitigado
 
 - Local: definição SQL existente apenas no banco remoto de produção.
-- Evidência: a coleta de esquema sem dados detectou ao menos um valor com formato
-  de credencial; o valor não foi exibido nem copiado para o repositório.
-- Impacto: uma função ou configuração SQL pode conter credencial estática e ampliar
-  o impacto de acesso indevido ao catálogo do banco.
+- Evidência: a coleta de esquema sem dados detectou um JWT e classificou somente o
+  claim `role`, sem exibir o token: `jwt_anon=1`.
+- Impacto: a chave `anon` é pública e não concede privilégios de `service_role`, mas
+  o literal fica desatualizado quando a chave pública é rotacionada.
 - Mitigação aplicada: novos artefatos recebem somente esquema redigido; tipos e
   quantidades de valores removidos ficam no resumo, nunca os próprios valores.
-- Próximo passo: localizar a definição pelo dump redigido, substituir o literal por
-  secret server-side e rotacionar a credencial correspondente.
+- Próximo passo: substituir o literal público por configuração gerenciada ao
+  reconciliar a função `invoke_edge_function`; rotação emergencial não é necessária.
 - Observação operacional: um artefato privado anterior reteve o dump bruto por sete
   dias; a tentativa de exclusão imediata retornou 403 por falta de permissão da
   conta GitHub CLI. O acesso continua restrito aos colaboradores autorizados.
