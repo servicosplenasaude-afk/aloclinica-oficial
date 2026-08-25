@@ -53,14 +53,15 @@ análise.
 
 ## Baixo / hardening residual
 
-### SEC-105 — `unsafe-inline` ainda existe na CSP — aberto
+### SEC-105 — JavaScript inline autorizado genericamente pela CSP — corrigido
 
-- Local: `public/_headers:18`, `index.html:61` e `public/offline.html:62`.
-- Evidência: JSON-LD e script offline continuam inline.
-- Impacto: reduz a proteção da CSP contra XSS, embora `unsafe-eval` e sinks
-  identificados já tenham sido removidos.
-- Próximo passo: mover o script offline para arquivo externo e aplicar hash CSP
-  estável ao JSON-LD antes de retirar `unsafe-inline`.
+- Local: `public/_headers:11`, `index.html:61` e `public/offline.html:62`.
+- Evidência anterior: `script-src` aceitava qualquer script inline.
+- Correção: `unsafe-inline` foi removido de `script-src`; apenas os conteúdos
+  exatos do JSON-LD e do script offline são autorizados por hashes SHA-256.
+- Validação: build, navegador headless e comparação automatizada dos hashes.
+- Observação: `style-src 'unsafe-inline'` permanece necessário para estilos
+  dinâmicos produzidos por React; isso não autoriza execução de JavaScript.
 
 ### SEC-106 — WAF e rotação externa não certificáveis — aberto
 

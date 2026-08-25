@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 
 const root = process.cwd();
 const findings = [];
@@ -160,6 +161,24 @@ for (const seedFunction of ["seed-test-users", "seed-test-doctors"]) {
 }
 if (workflow.includes("supabase/seeds") || workflow.includes("db seed")) {
   add("error", "deploy", "Production workflow must not load demo/test seed data.", ".github/workflows/deploy.yml");
+}
+
+const cloudflareHeaders = read("public/_headers");
+const csp = cloudflareHeaders.match(/Content-Security-Policy:\s*([^\r\n]+)/)?.[1] ?? "";
+const scriptSrc = csp.match(/(?:^|;)\s*script-src\s+([^;]+)/)?.[1] ?? "";
+if (!scriptSrc) add("error", "csp", "Cloudflare headers must define script-src.", "public/_headers");
+if (scriptSrc.includes("'unsafe-inline'") || scriptSrc.includes("'unsafe-eval'")) {
+  add("error", "csp", "script-src must not allow unsafe-inline or unsafe-eval.", "public/_headers");
+}
+for (const htmlFile of ["index.html", "public/offline.html"]) {
+  const html = read(htmlFile);
+  for (const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) {
+    if (!match[1]) continue;
+    const hash = `'sha256-${createHash("sha256").update(match[1]).digest("base64")}'`;
+    if (!scriptSrc.includes(hash)) {
+      add("error", "csp", `Inline script hash is missing from script-src: ${hash}`, htmlFile);
+    }
+  }
 }
 
 const databaseSafetyWorkflow = read(".github/workflows/database-safety.yml");
