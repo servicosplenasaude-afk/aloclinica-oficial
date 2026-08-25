@@ -18,7 +18,6 @@ const forbiddenSecrets = [
   ["cloudflare_token", /\bcfut_[A-Za-z0-9_-]{30,}\b/g],
   ["supabase_token", /\bsbp_[A-Za-z0-9_-]{30,}\b/g],
   ["payment_secret", /\b(?:sk_live_|sk_test_)[A-Za-z0-9_-]{16,}\b/g],
-  ["jwt", /\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/g],
   ["private_key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g],
 ];
 const redactions = {};
@@ -31,6 +30,23 @@ for (const [label, pattern] of forbiddenSecrets) {
   });
   if (matches) redactions[label] = matches;
 }
+redactedSql = redactedSql.replace(
+  /\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/g,
+  (jwt) => {
+    let role = "unknown";
+    try {
+      const payload = JSON.parse(Buffer.from(jwt.split(".")[1], "base64url").toString("utf8"));
+      if (payload?.role === "anon") role = "anon";
+      else if (payload?.role === "authenticated") role = "authenticated";
+      else if (payload?.role === "service_role") role = "service_role";
+    } catch {
+      // Malformed JWT-like strings stay classified as unknown and are still redacted.
+    }
+    const label = `jwt_${role}`;
+    redactions[label] = (redactions[label] ?? 0) + 1;
+    return `[REDACTED_${label.toUpperCase()}]`;
+  },
+);
 
 const count = (pattern) => [...sql.matchAll(pattern)].length;
 const summary = {
