@@ -171,6 +171,11 @@ if (scriptSrc.includes("'unsafe-inline'") || scriptSrc.includes("'unsafe-eval'")
   add("error", "csp", "script-src must not allow unsafe-inline or unsafe-eval.", "public/_headers");
 }
 for (const htmlFile of ["index.html", "public/offline.html"]) {
+  if (/\son[a-z]+\s*=/i.test(read(htmlFile))) {
+    add("error", "csp", "Inline event handlers are forbidden by script-src.", htmlFile);
+  }
+}
+for (const htmlFile of ["index.html", "public/offline.html"]) {
   const html = read(htmlFile);
   for (const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) {
     if (!match[1]) continue;
