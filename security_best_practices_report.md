@@ -72,6 +72,21 @@ análise.
   atualizar GitHub/Cloudflare/Supabase, validar deploy e somente então revogar o
   anterior.
 
+### SEC-107 — Valor com formato de credencial no esquema remoto — aberto
+
+- Local: definição SQL existente apenas no banco remoto de produção.
+- Evidência: a coleta de esquema sem dados detectou ao menos um valor com formato
+  de credencial; o valor não foi exibido nem copiado para o repositório.
+- Impacto: uma função ou configuração SQL pode conter credencial estática e ampliar
+  o impacto de acesso indevido ao catálogo do banco.
+- Mitigação aplicada: novos artefatos recebem somente esquema redigido; tipos e
+  quantidades de valores removidos ficam no resumo, nunca os próprios valores.
+- Próximo passo: localizar a definição pelo dump redigido, substituir o literal por
+  secret server-side e rotacionar a credencial correspondente.
+- Observação operacional: um artefato privado anterior reteve o dump bruto por sete
+  dias; a tentativa de exclusão imediata retornou 403 por falta de permissão da
+  conta GitHub CLI. O acesso continua restrito aos colaboradores autorizados.
+
 ## Histórico Git
 
 A árvore atual não contém credencial real compatível com os padrões pesquisados.

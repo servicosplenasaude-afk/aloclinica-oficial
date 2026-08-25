@@ -2,9 +2,9 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 
-const [input, output] = process.argv.slice(2);
-if (!input || !output) {
-  console.error("Usage: node scripts/summarize-schema-dump.mjs <schema.sql> <summary.json>");
+const [input, output, redactedOutput] = process.argv.slice(2);
+if (!input || !output || !redactedOutput) {
+  console.error("Usage: node scripts/summarize-schema-dump.mjs <schema.sql> <summary.json> <redacted-schema.sql>");
   process.exit(2);
 }
 
@@ -15,15 +15,21 @@ if (!sql.trim()) {
 }
 
 const forbiddenSecrets = [
-  /\bcfut_[A-Za-z0-9_-]{30,}\b/,
-  /\bsbp_[A-Za-z0-9_-]{30,}\b/,
-  /\b(?:sk_live_|sk_test_)[A-Za-z0-9_-]{16,}\b/,
-  /\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/,
-  /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
+  ["cloudflare_token", /\bcfut_[A-Za-z0-9_-]{30,}\b/g],
+  ["supabase_token", /\bsbp_[A-Za-z0-9_-]{30,}\b/g],
+  ["payment_secret", /\b(?:sk_live_|sk_test_)[A-Za-z0-9_-]{16,}\b/g],
+  ["jwt", /\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\b/g],
+  ["private_key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----[\s\S]*?-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g],
 ];
-if (forbiddenSecrets.some((pattern) => pattern.test(sql))) {
-  console.error("Schema evidence contains a credential-like value; refusing to publish it.");
-  process.exit(1);
+const redactions = {};
+let redactedSql = sql;
+for (const [label, pattern] of forbiddenSecrets) {
+  let matches = 0;
+  redactedSql = redactedSql.replace(pattern, () => {
+    matches += 1;
+    return `[REDACTED_${label.toUpperCase()}]`;
+  });
+  if (matches) redactions[label] = matches;
 }
 
 const count = (pattern) => [...sql.matchAll(pattern)].length;
@@ -31,6 +37,7 @@ const summary = {
   format: "aloclinica-schema-summary-v1",
   sha256: createHash("sha256").update(sql).digest("hex"),
   bytes: Buffer.byteLength(sql),
+  redactions,
   objects: {
     tables: count(/^CREATE TABLE\s/gim),
     functions: count(/^CREATE (?:OR REPLACE )?FUNCTION\s/gim),
@@ -43,4 +50,5 @@ const summary = {
 };
 
 writeFileSync(output, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
+writeFileSync(redactedOutput, redactedSql, "utf8");
 console.log(JSON.stringify(summary));
